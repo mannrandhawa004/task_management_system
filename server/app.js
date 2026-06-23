@@ -1,0 +1,104 @@
+import express from "express";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import http from "http";
+import { Server } from "socket.io";
+
+import cors from "cors";
+import compression from "compression";
+
+import { errorHandler } from "./src/middlewares/errorHandlerMiddleware.js";
+import { connectDB } from "./src/config/db.js";
+
+import authRoutes from "./src/routes/auth.routes.js";
+import projectRoutes from "./src/routes/projects.routes.js";
+import taskRoutes from "./src/routes/task.routes.js";
+import auditRoutes from "./src/routes/audit.routes.js";
+import notificationRoutes from "./src/routes/notification.routes.js";
+import dashboardRoutes from "./src/routes/dashboard.routes.js"
+import { clientIpMiddleware } from "./src/middlewares/clientIp.middleware.js";
+import { registerUserSocket, removeUserSocket, setSocketIO } from "./src/socket/socket.js";
+import { setAuditServiceIO } from "./src/services/audit.service.js";
+
+dotenv.config({
+  quiet: true,
+});
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+app.use(helmet());
+app.use(compression());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  }),
+);
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 500,
+  message: {
+    success: false,
+    message: "Too many requests, please try again later",
+  },
+});
+
+
+// app.use(limiter);
+
+app.use(express.json({ limit: "50kb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(clientIpMiddleware);
+app.get("/", (req, res) => {
+  res.send("Server running");
+});
+
+app.use("/v1/auth", authRoutes);
+app.use("/v1/project", projectRoutes);
+app.use("/v1/task", taskRoutes);
+app.use("/v1/audit-logs", auditRoutes);
+app.use("/v1/notification", notificationRoutes);
+app.use('/v1/dashboard', dashboardRoutes)
+
+app.use(errorHandler);
+
+const server = http.createServer(app);
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    credentials: true,
+  },
+});
+// console.log(io)
+
+
+setAuditServiceIO(io);
+setSocketIO(io);
+// setRectantelyServiceIO(io)
+
+connectDB()
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+  })
+  .catch((err) => console.error("Failed to start server:", err));
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.on("register", (userId, role) => {
+    registerUserSocket(userId, socket.id);
+    console.log(`User ${userId} registered`);
+  });
+
+  socket.on("disconnect", () => {
+    removeUserSocket(socket.id);
+
+    console.log("User disconnected");
+  });
+});

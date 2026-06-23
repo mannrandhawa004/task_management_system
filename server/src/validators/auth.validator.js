@@ -1,0 +1,48 @@
+import { body } from "express-validator";
+
+export const registerValidator = [
+  body("name")
+    .trim()
+    .isLength({ min: 3})
+    .withMessage("name must be at least 3 characters"),
+
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("email is required")
+    .isEmail()
+    .withMessage("Invalid Email Format"),
+
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("password is required")
+    .isLength({ min: 6 })
+    .withMessage("password must be at least 6 characters"),
+
+  body("role_id").trim().isNumeric().withMessage("role_id must be interger")
+    .optional(),
+];
+
+export const loginValidator = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Invalid email format"),
+
+  body("password").notEmpty().withMessage("Password is required"),
+];
+
+export const changePasswordValidator = [
+  body("currentPassword")
+    .notEmpty()
+    .withMessage("Current password is required"),
+
+  body("newPassword")
+    .notEmpty()
+    .withMessage("New password is required")
+    .isLength({ min: 6 })
+    .withMessage("New password must be at least 6 characters"),
+];
