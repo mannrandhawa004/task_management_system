@@ -11,7 +11,7 @@ import GenerateToken from "../utils/generateToken.js";
 import { formatPagination } from "../utils/pagination.js";
 
 class AuthServices {
-  async register({ name, email, password, role_id, device, ip, avatar }) {
+  async register({ name, email, password, role_id, department_id, device, ip, avatar }) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await AuthModel.registerUserQuery({
@@ -19,6 +19,7 @@ class AuthServices {
       email,
       password: hashedPassword,
       role_id,
+      department_id,
       avatar
     });
 

@@ -20,7 +20,10 @@ export const registerValidator = [
     .isLength({ min: 6 })
     .withMessage("password must be at least 6 characters"),
 
-  body("role_id").trim().isNumeric().withMessage("role_id must be interger")
+  body("role_id").trim().isNumeric().withMessage("role_id must be integer")
+    .optional(),
+
+  body("department_id").trim().isNumeric().withMessage("department_id must be integer")
     .optional(),
 ];
 

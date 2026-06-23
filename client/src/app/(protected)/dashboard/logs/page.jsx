@@ -211,7 +211,7 @@ export default function AuditLogPage() {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <span className="font-bold block truncate">{log.user_name || "System automated"}</span>
-                                                            <span className="text-[10px] block opacity-70 uppercase font-black tracking-wider text-[var(--muted)]">{log.role_name || "Member"}</span>
+                                                            <span className="text-[10px] block opacity-70 uppercase font-black tracking-wider text-[var(--muted)]">{log.role_name || "Employee"}</span>
                                                         </div>
                                                     </div>
                                                 </td>

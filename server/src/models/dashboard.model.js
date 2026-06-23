@@ -339,8 +339,103 @@ class DashboardModel {
 
         return await executeQuery(query, params);
     }
+
+    async getAdminMetrics() {
+        const queryCounts = `
+            SELECT 
+                (SELECT COUNT(*) FROM users) as total_users,
+                (SELECT COUNT(*) FROM departments) as total_departments,
+                (SELECT COUNT(*) FROM teams) as total_teams,
+                (SELECT COUNT(*) FROM projects) as total_projects,
+                (SELECT COUNT(*) FROM tasks) as total_tasks
+        `;
+        const queryAttendance = `
+            SELECT 
+                COUNT(CASE WHEN status = 'present' THEN 1 END) as present,
+                COUNT(CASE WHEN status = 'late' THEN 1 END) as late,
+                COUNT(CASE WHEN status = 'half_day' THEN 1 END) as half_day,
+                COUNT(CASE WHEN status = 'absent' THEN 1 END) as absent,
+                COUNT(CASE WHEN status = 'remote' THEN 1 END) as remote,
+                COUNT(CASE WHEN status = 'on_leave' THEN 1 END) as on_leave
+            FROM attendance
+            WHERE date = CURRENT_DATE()
+        `;
+
+        const [counts, attendance] = await Promise.all([
+            executeQuery(queryCounts),
+            executeQuery(queryAttendance)
+        ]);
+
+        return {
+            counts: counts[0],
+            attendance: attendance[0]
+        };
+    }
+
+    async getDepartmentMetrics(departmentId) {
+        const queryCounts = `
+            SELECT 
+                (SELECT COUNT(*) FROM users WHERE department_id = ?) as total_users,
+                (SELECT COUNT(*) FROM projects WHERE department_id = ?) as total_projects,
+                (SELECT COUNT(*) FROM teams WHERE department_id = ?) as total_teams
+        `;
+        const queryTasks = `
+            SELECT 
+                COUNT(t.id) as total_tasks,
+                COUNT(CASE WHEN t.status = 'completed' THEN 1 END) as completed_tasks,
+                COUNT(CASE WHEN t.status = 'in_progress' THEN 1 END) as in_progress_tasks,
+                COUNT(CASE WHEN t.status = 'todo' THEN 1 END) as todo_tasks
+            FROM tasks t
+            JOIN projects p ON t.project_id = p.id
+            WHERE p.department_id = ?
+        `;
+        const queryAttendance = `
+            SELECT 
+                COUNT(CASE WHEN a.status = 'present' THEN 1 END) as present,
+                COUNT(CASE WHEN a.status = 'late' THEN 1 END) as late,
+                COUNT(CASE WHEN a.status = 'half_day' THEN 1 END) as half_day,
+                COUNT(CASE WHEN a.status = 'absent' THEN 1 END) as absent,
+                COUNT(CASE WHEN a.status = 'remote' THEN 1 END) as remote,
+                COUNT(CASE WHEN a.status = 'on_leave' THEN 1 END) as on_leave
+            FROM attendance a
+            JOIN users u ON a.user_id = u.id
+            WHERE u.department_id = ? AND a.date = CURRENT_DATE()
+        `;
+
+        const [counts, tasks, attendance] = await Promise.all([
+            executeQuery(queryCounts, [departmentId, departmentId, departmentId]),
+            executeQuery(queryTasks, [departmentId]),
+            executeQuery(queryAttendance, [departmentId])
+        ]);
+
+        return {
+            counts: counts[0],
+            tasks: tasks[0],
+            attendance: attendance[0]
+        };
+    }
+
+    async getUserMetrics(userId) {
+        const queryTasks = `
+            SELECT 
+                COUNT(id) as total_assigned,
+                COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed,
+                COUNT(CASE WHEN status = 'in_progress' THEN 1 END) as in_progress,
+                COUNT(CASE WHEN status = 'todo' THEN 1 END) as pending
+            FROM tasks
+            WHERE id IN (
+                SELECT task_id FROM task_assignees WHERE user_id = ?
+            )
+        `;
+
+        const [tasks] = await Promise.all([
+            executeQuery(queryTasks, [userId])
+        ]);
+
+        return {
+            tasks: tasks[0]
+        };
+    }
 }
-
-
 
 export default new DashboardModel();

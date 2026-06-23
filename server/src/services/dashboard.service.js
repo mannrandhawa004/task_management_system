@@ -58,13 +58,25 @@ class DashboardService {
     }
 
     async getDailyTaskProgress(user, { days = 30 } = {}) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = user.role === "admin" || user.role === "super_admin";
         const rows = await DashboardModel.getDailyTaskProgress(user, isAdmin, { days });
         return { rows };
     }
 
+    async getAdminMetrics() {
+        return await DashboardModel.getAdminMetrics();
+    }
+
+    async getDepartmentMetrics(departmentId) {
+        return await DashboardModel.getDepartmentMetrics(departmentId);
+    }
+
+    async getUserMetrics(userId) {
+        return await DashboardModel.getUserMetrics(userId);
+    }
+
     async getOverdueMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = user.role === "admin" || user.role === "super_admin";
         const [totalCriticalCount, rawRows] = await Promise.all([
             DashboardModel.countOverdueTasks(user, isAdmin),
             DashboardModel.fetchPaginatedOverdueTasks(user, isAdmin, { offset, limit })
@@ -90,6 +102,7 @@ class DashboardService {
             overdueTasks,
             upcomingDeadlines
         };
+
     }
 }
 

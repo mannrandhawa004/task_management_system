@@ -122,6 +122,33 @@ class DashboardController {
 
         return successResponse(res, "Daily task progress retrieved.", payload, 200);
     });
+
+    getAdminMetrics = asyncHandler(async (req, res) => {
+        const metrics = await DashboardService.getAdminMetrics();
+        return successResponse(res, "Admin global metrics fetched successfully", metrics, 200);
+    });
+
+    getDepartmentMetrics = asyncHandler(async (req, res) => {
+        const departmentId = req.params.deptId || req.user.department_id;
+        if (!departmentId) {
+            return successResponse(res, "No department associated with this user", { counts: {}, tasks: {}, attendance: {} }, 200);
+        }
+
+        // Restrict non-admins to their own department
+        const userRole = req.user.role ? req.user.role.toLowerCase() : "";
+        if (userRole !== "super_admin" && userRole !== "admin" && Number(req.user.department_id) !== Number(departmentId)) {
+            return res.status(403).json({ success: false, message: "Access denied to this department dashboard" });
+        }
+
+        const metrics = await DashboardService.getDepartmentMetrics(departmentId);
+        return successResponse(res, "Department metrics fetched successfully", metrics, 200);
+    });
+
+    getUserMetrics = asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        const metrics = await DashboardService.getUserMetrics(userId);
+        return successResponse(res, "User metrics fetched successfully", metrics, 200);
+    });
 }
 
 export default new DashboardController();

@@ -1,5 +1,5 @@
 export const isAdmin = (user) => user?.role === "admin";
-export const isUser = (user) => user?.role === "user";
+export const isEmployee = (user) => user?.role === "employee";
 export const canCreateProject = (user) => isAdmin(user);
 export const canDeleteProject = (user) => isAdmin(user);
 

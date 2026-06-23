@@ -13,8 +13,8 @@ import authModel from "../models/auth.model.js";
 
 class AuthController {
   register = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
-    const role_id = 4;
+    const { name, email, password, role_id, department_id } = req.body;
+    const final_role_id = role_id ? Number(role_id) : 3; // Default to employee (3)
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0] ||
       req.socket?.remoteAddress;
@@ -25,12 +25,12 @@ class AuthController {
       profilePicUrl = req.file.path;
     }
 
-
     const newUser = await AuthService.register({
       name,
       email,
       password,
-      role_id,
+      role_id: final_role_id,
+      department_id: department_id ? Number(department_id) : null,
       device,
       ip,
       avatar: profilePicUrl,

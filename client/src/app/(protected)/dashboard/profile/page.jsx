@@ -38,7 +38,7 @@ export default function ProfilePage() {
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--input)] px-3 py-1.5 text-xs font-black capitalize">
             <Shield size={13} className="text-[var(--primary)]" />
-            {user?.role || "member"}
+            {user?.role || "employee"}
           </span>
         </div>
 
@@ -47,7 +47,7 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <ProfileField icon={UserRound} label="Name" value={user?.name || "Not available"} />
             <ProfileField icon={Mail} label="Email" value={user?.email || "Not available"} />
-            <ProfileField icon={Shield} label="Role" value={user?.role || "member"} />
+            <ProfileField icon={Shield} label="Role" value={user?.role || "employee"} />
             <ProfileField icon={BadgeCheck} label="Status" value={user?.status || "active"} />
             {/* <ProfileField icon={Calendar} label="User ID" value={user?.id ? `#${user.id}` : "Not available"} /> */}
           </div>

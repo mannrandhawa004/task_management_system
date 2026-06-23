@@ -18,6 +18,9 @@ import taskRoutes from "./src/routes/task.routes.js";
 import auditRoutes from "./src/routes/audit.routes.js";
 import notificationRoutes from "./src/routes/notification.routes.js";
 import dashboardRoutes from "./src/routes/dashboard.routes.js"
+import departmentRoutes from "./src/routes/department.routes.js";
+import teamRoutes from "./src/routes/team.routes.js";
+import attendanceRoutes from "./src/routes/attendance.routes.js";
 import { clientIpMiddleware } from "./src/middlewares/clientIp.middleware.js";
 import { registerUserSocket, removeUserSocket, setSocketIO } from "./src/socket/socket.js";
 import { setAuditServiceIO } from "./src/services/audit.service.js";
@@ -62,7 +65,10 @@ app.use("/v1/project", projectRoutes);
 app.use("/v1/task", taskRoutes);
 app.use("/v1/audit-logs", auditRoutes);
 app.use("/v1/notification", notificationRoutes);
-app.use('/v1/dashboard', dashboardRoutes)
+app.use('/v1/dashboard', dashboardRoutes);
+app.use("/v1/departments", departmentRoutes);
+app.use("/v1/teams", teamRoutes);
+app.use("/v1/attendance", attendanceRoutes);
 
 app.use(errorHandler);
 

@@ -1,9 +1,9 @@
 import { executeQuery } from "../utils/dbQuery.js";
 
 class AuthModel {
-  async registerUserQuery({ name, email, password, role_id, avatar }) {
-    const params = [name, email, password, role_id, avatar || null];
-    const insertUserQuery = `INSERT INTO users(name, email, password, role_id, avatar) VALUES (?, ?, ?, ? ,?)`;
+  async registerUserQuery({ name, email, password, role_id, department_id, avatar }) {
+    const params = [name, email, password, role_id, department_id || null, avatar || null];
+    const insertUserQuery = `INSERT INTO users(name, email, password, role_id, department_id, avatar) VALUES (?, ?, ?, ?, ?, ?)`;
 
     const result = await executeQuery(insertUserQuery, params);
     return result;
@@ -17,14 +17,12 @@ class AuthModel {
       u.password,
       u.status,
       u.avatar,
-
+      u.department_id,
+      d.name AS department_name,
       r.name AS role
-
       FROM users u
-
-      JOIN roles r
-      ON r.id = u.role_id
-
+      JOIN roles r ON r.id = u.role_id
+      LEFT JOIN departments d ON u.department_id = d.id
       WHERE email = ?`;
     const result = await executeQuery(query, [email]);
 
@@ -75,7 +73,6 @@ class AuthModel {
 
   async profile(id) {
     const query = `
-
     SELECT
       u.id,
       u.name,
@@ -83,13 +80,13 @@ class AuthModel {
       u.status,
       u.avatar,
       u.created_at,
-
+      u.department_id,
+      d.name AS department_name,
       r.id AS role_id,
       r.name AS role
-
     FROM users u
-    JOIN roles r
-    ON r.id = u.role_id
+    JOIN roles r ON r.id = u.role_id
+    LEFT JOIN departments d ON u.department_id = d.id
     WHERE u.id = ?
     LIMIT 1
   `;
@@ -101,7 +98,6 @@ class AuthModel {
 
   async getAllUsers(limit, offset) {
     const query = `
-  
     SELECT
       u.id,
       u.name,
@@ -109,12 +105,13 @@ class AuthModel {
       u.status,
       u.avatar,
       u.created_at,
-
+      u.department_id,
+      d.name AS department_name,
       r.id AS role_id,
       r.name AS role
     FROM users u
-    JOIN roles r
-    ON r.id = u.role_id
+    JOIN roles r ON r.id = u.role_id
+    LEFT JOIN departments d ON u.department_id = d.id
     ORDER BY u.created_at DESC
     LIMIT ? OFFSET ?
   `;
@@ -173,12 +170,13 @@ class AuthModel {
       u.name,
       u.email,
       u.status,
-
+      u.department_id,
+      d.name AS department_name,
       r.id AS role_id,
       r.name AS role
     FROM users u
-    JOIN roles r
-    ON r.id = u.role_id
+    JOIN roles r ON r.id = u.role_id
+    LEFT JOIN departments d ON u.department_id = d.id
     WHERE u.id = ?
     LIMIT 1
   `;

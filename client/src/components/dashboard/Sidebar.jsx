@@ -19,6 +19,9 @@ import {
   ChevronDown,
   PanelLeftClose,
   PanelLeftOpen,
+  Building2,
+  Users2,
+  Clock,
 } from "lucide-react";
 
 import { isAdmin } from "@/lib/permissions";
@@ -27,14 +30,16 @@ export default function Sidebar() {
 
   const pathname = usePathname();
   const user = useSelector((state) => state.auth.user);
-  const userRole = user?.role?.toLowerCase() || "member";
+  const userRole = user?.role?.toLowerCase() || "employee";
   const projects = useSelector((state) => state.project.projects);
 
   const [collapsed, setCollapsed] = useState(false);
   const [openSections, setOpenSections] = useState({
     users: true,
+    company: true,
     projects: true,
     tasks: true,
+    workplace: true,
     system: true,
   });
 
@@ -43,21 +48,41 @@ export default function Sidebar() {
   };
 
   const isProjectManager = projects?.some(
-    (p) => p.role?.toLowerCase() === "manager"
+    (p) => p.role?.toLowerCase() === "manager" || p.role?.toLowerCase() === "project_manager"
   );
+
+  const allSystemRoles = [
+    "super_admin",
+    "admin",
+    "dept_head",
+    "project_manager",
+    "team_lead",
+    "senior_employee",
+    "employee",
+    "intern",
+  ];
 
   const sections = [
     {
       key: "users",
       title: "User Management",
-      roles: ["admin"],
+      roles: ["super_admin", "admin"],
       items: [{ title: "All Users", href: "/dashboard/users", icon: Users }],
+    },
+    {
+      key: "company",
+      title: "Organization",
+      roles: ["super_admin", "admin", "dept_head"],
+      items: [
+        { title: "Departments", href: "/dashboard/departments", icon: Building2 },
+        { title: "Teams", href: "/dashboard/teams", icon: Users2 },
+      ],
     },
     {
       key: "projects",
       title: "Projects",
-      roles: ["admin", "user", "member", "manager"],
-      items: isAdmin(user)
+      roles: allSystemRoles,
+      items: isAdmin(user) || userRole === "super_admin" || userRole === "admin"
         ? [
           { title: "All Projects", href: "/dashboard/projects", icon: FolderKanban },
         ]
@@ -66,9 +91,9 @@ export default function Sidebar() {
     {
       key: "tasks",
       title: "Tasks",
-      roles: ["manager", "member", "user", "admin"],
+      roles: allSystemRoles,
       items: [
-        ...(userRole === "admin" || userRole === "manager" || isProjectManager
+        ...(userRole === "admin" || userRole === "super_admin" || userRole === "project_manager" || userRole === "manager" || isProjectManager
           ? [{ title: "All Tasks", href: "/dashboard/tasks/all", icon: CheckSquare }]
           : [{ title: "My Tasks", href: "/dashboard/tasks", icon: CheckSquare }]),
         { title: "Task Board", href: "/dashboard/tasks/board", icon: CheckSquare },
@@ -76,11 +101,19 @@ export default function Sidebar() {
       ],
     },
     {
+      key: "workplace",
+      title: "Workplace",
+      roles: allSystemRoles,
+      items: [
+        { title: "Attendance", href: "/dashboard/attendance", icon: Clock },
+      ],
+    },
+    {
       key: "system",
       title: "System",
-      roles: ["admin", "manager", "member", "user"],
+      roles: allSystemRoles,
       items: [
-        ...(userRole === "admin" ? [{ title: "Activity Logs", href: "/dashboard/logs", icon: Activity }] : []),
+        ...(userRole === "admin" || userRole === "super_admin" ? [{ title: "Activity Logs", href: "/dashboard/logs", icon: Activity }] : []),
         { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
         { title: "Profile", href: "/dashboard/profile", icon: User },
         { title: "Settings", href: "/dashboard/settings", icon: Settings },
@@ -107,7 +140,7 @@ export default function Sidebar() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
               <h1 className="font-extrabold text-sm tracking-tight text-[var(--text)]">TaskFlow</h1>
               <p className="text-[9px] uppercase font-bold tracking-wider truncate text-[var(--muted)]">
-                {user?.role || "Member"} Space
+                {user?.role || "Employee"} Space
               </p>
             </motion.div>
           )}
