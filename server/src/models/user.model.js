@@ -9,8 +9,8 @@ class UserModel {
     const userRole = requestingUser.role ? requestingUser.role.toLowerCase() : "";
 
     // 1. Enforce strict visibility restrictions at query layer
-    if (userRole === "super_admin" || userRole === "admin") {
-      // No visibility restrictions
+    if (userRole === "super_admin" || userRole === "admin" || userRole === "hr") {
+      // No visibility restrictions — HR needs full employee list access for onboarding/offboarding
     } else if (userRole === "dept_head") {
       visibilityQuery += " AND u.department_id = ? ";
       params.push(requestingUser.department_id);

@@ -15,7 +15,7 @@ import { authorizePermissions } from "../middlewares/authorizePermissions.middle
 
 const router = Router();
 
-router.get("/", authMiddleware, ProjectController.allProjects);
+router.get("/", authMiddleware, authorizeRoles("super_admin"), ProjectController.allProjects);
 
 router.get("/details/:id", authMiddleware, ProjectController.individualProject);
 

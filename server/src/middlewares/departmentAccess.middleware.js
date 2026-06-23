@@ -1,5 +1,9 @@
 import { ForbiddenError } from "../utils/errorHandler.js";
 
+// Roles that have global department access without restriction
+// NOTE: "hr" is intentionally excluded — HR is scoped to their own department
+const BYPASS_ROLES = ["super_admin", "admin"];
+
 /**
  * Middleware to restrict department resource access.
  * Admins/Super Admins can access any department.
@@ -13,7 +17,7 @@ export const departmentAccessMiddleware = async (req, res, next) => {
   const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
   // Super Admin and Admin bypass department boundary checks
-  if (userRole === "super_admin" || userRole === "admin") {
+  if (BYPASS_ROLES.includes(userRole)) {
     return next();
   }
 
@@ -46,7 +50,7 @@ export const departmentHeadMiddleware = async (req, res, next) => {
   const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
   // Super Admin and Admin bypass
-  if (userRole === "super_admin" || userRole === "admin") {
+  if (BYPASS_ROLES.includes(userRole)) {
     return next();
   }
 

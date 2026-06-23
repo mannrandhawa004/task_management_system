@@ -1,5 +1,9 @@
 import { ForbiddenError } from "../utils/errorHandler.js";
 
+// Roles that bypass all route-level role checks (full system access)
+// NOTE: "hr" is intentionally excluded — HR goes through normal role checks
+const BYPASS_ROLES = ["super_admin", "admin"];
+
 export const authorizeRoles =
   (...roles) =>
     (req, res, next) => {
@@ -10,7 +14,7 @@ export const authorizeRoles =
       const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
       // Super Admin and Admin bypass role checks
-      if (userRole === "super_admin" || userRole === "admin") {
+      if (BYPASS_ROLES.includes(userRole)) {
         return next();
       }
 

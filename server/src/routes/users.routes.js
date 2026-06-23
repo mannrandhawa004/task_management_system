@@ -15,10 +15,13 @@ router.get("/", UserController.getAllUsers);
 router.get("/roles", UserController.getAllRoles);
 router.get("/:id", UserController.getUserById);
 
-// 2. User CRUD administration (strictly restricted to Super Admin / Admin)
+// 2. User CRUD administration
+// Super Admin and Admin have full access (via authorizeRoles bypass).
+// HR role is explicitly granted access here to add/edit/delete employees —
+// their scope is enforced at the model/service layer (they see all employees but cannot touch departments).
 router.post(
   "/",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin", "admin", "hr"),
   uploadProfilePic.single("avatar"),
   createUserValidator,
   validate,
@@ -27,7 +30,7 @@ router.post(
 
 router.put(
   "/:id",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin", "admin", "hr"),
   uploadProfilePic.single("avatar"),
   updateUserValidator,
   validate,
@@ -36,7 +39,7 @@ router.put(
 
 router.delete(
   "/:id",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin", "admin", "hr"),
   UserController.deleteUser
 );
 

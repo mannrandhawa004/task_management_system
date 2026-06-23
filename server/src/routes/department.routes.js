@@ -15,10 +15,11 @@ const router = Router();
 
 router.use(authMiddleware);
 
-// Only Super Admins and Admins can create, update, or delete departments globally
+// Only Super Admins can create, update, or delete departments
+// (Admins are intentionally excluded — department structure is a super_admin responsibility)
 router.post(
   "/create",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin"),
   createDepartmentValidator,
   validate,
   DepartmentController.createDepartment
@@ -26,7 +27,7 @@ router.post(
 
 router.patch(
   "/:id",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin"),
   updateDepartmentValidator,
   validate,
   DepartmentController.updateDepartment
@@ -34,11 +35,11 @@ router.patch(
 
 router.delete(
   "/delete/:id",
-  authorizeRoles("super_admin", "admin"),
+  authorizeRoles("super_admin"),
   DepartmentController.deleteDepartment
 );
 
-// All authenticated employees can list departments (e.g. for selection)
+// All authenticated employees can list departments (e.g. for selection in forms)
 router.get(
   "/",
   DepartmentController.listDepartments

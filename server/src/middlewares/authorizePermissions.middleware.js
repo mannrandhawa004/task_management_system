@@ -1,6 +1,10 @@
 import AuthModel from "../models/auth.model.js";
 import { ForbiddenError } from "../utils/errorHandler.js";
 
+// Roles that bypass all permission checks (full system access)
+// NOTE: "hr" is intentionally excluded — HR permissions are evaluated normally
+const BYPASS_ROLES = ["super_admin", "admin"];
+
 // Normalize permission names to support legacy checks and aliases
 const normalizePermission = (name) => {
   if (!name) return "";
@@ -19,7 +23,7 @@ export const authorizePermissions = (...permissions) => {
     const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
     // Super Admin and Admin bypass all permission checks
-    if (userRole === "super_admin" || userRole === "admin") {
+    if (BYPASS_ROLES.includes(userRole)) {
       return next();
     }
 

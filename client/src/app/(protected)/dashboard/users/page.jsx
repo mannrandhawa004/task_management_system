@@ -69,7 +69,8 @@ export default function UsersPage() {
 
   const isWriteAuthorized =
     loggedInUser?.role?.toLowerCase() === "admin" ||
-    loggedInUser?.role?.toLowerCase() === "super_admin";
+    loggedInUser?.role?.toLowerCase() === "super_admin" ||
+    loggedInUser?.role?.toLowerCase() === "hr";
 
   // Load lists on mount
   useEffect(() => {

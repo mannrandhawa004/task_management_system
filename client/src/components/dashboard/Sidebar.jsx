@@ -24,7 +24,7 @@ import {
   Clock,
 } from "lucide-react";
 
-import { isAdmin } from "@/lib/permissions";
+import { isAdmin, isHR } from "@/lib/permissions";
 
 export default function Sidebar() {
 
@@ -66,13 +66,15 @@ export default function Sidebar() {
     {
       key: "users",
       title: "User Management",
-      roles: ["super_admin", "admin"],
+      // HR can access User Management to add/edit/delete employees
+      roles: ["super_admin", "admin", "hr"],
       items: [{ title: "All Users", href: "/dashboard/users", icon: Users }],
     },
     {
       key: "company",
       title: "Organization",
-      roles: ["super_admin", "admin", "dept_head"],
+      // HR can view departments/teams (read-only — create/edit/delete is super_admin only)
+      roles: ["super_admin", "admin", "hr", "dept_head"],
       items: [
         { title: "Departments", href: "/dashboard/departments", icon: Building2 },
         { title: "Teams", href: "/dashboard/teams", icon: Users2 },

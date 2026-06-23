@@ -44,8 +44,8 @@ export default function DepartmentsPage() {
   const [status, setStatus] = useState("active");
   const [selectedId, setSelectedId] = useState(null);
 
-  const isAdminOrSuper =
-    user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
+  // Only super_admin can create/edit/delete departments — it is a structural operation
+  const isSuperAdminUser = user?.role?.toLowerCase() === "super_admin";
 
   useEffect(() => {
     dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
@@ -108,7 +108,7 @@ export default function DepartmentsPage() {
           </p>
         </div>
 
-        {isAdminOrSuper && (
+        {isSuperAdminUser && (
           <button
             type="button"
             onClick={() => {
@@ -170,7 +170,7 @@ export default function DepartmentsPage() {
                   </div>
                 </div>
 
-                {isAdminOrSuper && (
+                {isSuperAdminUser && (
                   <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
