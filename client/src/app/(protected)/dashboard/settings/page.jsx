@@ -25,7 +25,7 @@ export default function SettingsPage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const role = user?.role?.toLowerCase() || "member";
-  const isAdmin = role === "admin";
+  const isAdmin = role === "admin" || role === "super_admin";
 
   useEffect(() => {
     dispatch(getProjectsThunk({ page: 1, limit: 10 }));
@@ -39,7 +39,7 @@ export default function SettingsPage() {
   }, [dispatch, isAdmin]);
 
   const roleCapabilities = useMemo(() => {
-    if (role === "admin") {
+    if (role === "admin" || role === "super_admin") {
       return [
         "Manage all users and account status",
         "View all projects and tasks",

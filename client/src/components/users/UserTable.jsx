@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, UserMinus } from "lucide-react";
+import { Eye, UserMinus, Edit2 } from "lucide-react";
 
 export default function UserTable({
     users,
     loading,
     onDeleteUser,
+    onEditUser,
     onStatusChange,
     statusConfig,
 }) {
@@ -106,6 +107,16 @@ export default function UserTable({
                                             >
                                                 <Eye size={16} />
                                             </Link>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => onEditUser(user)}
+                                                className="inline-flex items-center justify-center h-9 w-9 rounded-xl border transition hover:bg-neutral-500/10 active:scale-95 cursor-pointer"
+                                                style={{ background: "var(--input)", borderColor: "var(--border)", color: "var(--primary)" }}
+                                                title="Edit Employee settings"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
 
                                             <button
                                                 type="button"

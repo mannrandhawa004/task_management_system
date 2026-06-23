@@ -5,6 +5,10 @@ import {
   registerUser,
   getAllUsers,
   changeStatus,
+  createUser,
+  updateUser,
+  deleteUser,
+  getRoles,
 } from "@/features/auth/services/auth.service";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -79,11 +83,55 @@ export const changeStatusThunk = createAsyncThunk(
 
 export const getAllUsersThunk = createAsyncThunk(
   "auth/getAllUsers",
-  async ({ page = 1, limit = 10 }, thunkAPI) => {
+  async ({ page = 1, limit = 10, filters = {} }, thunkAPI) => {
     try {
-      return await getAllUsers(page, limit);
+      return await getAllUsers(page, limit, filters);
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data?.message);
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch users");
     }
   },
+);
+
+export const createUserThunk = createAsyncThunk(
+  "auth/createUser",
+  async (formData, thunkAPI) => {
+    try {
+      return await createUser(formData);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to create user");
+    }
+  }
+);
+
+export const updateUserThunk = createAsyncThunk(
+  "auth/updateUser",
+  async ({ id, formData }, thunkAPI) => {
+    try {
+      return await updateUser(id, formData);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to update user");
+    }
+  }
+);
+
+export const deleteUserThunk = createAsyncThunk(
+  "auth/deleteUser",
+  async (id, thunkAPI) => {
+    try {
+      return await deleteUser(id);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to delete user");
+    }
+  }
+);
+
+export const getRolesThunk = createAsyncThunk(
+  "auth/getRoles",
+  async (_, thunkAPI) => {
+    try {
+      return await getRoles();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch roles");
+    }
+  }
 );

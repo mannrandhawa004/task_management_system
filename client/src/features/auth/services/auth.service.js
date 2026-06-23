@@ -28,16 +28,21 @@ export const changePassword = async ({ currentPassword, newPassword }) => {
   return response.data;
 };
 
-export const getAllUsers = async (page = 1, limit = 10) => {
-  const response = await api.get(`/auth/allusers?page=${page}&limit=${limit}`);
+export const getAllUsers = async (page = 1, limit = 10, filters = {}) => {
+  const queryParams = new URLSearchParams({ page, limit });
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== "" && value !== "all") {
+      queryParams.append(key, value);
+    }
+  });
+  const response = await api.get(`/users?${queryParams.toString()}`);
   return response.data.data;
 };
 
 export const getIndividualUser = async (userId) => {
-  const response = await api.get(`/auth/user/detail/${userId}`);
+  const response = await api.get(`/users/${userId}`);
   return response.data.data;
 };
-
 
 export const changeStatus = async ({ userId, status }) => {
   console.log("Updating User ID:", userId, "to Status:", status);
@@ -45,10 +50,31 @@ export const changeStatus = async ({ userId, status }) => {
   return response.data.data;
 };
 
-export const searchUsers = async (search = "", page = 1, limit = 10) => {
-  const response = await api.get(
-    `auth/user?search=${search}&page=${page}&limit=${limit}`,
-  );
-
+export const createUser = async (formData) => {
+  const response = await api.post("/users", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
   return response.data.data;
 };
+
+export const updateUser = async (userId, formData) => {
+  const response = await api.put(`/users/${userId}`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data.data;
+};
+
+export const deleteUser = async (userId) => {
+  const response = await api.delete(`/users/${userId}`);
+  return response.data.data;
+};
+
+export const getRoles = async () => {
+  const response = await api.get("/users/roles");
+  return response.data.data;
+};
+

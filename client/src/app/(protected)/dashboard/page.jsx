@@ -72,7 +72,8 @@ export default function DashboardPage() {
   const { project: currentProject, loading: projectLoading } = useSelector((state) => state.project);
   const dashboard = useSelector((state) => state.dashboard);
 
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
 
   // Fetch dashboard stats from API - single source of truth
   useEffect(() => {

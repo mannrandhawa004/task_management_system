@@ -6,6 +6,7 @@ import {
   logoutThunk,
   changeStatusThunk,
   getAllUsersThunk,
+  getRolesThunk,
 } from "../thunks/authThunk";
 
 const initialState = {
@@ -14,6 +15,7 @@ const initialState = {
   loading: false,
   error: null,
   users: [],
+  roles: [],
   initialized: false,
   pagination: null,
 };
@@ -91,6 +93,9 @@ const authSlice = createSlice({
       .addCase(changeStatusThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload; // Captures the  message safely
+      })
+      .addCase(getRolesThunk.fulfilled, (state, action) => {
+        state.roles = action.payload || [];
       });
   },
 });

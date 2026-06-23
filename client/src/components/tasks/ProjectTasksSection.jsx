@@ -60,7 +60,7 @@ export default function ProjectTasksSection({
     return rawTasks.filter((task) => task && task.status === status);
   }, [tasks, status]);
 
-  const isWorkspaceAdmin = user?.role === "admin";
+  const isWorkspaceAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
   const isProjectManager = project?.role === "manager";
   const hasEditPrivileges = isWorkspaceAdmin || isProjectManager;
 

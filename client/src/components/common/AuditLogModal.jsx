@@ -7,7 +7,7 @@ import { getSocket } from "@/lib/socket";
 
 const filterLogsByRole = (logsData, role) => {
     // Admin can see all logs
-    if (role === "admin") {
+    if (role === "admin" || role === "super_admin") {
         return logsData;
     }
 

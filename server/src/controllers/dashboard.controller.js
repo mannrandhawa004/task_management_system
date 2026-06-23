@@ -12,8 +12,8 @@ class DashboardController {
         const { totalProjects, activeProjects, rows } = await DashboardService.getProjectMetrics(user, { offset, limit });
 
         const payload = {
-            metrics: { totalProjects, activeProjectsCount: activeProjects.length },
-            ...formatPagination({ data: rows, total: activeProjects.length, page, limit })
+            metrics: { totalProjects, activeProjectsCount: activeProjects },
+            ...formatPagination({ data: rows, total: activeProjects, page, limit })
         };
 
         return successResponse(res, "Project dashboard metrics aggregated.", payload, 200);

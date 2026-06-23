@@ -53,7 +53,7 @@ export default function AllTasksPage() {
     // ─── Auth ────────────────────────────────────────────────────────────────
     const { user } = useSelector((state) => state.auth);
     const systemRole = user?.role?.toLowerCase() || "member";
-    const isAdmin = systemRole === "admin";
+    const isAdmin = systemRole === "admin" || systemRole === "super_admin";
     const isSystemManager = systemRole === "manager";
 
     // ─── Projects (contains per-project role) ────────────────────────────────

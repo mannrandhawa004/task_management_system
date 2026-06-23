@@ -1,4 +1,7 @@
-export const isAdmin = (user) => user?.role === "admin";
+export const isAdmin = (user) => {
+  const role = user?.role?.toLowerCase();
+  return role === "admin" || role === "super_admin";
+};
 export const isEmployee = (user) => user?.role === "employee";
 export const canCreateProject = (user) => isAdmin(user);
 export const canDeleteProject = (user) => isAdmin(user);

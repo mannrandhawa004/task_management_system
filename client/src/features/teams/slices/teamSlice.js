@@ -41,8 +41,8 @@ const teamSlice = createSlice({
       })
       .addCase(getTeamsThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.teamsList = action.payload?.rows || action.payload || [];
-        state.total = action.payload?.total || 0;
+        state.teamsList = Array.isArray(action.payload) ? action.payload : (action.payload?.data || action.payload?.rows || []);
+        state.total = action.payload?.pagination?.total || action.payload?.total || (Array.isArray(action.payload) ? action.payload.length : 0);
       })
       .addCase(getTeamsThunk.rejected, (state, action) => {
         state.loading = false;

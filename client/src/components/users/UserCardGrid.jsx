@@ -1,12 +1,13 @@
 "use client";
 
-import { Mail, Fingerprint, UserMinus, ShieldAlert, ChevronDown } from "lucide-react";
+import { Mail, Fingerprint, UserMinus, ShieldAlert, ChevronDown, Edit2 } from "lucide-react";
 
 export default function UserCardGrid({
     users,
     loading,
     limit,
     onDeleteUser,
+    onEditUser,
     onStatusChange,
     statusConfig,
 }) {
@@ -119,6 +120,15 @@ export default function UserCardGrid({
                                     <ChevronDown size={14} />
                                 </div>
                             </div>
+
+                            <button
+                                type="button"
+                                onClick={() => onEditUser(user)}
+                                className="p-2 rounded-xl text-[var(--primary)] hover:bg-[var(--primary)]/5 border border-transparent hover:border-[var(--primary)]/10 transition-all duration-200 cursor-pointer active:scale-95 shrink-0"
+                                title="Edit Employee settings"
+                            >
+                                <Edit2 size={15} />
+                            </button>
 
                             <button
                                 type="button"

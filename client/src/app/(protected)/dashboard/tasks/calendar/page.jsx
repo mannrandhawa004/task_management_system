@@ -17,7 +17,7 @@ export default function TaskCalendarPage() {
   const dispatch = useDispatch();
   const { tasks, taskLoading } = useSelector((state) => state.task);
   const user = useSelector((state) => state.auth.user);
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
   const [cursorDate, setCursorDate] = useState(() => new Date());
 
   useEffect(() => {

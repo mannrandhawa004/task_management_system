@@ -24,7 +24,7 @@ export default function TaskBoardPage() {
   const dispatch = useDispatch();
   const { tasks, taskLoading } = useSelector((state) => state.task);
   const user = useSelector((state) => state.auth.user);
-  const isAdmin = user?.role?.toLowerCase() === "admin";
+  const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
   const [draggedTaskId, setDraggedTaskId] = useState(null);
 
   useEffect(() => {

@@ -17,12 +17,12 @@ export const deleteDepartment = async (id) => {
 
 export const getDepartments = async ({ page = 1, limit = 10 } = {}) => {
   const response = await api.get(`/departments?page=${page}&limit=${limit}`);
-  return response.data.data;
+  return response.data.data.data;
 };
 
 export const getDepartmentDetails = async (id) => {
   const response = await api.get(`/departments/${id}`);
-  return response.data.data;
+  return response.data.data.data;
 };
 
 export const getDepartmentUsers = async (id) => {

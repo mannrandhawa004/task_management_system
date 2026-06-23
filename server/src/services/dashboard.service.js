@@ -1,9 +1,13 @@
 
 import DashboardModel from "../models/dashboard.model.js";
 
+// Roles that have full visibility across all projects/tasks (no member-scoped filtering)
+const ADMIN_ROLES = ["admin", "super_admin"];
+const isAdminRole = (role) => ADMIN_ROLES.includes(role);
+
 class DashboardService {
     async getProjectMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const [totalProjects, activeProjects, rows] = await Promise.all([
             DashboardModel.countProjects(user, isAdmin, false), 
             DashboardModel.countProjects(user, isAdmin, true), 
@@ -13,7 +17,7 @@ class DashboardService {
     }
 
     async getInProgressMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const [totalTasks, inProgressCount, rows] = await Promise.all([
             DashboardModel.countTotalTasks(user, isAdmin),
             DashboardModel.countFilteredTasks(user, isAdmin, "in_progress"),
@@ -23,7 +27,7 @@ class DashboardService {
     }
 
     async getCompletedMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const [totalTasks, completedCount, rows] = await Promise.all([
             DashboardModel.countTotalTasks(user, isAdmin),
             DashboardModel.countFilteredTasks(user, isAdmin, "completed"),
@@ -35,7 +39,7 @@ class DashboardService {
     }
 
     async getUpcomingMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const [todoCount, rows] = await Promise.all([
             DashboardModel.countFilteredTasks(user, isAdmin, "todo"),
             DashboardModel.fetchPaginatedTasks(user, isAdmin, { status: "todo", offset, limit })
@@ -43,22 +47,20 @@ class DashboardService {
         return { todoCount, rows };
     }
 
-
-
     async getRecentlyActiveProjects(user, { limit = 5 }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const rows = await DashboardModel.fetchRecentlyActiveProjects(user, isAdmin, { limit });
         return { rows };
     }
 
     async getRecentlyActiveTasks(user, { limit = 5 }) {
-        const isAdmin = user.role === "admin";
+        const isAdmin = isAdminRole(user.role);
         const rows = await DashboardModel.fetchRecentlyActiveTasks(user, isAdmin, { limit });
         return { rows };
     }
 
     async getDailyTaskProgress(user, { days = 30 } = {}) {
-        const isAdmin = user.role === "admin" || user.role === "super_admin";
+        const isAdmin = isAdminRole(user.role);
         const rows = await DashboardModel.getDailyTaskProgress(user, isAdmin, { days });
         return { rows };
     }
@@ -76,7 +78,7 @@ class DashboardService {
     }
 
     async getOverdueMetrics(user, { offset, limit }) {
-        const isAdmin = user.role === "admin" || user.role === "super_admin";
+        const isAdmin = isAdminRole(user.role);
         const [totalCriticalCount, rawRows] = await Promise.all([
             DashboardModel.countOverdueTasks(user, isAdmin),
             DashboardModel.fetchPaginatedOverdueTasks(user, isAdmin, { offset, limit })
@@ -85,7 +87,6 @@ class DashboardService {
         const now = new Date();
         const overdueTasks = [];
         const upcomingDeadlines = [];
-
 
         rawRows.forEach((task) => {
             const taskDueDate = new Date(task.due_date);
@@ -102,7 +103,6 @@ class DashboardService {
             overdueTasks,
             upcomingDeadlines
         };
-
     }
 }
 
