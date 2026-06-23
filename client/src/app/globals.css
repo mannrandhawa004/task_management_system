@@ -11,7 +11,7 @@
   --text: #111827;
   --muted: #6b7280;
 
-  --border: rgba(0, 0, 0, 0.08);
+  --border: rgba(0, 0, 0, 0.06);
 
   --primary: #FA6781;
   --primary-hover: #e65570;
@@ -21,7 +21,7 @@
   --blob-1: rgba(99, 102, 241, 0.2);
   --blob-2: rgba(14, 165, 233, 0.15);
 
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
   /* --selection-color : #FA6781; */
   --selection-text: #ffff;
   --hover: rgba(0, 0, 0, 0.04);
@@ -37,7 +37,7 @@
   --text: #ffffff;
   --muted: #a1a1aa;
 
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.06);
 
   --primary: #F69D39;
   --primary-hover: #e69232;
@@ -47,7 +47,7 @@
   --blob-1: rgba(99, 102, 241, 0.18);
   --blob-2: rgba(6, 182, 212, 0.12);
 
-  --shadow: 0 10px 50px rgba(0, 0, 0, 0.45);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   /* --selection-color :#F69D39; */
   --selection-text: #000000;
 
@@ -67,8 +67,8 @@ select:focus {
 
 /* Scrollbar tweaks inside theme drawers */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -78,6 +78,10 @@ select:focus {
 ::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 * {

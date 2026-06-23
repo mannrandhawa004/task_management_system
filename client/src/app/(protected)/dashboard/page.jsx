@@ -472,7 +472,7 @@ export default function DashboardPage() {
 
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md"
           onClick={handleCloseModal}
         >
           <div
@@ -627,7 +627,7 @@ export default function DashboardPage() {
       {/* ── PROJECT DETAIL MODAL ── */}
       {isProjectModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md"
           onClick={handleCloseProjectModal}
         >
           <div
@@ -747,9 +747,10 @@ export default function DashboardPage() {
 function SectionLabel({ icon, title }) {
   return (
     <div className="flex items-center gap-2 mb-4">
-      <span className="text-[var(--primary)]">{icon}</span>
-      <h2 className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">{title}</h2>
-      <div className="flex-1 h-px bg-[var(--border)]/40" />
+      <div className="p-1.5 rounded-md bg-[var(--primary)]/10 text-[var(--primary)]">
+        {icon}
+      </div>
+      <h2 className="text-[11px] font-black uppercase tracking-widest text-[var(--muted)]">{title}</h2>
     </div>
   );
 }
@@ -759,7 +760,7 @@ function StatCard({ title, value, sub, icon, accent, iconBg, border, onClick }) 
     <button
       type="button"
       onClick={onClick}
-      className={`relative text-left w-full overflow-hidden rounded-xl border p-4 bg-[var(--card)] border-[var(--border)] transition-all duration-200 hover:shadow-md hover:-translate-y-1 ${border} focus:outline-none cursor-pointer`}
+      className={`relative text-left w-full overflow-hidden rounded-2xl border p-5 md:p-6 bg-[var(--card)] border-[var(--border)] transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${border} focus:outline-none cursor-pointer`}
     >
       {/* Background gradient accent */}
       <div className={`absolute inset-0 bg-gradient-to-br ${accent} pointer-events-none`} />
@@ -787,7 +788,7 @@ function OverviewModal({ open, title, items, type, pagination, loading, onClose,
   const { page = 1, totalPages = 1, total = 0, hasNextPage = false, hasPrevPage = false } = pagination || {};
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md" onClick={onClose}>
       <div className="relative w-full max-w-3xl overflow-hidden border shadow-2xl rounded-3xl bg-[var(--card)] border-[var(--border)] max-h-[88vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Modal header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border)] shrink-0">

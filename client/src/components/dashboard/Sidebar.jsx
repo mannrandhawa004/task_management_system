@@ -162,13 +162,12 @@ export default function Sidebar() {
         <div className="space-y-1">
           <Link
             href="/dashboard"
-            className={`flex items-center gap-3 rounded-xl p-2.5 text-xs font-bold transition-all ${pathname === "/dashboard"
-              ? "text-white shadow-xs"
-              : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
+            className={`flex items-center gap-3 rounded-xl p-3 text-xs font-bold transition-all ${pathname === "/dashboard"
+              ? "text-[var(--primary)] bg-[var(--primary)]/10 border-l-4 border-[var(--primary)] shadow-sm"
+              : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] border-l-4 border-transparent"
               }`}
-            style={{ background: pathname === "/dashboard" ? "var(--primary)" : "transparent" }}
           >
-            <LayoutDashboard size={16} strokeWidth={pathname === "/dashboard" ? 2.5 : 2} />
+            <LayoutDashboard size={16} strokeWidth={pathname === "/dashboard" ? 2.5 : 2} className="shrink-0" />
             {!collapsed && <span>Dashboard</span>}
           </Link>
         </div>
@@ -208,11 +207,10 @@ export default function Sidebar() {
                           key={item.href}
                           href={item.href}
                           prefetch={false}
-                          className={`flex items-center gap-3 rounded-xl p-2.5 text-xs font-bold transition-all ${isActive
-                            ? "text-white shadow-xs"
-                            : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
+                          className={`flex items-center gap-3 rounded-xl p-3 text-xs font-bold transition-all ${isActive
+                            ? "text-[var(--primary)] bg-[var(--primary)]/10 border-l-4 border-[var(--primary)] shadow-sm"
+                            : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] border-l-4 border-transparent"
                             }`}
-                          style={{ background: isActive ? "var(--primary)" : "transparent" }}
                         >
                           <Icon size={16} strokeWidth={isActive ? 2.5 : 2} className="shrink-0" />
                           {!collapsed && <span className="truncate">{item.title}</span>}
