@@ -8,7 +8,7 @@ class AuditController {
 
   getAllLogs = asyncHandler(async (req, res) => {
     // Admin can see all logs, others can only see logs for projects they're part of
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "super_admin") {
       throw new ForbiddenError("Only admins can view all audit logs");
     }
 
@@ -28,7 +28,7 @@ class AuditController {
     const log = await AuditService.getLogById(id);
 
     // Check if user has permission to view this log
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "super_admin") {
       const projectId = log.project?.id;
       if (projectId) {
         const hasAccess = await ProjectModel.hasUserAccess(
@@ -57,7 +57,7 @@ class AuditController {
     const { id: projectId } = req.params;
 
     // Check if user has permission to view project logs
-    if (req.user.role !== "admin") {
+    if (req.user.role !== "super_admin") {
       const hasAccess = await ProjectModel.hasUserAccess(
         projectId,
         req.user.id
