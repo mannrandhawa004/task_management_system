@@ -52,7 +52,7 @@ class AuthServices {
     const existingUser = await AuthModel.getUserByEmail(email);
 
     if (!existingUser) {
-      throw new NotFoundError("Email does not exist");
+      throw new NotFoundError("Invalid email or password");
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
