@@ -30,6 +30,7 @@ import {
 import { getDepartmentsThunk } from "@/features/departments/thunks/departmentThunks";
 import { getAllUsersThunk } from "@/features/auth/thunks/authThunk";
 import AppLoader from "@/components/common/AppLoader";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 export default function TeamsPage() {
   const dispatch = useDispatch();
@@ -51,6 +52,19 @@ export default function TeamsPage() {
   // Filters
   const [filterDept, setFilterDept] = useState("");
 
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    onConfirm: null,
+  });
+
+  const closeConfirm = () =>
+    setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
+
+
   // Member management state
   const [memberToAdd, setMemberToAdd] = useState("");
 
@@ -58,6 +72,7 @@ export default function TeamsPage() {
     user?.role?.toLowerCase() === "admin" ||
     user?.role?.toLowerCase() === "super_admin" ||
     user?.role?.toLowerCase() === "dept_head";
+
 
   // Initial data loading
   useEffect(() => {
@@ -98,9 +113,16 @@ export default function TeamsPage() {
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this team?")) {
-      dispatch(deleteTeamThunk(id));
-    }
+    setConfirmDialog({
+      open: true,
+      title: "Delete Team",
+      message: "Are you sure you want to delete this team? All member associations will be removed and this action cannot be undone.",
+      confirmLabel: "Delete Team",
+      onConfirm: () => {
+        dispatch(deleteTeamThunk(id));
+        closeConfirm();
+      },
+    });
   };
 
   const handleOpenDetails = (team) => {
@@ -119,9 +141,16 @@ export default function TeamsPage() {
   };
 
   const handleRemoveMember = (memberId) => {
-    if (confirm("Are you sure you want to remove this member from the team?")) {
-      dispatch(removeTeamMemberThunk({ teamId: selectedId, userId: memberId }));
-    }
+    setConfirmDialog({
+      open: true,
+      title: "Remove Team Member",
+      message: "Are you sure you want to remove this member from the team? They will lose access to team resources.",
+      confirmLabel: "Remove Member",
+      onConfirm: () => {
+        dispatch(removeTeamMemberThunk({ teamId: selectedId, userId: memberId }));
+        closeConfirm();
+      },
+    });
   };
 
   const handleOpenEdit = (team, e) => {
@@ -609,6 +638,16 @@ export default function TeamsPage() {
           </div>
         </div>
       )}
+      {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onClose={closeConfirm}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmLabel={confirmDialog.confirmLabel}
+        variant="danger"
+      />
     </div>
   );
 }

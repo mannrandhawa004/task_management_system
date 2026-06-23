@@ -26,6 +26,7 @@ import {
 } from "@/features/departments/thunks/departmentThunks";
 import { getAllUsersThunk } from "@/features/auth/thunks/authThunk";
 import AppLoader from "@/components/common/AppLoader";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 
 export default function DepartmentsPage() {
   const dispatch = useDispatch();
@@ -47,6 +48,18 @@ export default function DepartmentsPage() {
   // Only super_admin can create/edit/delete departments — it is a structural operation
   const isSuperAdminUser = user?.role?.toLowerCase() === "super_admin";
 
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    onConfirm: null,
+  });
+
+  const closeConfirm = () =>
+    setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
+
   useEffect(() => {
     dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
   }, [dispatch]);
@@ -66,9 +79,16 @@ export default function DepartmentsPage() {
   };
 
   const handleDelete = (id) => {
-    if (confirm("Are you sure you want to delete this department?")) {
-      dispatch(deleteDepartmentThunk(id));
-    }
+    setConfirmDialog({
+      open: true,
+      title: "Delete Department",
+      message: "Are you sure you want to delete this department? All associated teams and data will be affected. This action cannot be undone.",
+      confirmLabel: "Delete Department",
+      onConfirm: () => {
+        dispatch(deleteDepartmentThunk(id));
+        closeConfirm();
+      },
+    });
   };
 
   const handleOpenDetails = (dept) => {
@@ -455,6 +475,16 @@ export default function DepartmentsPage() {
           </div>
         </div>
       )}
+      {/* CONFIRM DIALOG */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onClose={closeConfirm}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmLabel={confirmDialog.confirmLabel}
+        variant="danger"
+      />
     </div>
   );
 }

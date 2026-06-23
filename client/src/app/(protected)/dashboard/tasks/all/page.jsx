@@ -547,6 +547,8 @@ export default function AllTasksPage() {
                 open={confirmDelete.isOpen}
                 title="Delete Task"
                 message="Are you sure you want to permanently delete this task? This action cannot be undone."
+                confirmLabel="Delete Task"
+                variant="danger"
                 loading={taskLoading}
                 onClose={() => setConfirmDelete({ isOpen: false, taskId: null })}
                 onConfirm={handleExecuteDelete}

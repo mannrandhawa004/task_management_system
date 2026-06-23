@@ -222,7 +222,16 @@ export default function ProjectTable({ projects = [], loading, user, view }) {
       )}
 
       <UpdateProjectDrawer open={updateOpen} onClose={() => setUpdateOpen(false)} project={selectedProject} />
-      <ConfirmDialog open={deleteOpen} onClose={() => setDeleteOpen(false)} onConfirm={handleDelete} loading={deleteLoading} />
+      <ConfirmDialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        onConfirm={handleDelete}
+        loading={deleteLoading}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? All associated tasks and member records will be permanently removed."
+        confirmLabel="Delete Project"
+        variant="danger"
+      />
     </>
   );
 }

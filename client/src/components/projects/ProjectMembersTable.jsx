@@ -171,8 +171,10 @@ export default function ProjectMembersTable({
         open={!!selectedMember}
         onClose={() => setSelectedMember(null)}
         loading={actionLoading}
-        title="Revoke Access Credentials?"
-        message={`Are you sure you want to remove ${selectedMember?.member_name}? They will lose read/write database scope visualization triggers immediately.`}
+        title="Remove Project Member?"
+        message={`Are you sure you want to remove ${selectedMember?.member_name}? They will lose access to this project immediately.`}
+        confirmLabel="Remove Member"
+        variant="danger"
         onConfirm={handleRemove}
       />
     </>
