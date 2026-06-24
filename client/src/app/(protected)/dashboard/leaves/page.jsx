@@ -74,7 +74,7 @@ export default function LeavesPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-4 md:p-8 space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto w-full text-[var(--text)]">
       
       {/* HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-[var(--border)] pb-6">
@@ -229,6 +229,6 @@ export default function LeavesPage() {
           variant={confirmAction.status === "approved" ? "warning" : "danger"}
         />
       )}
-    </main>
+    </div>
   );
 }

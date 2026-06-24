@@ -156,10 +156,10 @@ export default function AttendanceWidget() {
       };
     return {
       label: "Not Checked In",
-      color: "text-zinc-400",
-      bg: "bg-zinc-500/5",
-      border: "border-zinc-500/10",
-      dot: "bg-zinc-400",
+      color: "text-[var(--muted)]",
+      bg: "bg-[var(--hover)]",
+      border: "border-[var(--border)]",
+      dot: "bg-[var(--muted)]",
       pulse: false,
     };
   };
@@ -168,26 +168,25 @@ export default function AttendanceWidget() {
 
   return (
     <div
-      className="relative overflow-hidden rounded-3xl border bg-[var(--card)] shadow-sm backdrop-blur-sm"
-      style={{ borderColor: "var(--border)" }}
+      className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-sm backdrop-blur-sm hover:shadow-md transition-all duration-300"
     >
       {/* Subtle gradient accent at top */}
       <div
-        className={`absolute top-0 left-0 right-0 h-1 ${
+        className={`absolute top-0 left-0 right-0 h-1 transition-all duration-300 ${
           isWorking
             ? "bg-gradient-to-r from-emerald-400 to-teal-500"
             : isOnBreak
               ? "bg-gradient-to-r from-amber-400 to-orange-500"
               : isCheckedOut
                 ? "bg-gradient-to-r from-blue-400 to-indigo-500"
-                : "bg-gradient-to-r from-zinc-300 to-zinc-400 dark:from-zinc-600 dark:to-zinc-700"
+                : "bg-gradient-to-r from-[var(--muted)]/50 to-[var(--muted)]"
         }`}
       />
 
       <div className="p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-black text-zinc-800 dark:text-zinc-100 flex items-center gap-2.5">
+          <h2 className="text-lg font-black text-[var(--text)] flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-[var(--primary)]/10">
               <Timer size={18} className="text-[var(--primary)]" />
             </div>
@@ -217,15 +216,15 @@ export default function AttendanceWidget() {
           <div
             className={`text-5xl font-black tabular-nums tracking-tight mb-1 transition-colors duration-300 ${
               isWorking
-                ? "text-emerald-600 dark:text-emerald-400"
+                ? "text-emerald-500"
                 : isOnBreak
-                  ? "text-amber-600 dark:text-amber-400"
-                  : "text-zinc-800 dark:text-zinc-100"
+                  ? "text-amber-500"
+                  : "text-[var(--text)]"
             }`}
           >
             {formatTime(elapsedSeconds)}
           </div>
-          <p className="text-xs font-medium text-zinc-400 tracking-wide uppercase">
+          <p className="text-xs font-bold text-[var(--muted)] tracking-wide uppercase">
             {isWorking && "productive time"}
             {isOnBreak && "productive time (paused)"}
             {isCheckedOut && "total hours logged"}
@@ -234,9 +233,9 @@ export default function AttendanceWidget() {
 
           {/* Break timer shown during break */}
           {isOnBreak && breakElapsed > 0 && (
-            <div className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+            <div className="mt-3 flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
               <Coffee size={14} className="text-amber-500" />
-              <span className="text-sm font-bold text-amber-600 dark:text-amber-400 tabular-nums">
+              <span className="text-sm font-bold text-amber-500 tabular-nums">
                 Break: {formatTime(breakElapsed)}
               </span>
             </div>
@@ -246,33 +245,33 @@ export default function AttendanceWidget() {
         {/* Time Details Grid */}
         {todayRecord && (
           <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)] hover:bg-[var(--hover)] transition-colors duration-200">
               <LogIn size={14} className="text-emerald-500 mb-1" />
-              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
+              <span className="text-[10px] font-bold uppercase text-[var(--muted)] tracking-wider">
                 Check In
               </span>
-              <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+              <span className="text-sm font-black text-[var(--text)]">
                 {formatTimestamp(todayRecord.check_in)}
               </span>
             </div>
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)] hover:bg-[var(--hover)] transition-colors duration-200">
               <Coffee size={14} className="text-amber-500 mb-1" />
-              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
+              <span className="text-[10px] font-bold uppercase text-[var(--muted)] tracking-wider">
                 Break
               </span>
-              <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+              <span className="text-sm font-black text-[var(--text)]">
                 {formatBreakTotal(
                   (todayRecord.total_break_seconds || 0) +
                     (isOnBreak ? breakElapsed : 0)
                 )}
               </span>
             </div>
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)] hover:bg-[var(--hover)] transition-colors duration-200">
               <LogOut size={14} className="text-blue-500 mb-1" />
-              <span className="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
+              <span className="text-[10px] font-bold uppercase text-[var(--muted)] tracking-wider">
                 Check Out
               </span>
-              <span className="text-sm font-bold text-zinc-700 dark:text-zinc-200">
+              <span className="text-sm font-black text-[var(--text)]">
                 {formatTimestamp(todayRecord.check_out)}
               </span>
             </div>
@@ -280,11 +279,11 @@ export default function AttendanceWidget() {
         )}
 
         {/* Weekly Hours Badge */}
-        <div className="flex items-center justify-center gap-2 mb-5 px-4 py-2.5 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50">
+        <div className="flex items-center justify-center gap-2 mb-5 px-4 py-2.5 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)]">
           <TrendingUp size={14} className="text-[var(--primary)]" />
-          <span className="text-xs font-bold text-zinc-500">
+          <span className="text-xs font-bold text-[var(--muted)]">
             This Week:{" "}
-            <span className="text-zinc-800 dark:text-zinc-200">
+            <span className="text-[var(--text)] font-black">
               {Number(weeklyHours)?.toFixed(1) || "0.0"}h
             </span>
           </span>
@@ -297,7 +296,7 @@ export default function AttendanceWidget() {
             <button
               onClick={handleCheckIn}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all hover:-translate-y-[1px] hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-emerald-500/20"
             >
               <Play size={18} />
               Start Your Day
@@ -310,7 +309,7 @@ export default function AttendanceWidget() {
               <button
                 onClick={handleStartBreak}
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3.5 px-5 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/20"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-bold py-3.5 px-5 rounded-2xl transition-all hover:-translate-y-[1px] hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-amber-500/20"
               >
                 <Pause size={16} />
                 Break
@@ -318,7 +317,7 @@ export default function AttendanceWidget() {
               <button
                 onClick={handleCheckOut}
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3.5 px-5 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-500/20"
+                className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold py-3.5 px-5 rounded-2xl transition-all hover:-translate-y-[1px] hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-red-500/20"
               >
                 <Square size={16} />
                 Check Out
@@ -331,7 +330,7 @@ export default function AttendanceWidget() {
             <button
               onClick={handleEndBreak}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+              className="w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-bold py-3.5 px-6 rounded-2xl transition-all hover:-translate-y-[1px] hover:shadow-lg active:translate-y-0 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shadow-md shadow-emerald-500/20"
             >
               <Play size={18} />
               End Break & Resume
@@ -340,9 +339,9 @@ export default function AttendanceWidget() {
 
           {/* Checked out → Show completion */}
           {isCheckedOut && (
-            <div className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+            <div className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-2xl bg-blue-500/10 border border-blue-500/20">
               <CheckCircle2 size={18} className="text-blue-500" />
-              <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+              <span className="text-sm font-bold text-blue-500">
                 Day Complete —{" "}
                 {parseFloat(todayRecord.working_hours)?.toFixed(1) || "0.0"}h
                 logged
