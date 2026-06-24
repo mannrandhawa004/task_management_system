@@ -25,6 +25,16 @@ router.post(
   AttendanceController.checkOut
 );
 
+router.post(
+  "/start-break",
+  AttendanceController.startBreak
+);
+
+router.post(
+  "/end-break",
+  AttendanceController.endBreak
+);
+
 router.get(
   "/today-status",
   AttendanceController.getTodayStatus

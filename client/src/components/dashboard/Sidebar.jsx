@@ -22,6 +22,7 @@ import {
   Building2,
   Users2,
   Clock,
+  CalendarDays,
 } from "lucide-react";
 
 import { isAdmin, isHR } from "@/lib/permissions";
@@ -108,6 +109,7 @@ export default function Sidebar() {
       roles: allSystemRoles,
       items: [
         { title: "Attendance", href: "/dashboard/attendance", icon: Clock },
+        { title: "Leaves", href: "/dashboard/leaves", icon: CalendarDays },
       ],
     },
     {

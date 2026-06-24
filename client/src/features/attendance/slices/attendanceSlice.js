@@ -7,10 +7,13 @@ import {
   getDailyLogsThunk,
   getMonthlySummaryThunk,
   updateAttendanceThunk,
+  startBreakThunk,
+  endBreakThunk,
 } from "../thunks/attendanceThunks";
 
 const initialState = {
-  todayStatus: null, // current day checkin/checkout status
+  todayRecord: null, // current day checkin/checkout/break status
+  weeklyHours: 0,
   history: [],
   summary: null,
   dailyLogs: [],
@@ -24,7 +27,8 @@ const attendanceSlice = createSlice({
   initialState,
   reducers: {
     clearAttendanceState: (state) => {
-      state.todayStatus = null;
+      state.todayRecord = null;
+      state.weeklyHours = 0;
       state.history = [];
       state.summary = null;
     },
@@ -38,7 +42,7 @@ const attendanceSlice = createSlice({
       })
       .addCase(checkInThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.todayStatus = action.payload;
+        state.todayRecord = action.payload;
       })
       .addCase(checkInThunk.rejected, (state, action) => {
         state.loading = false;
@@ -52,9 +56,37 @@ const attendanceSlice = createSlice({
       })
       .addCase(checkOutThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.todayStatus = action.payload;
+        state.todayRecord = action.payload;
       })
       .addCase(checkOutThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // startBreak
+      .addCase(startBreakThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(startBreakThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.todayRecord = action.payload;
+      })
+      .addCase(startBreakThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // endBreak
+      .addCase(endBreakThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(endBreakThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.todayRecord = action.payload;
+      })
+      .addCase(endBreakThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -66,7 +98,8 @@ const attendanceSlice = createSlice({
       })
       .addCase(getTodayStatusThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.todayStatus = action.payload;
+        state.todayRecord = action.payload?.record || null;
+        state.weeklyHours = action.payload?.weeklyHours || 0;
       })
       .addCase(getTodayStatusThunk.rejected, (state, action) => {
         state.loading = false;

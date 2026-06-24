@@ -70,9 +70,10 @@ class ProjectController {
     const { limit, offset, page } = getPagination(req.query);
 
     let projects = [];
-    if (req.user.role === "super_admin" || "admin") {
+    if (["super_admin", "admin"].includes(req.user.role)) {
       projects = await ProjectServices.allProjects({ limit, offset, page });
     } else {
+      console.log("else case")
       projects = await ProjectServices.getUserProjects(req.user.id, { limit, offset, page });
     }
 

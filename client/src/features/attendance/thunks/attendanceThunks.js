@@ -7,6 +7,8 @@ import {
   getDailyLogs,
   getMonthlySummary,
   updateAttendance,
+  startBreak,
+  endBreak,
 } from "../services/attendance.service";
 
 export const checkInThunk = createAsyncThunk(
@@ -27,6 +29,28 @@ export const checkOutThunk = createAsyncThunk(
       return await checkOut();
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Check-out failed");
+    }
+  }
+);
+
+export const startBreakThunk = createAsyncThunk(
+  "attendance/startBreak",
+  async (_, thunkAPI) => {
+    try {
+      return await startBreak();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to start break");
+    }
+  }
+);
+
+export const endBreakThunk = createAsyncThunk(
+  "attendance/endBreak",
+  async (_, thunkAPI) => {
+    try {
+      return await endBreak();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to end break");
     }
   }
 );

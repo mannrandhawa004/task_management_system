@@ -71,6 +71,22 @@ class AttendanceController {
     return successResponse(res, "Checked out successfully", record, 200);
   });
 
+  startBreak = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const record = await AttendanceService.startBreak(userId);
+    const io = getSocketIO();
+    if (io) io.emit("attendance_activity", { action: "START_BREAK", user_id: userId, record });
+    return successResponse(res, "Started break", record, 200);
+  });
+
+  endBreak = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const record = await AttendanceService.endBreak(userId);
+    const io = getSocketIO();
+    if (io) io.emit("attendance_activity", { action: "END_BREAK", user_id: userId, record });
+    return successResponse(res, "Ended break", record, 200);
+  });
+
   getTodayStatus = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const status = await AttendanceService.getTodayStatus(userId);

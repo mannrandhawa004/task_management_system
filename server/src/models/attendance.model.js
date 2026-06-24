@@ -16,24 +16,56 @@ class AttendanceModel {
       INSERT INTO attendance (user_id, date, check_in, status)
       VALUES (?, CURRENT_DATE(), NOW(), ?)
     `;
-    return await executeQuery(query, [userId, status || "present"]);
+    return await executeQuery(query, [userId, status || "working"]);
   }
 
-  async checkOut({ id }) {
-    // Calculates working hours as difference between check_in and NOW() in hours
+  async checkOut({ id, finalStatus = 'present' }) {
     const query = `
       UPDATE attendance
       SET check_out = NOW(),
-          working_hours = ROUND(TIMESTAMPDIFF(SECOND, check_in, NOW()) / 3600, 2)
+          status = ?,
+          working_hours = ROUND((TIMESTAMPDIFF(SECOND, check_in, NOW()) - COALESCE(total_break_seconds, 0)) / 3600, 2)
       WHERE id = ?
     `;
-    return await executeQuery(query, [id]);
+    return await executeQuery(query, [finalStatus, id]);
   }
 
   async getById(id) {
     const query = `SELECT * FROM attendance WHERE id = ? LIMIT 1`;
     const rows = await executeQuery(query, [id]);
     return rows[0] || null;
+  }
+
+  async startBreak({ id }) {
+    const query = `
+      UPDATE attendance
+      SET status = 'on_break', break_start = NOW()
+      WHERE id = ?
+    `;
+    return await executeQuery(query, [id]);
+  }
+
+  async endBreak({ id }) {
+    // Add the duration of the current break to total_break_seconds
+    const query = `
+      UPDATE attendance
+      SET status = 'working',
+          total_break_seconds = total_break_seconds + TIMESTAMPDIFF(SECOND, break_start, NOW()),
+          break_start = NULL
+      WHERE id = ?
+    `;
+    return await executeQuery(query, [id]);
+  }
+
+  async getWeeklyHours(userId) {
+    const query = `
+      SELECT SUM(working_hours) as weekly_hours
+      FROM attendance
+      WHERE user_id = ?
+        AND YEARWEEK(date, 1) = YEARWEEK(CURRENT_DATE(), 1)
+    `;
+    const rows = await executeQuery(query, [userId]);
+    return rows[0]?.weekly_hours || 0;
   }
 
   async getHistory({ userId, startDate, endDate }) {

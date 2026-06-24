@@ -8,6 +8,7 @@ import dashboardReducer from "../features/dashboard/slices/dashboardSlice";
 import departmentReducer from "../features/departments/slices/departmentSlice";
 import teamReducer from "../features/teams/slices/teamSlice";
 import attendanceReducer from "../features/attendance/slices/attendanceSlice";
+import leaveReducer from "../features/leaves/slices/leaveSlice";
 
 export const store = configureStore({
   reducer: {
@@ -19,5 +20,6 @@ export const store = configureStore({
     departments: departmentReducer,
     teams: teamReducer,
     attendance: attendanceReducer,
+    leaves: leaveReducer,
   },
 });

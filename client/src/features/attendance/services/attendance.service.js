@@ -10,6 +10,16 @@ export const checkOut = async () => {
   return response.data.data;
 };
 
+export const startBreak = async () => {
+  const response = await api.post("/attendance/start-break");
+  return response.data.data;
+};
+
+export const endBreak = async () => {
+  const response = await api.post("/attendance/end-break");
+  return response.data.data;
+};
+
 export const getTodayStatus = async () => {
   const response = await api.get("/attendance/today-status");
   return response.data.data;

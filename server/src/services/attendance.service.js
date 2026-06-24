@@ -8,21 +8,9 @@ class AttendanceService {
       throw new ConflictError("Already checked in for today");
     }
 
-    // Determine status automatically if not provided
-    let finalStatus = status || "present";
-
-    if (!status) {
-      // Auto lateness detection: late if check in is after 09:15 AM local time
-      const now = new Date();
-      const hours = now.getHours();
-      const minutes = now.getMinutes();
-      
-      if (hours > 9 || (hours === 9 && minutes > 15)) {
-        finalStatus = "late";
-      }
-    }
-
-    const result = await AttendanceModel.checkIn({ userId, status: finalStatus });
+    // Always set status to 'working' — the final attendance status
+    // (present/late) will be determined at checkout time
+    const result = await AttendanceModel.checkIn({ userId, status: 'working' });
     return await AttendanceModel.getById(result.insertId);
   }
 
@@ -36,12 +24,44 @@ class AttendanceService {
       throw new ConflictError("Already checked out for today");
     }
 
-    await AttendanceModel.checkOut({ id: todayRecord.id });
+    // If currently on break, end the break first
+    if (todayRecord.status === 'on_break') {
+      await AttendanceModel.endBreak({ id: todayRecord.id });
+    }
+
+    // Determine final status based on check-in time
+    const checkInTime = new Date(todayRecord.check_in);
+    const hours = checkInTime.getHours();
+    const minutes = checkInTime.getMinutes();
+    let finalStatus = 'present';
+    if (hours > 9 || (hours === 9 && minutes > 15)) {
+      finalStatus = 'late';
+    }
+
+    await AttendanceModel.checkOut({ id: todayRecord.id, finalStatus });
+    return await AttendanceModel.getById(todayRecord.id);
+  }
+
+  async startBreak(userId) {
+    const todayRecord = await AttendanceModel.getTodayRecord(userId);
+    if (!todayRecord) throw new BadRequestError("Not checked in");
+    if (todayRecord.status === 'on_break') throw new ConflictError("Already on break");
+    await AttendanceModel.startBreak({ id: todayRecord.id });
+    return await AttendanceModel.getById(todayRecord.id);
+  }
+
+  async endBreak(userId) {
+    const todayRecord = await AttendanceModel.getTodayRecord(userId);
+    if (!todayRecord) throw new BadRequestError("Not checked in");
+    if (todayRecord.status !== 'on_break') throw new ConflictError("Not on break");
+    await AttendanceModel.endBreak({ id: todayRecord.id });
     return await AttendanceModel.getById(todayRecord.id);
   }
 
   async getTodayStatus(userId) {
-    return await AttendanceModel.getTodayRecord(userId);
+    const record = await AttendanceModel.getTodayRecord(userId);
+    const weeklyHours = await AttendanceModel.getWeeklyHours(userId);
+    return { record, weeklyHours };
   }
 
   async getMyHistory({ userId, month, year }) {
