@@ -117,7 +117,7 @@ export default function ProjectTable({ projects = [], loading, user, view }) {
                   </div>
                   <div className="flex items-center gap-2.5" style={{ color: "var(--text)" }}>
                     <div className="p-1.5 rounded-lg" style={{ background: "var(--input)" }}><ShieldAlert size={13} /></div>
-                    <span>Role: <strong className="text-[var(--primary)] font-semibold">{project.role || "Member"}</strong></span>
+                    <span>Role: <strong className="text-[var(--primary)] font-semibold">{user?.role?.toLowerCase() === "super_admin" ? "Super Admin" : (project.role || "Member")}</strong></span>
                   </div>
                   <div className="flex items-center gap-2.5" style={{ color: "var(--muted)" }}>
                     <div className="p-1.5 rounded-lg" style={{ background: "var(--input)" }}><Calendar size={13} /></div>
@@ -191,7 +191,7 @@ export default function ProjectTable({ projects = [], loading, user, view }) {
                   </td>
                   <td className="p-4">
                     <span className="text-xs font-bold px-2.5 py-1 rounded-lg border uppercase tracking-wide" style={{ backgroundColor: "var(--input)", borderColor: "var(--border)", color: "var(--text)" }}>
-                      {project.role || "Member"}
+                      {user?.role?.toLowerCase() === "super_admin" ? "Super Admin" : (project.role || "Member")}
                     </span>
                   </td>
                   <td className="p-4 text-xs font-medium" style={{ color: "var(--muted)" }}>

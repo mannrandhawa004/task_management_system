@@ -30,7 +30,7 @@ class UserModel {
             SELECT p.id 
             FROM projects p 
             LEFT JOIN project_members pm2 ON pm2.project_id = p.id AND pm2.user_id = ?
-            WHERE p.created_by = ? OR pm2.role_id IN (2, 7)
+            WHERE p.created_by = ? OR pm2.role_id IN (1)
           )
         )) `;
       params.push(requestingUser.id, requestingUser.id, requestingUser.id);

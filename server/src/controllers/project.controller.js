@@ -61,6 +61,11 @@ class ProjectController {
     );
   });
 
+  getProjectRoles = asyncHandler(async (req, res) => {
+    const roles = await ProjectServices.getProjectRoles();
+    return successResponse(res, "Project roles fetched successfully", roles, 200);
+  });
+
   allProjects = asyncHandler(async (req, res) => {
     const { limit, offset, page } = getPagination(req.query);
 

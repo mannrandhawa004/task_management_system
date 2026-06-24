@@ -135,7 +135,7 @@ LEFT JOIN project_members pm
   ON pm.user_id = al.user_id
  AND pm.project_id = COALESCE(task_project.id, project_entity.id)
 
-LEFT JOIN roles project_role
+LEFT JOIN project_roles project_role
   ON project_role.id = pm.role_id
 
 ${filterConditions}

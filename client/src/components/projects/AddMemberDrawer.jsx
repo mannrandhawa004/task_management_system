@@ -17,7 +17,7 @@ export default function AddMemberDrawer({
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [rows, setRows] = useState([{ userId: "", roleId: 3 }]);
+  const [rows, setRows] = useState([{ userId: "", roleId: 2 }]);
 
   const [usersLoading, setUsersLoading] = useState(false);
   const [apiUsers, setApiUsers] = useState([]);
@@ -64,7 +64,7 @@ export default function AddMemberDrawer({
   }, [apiUsers, existingMembers]);
 
   const addRow = () => {
-    setRows((prev) => [...prev, { userId: "", roleId: 3 }]);
+    setRows((prev) => [...prev, { userId: "", roleId: 2 }]);
   };
 
   const removeRow = (index) => {
@@ -94,7 +94,7 @@ export default function AddMemberDrawer({
       await dispatch(getProjectMembersThunk(projectId));
       showToast.success("Team roster updated successfully");
 
-      setRows([{ userId: "", roleId: 3 }]);
+      setRows([{ userId: "", roleId: 2 }]);
       onClose();
     } catch (err) {
       showToast.error(err || "Failed to provision users.");
@@ -197,8 +197,8 @@ export default function AddMemberDrawer({
                     className="w-full bg-transparent py-2 pr-4 text-xs font-extrabold tracking-wider uppercase cursor-pointer text-[var(--primary)] outline-none appearance-none"
                   >
                     {/* ✅ Visibility Fix: Hardcoded static values to combat browser dark-mode component generation overrides */}
-                    <option value={3} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold uppercase">Member</option>
-                    <option value={2} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold uppercase">Manager</option>
+                    <option value={2} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold uppercase">Member</option>
+                    <option value={1} className="bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold uppercase">Manager</option>
                   </select>
                   <div className="absolute right-0 top-1/2 -translate-y-1/2 text-[9px] text-[var(--primary)] pointer-events-none">▼</div>
                 </div>

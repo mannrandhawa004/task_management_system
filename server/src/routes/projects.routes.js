@@ -17,6 +17,8 @@ const router = Router();
 
 router.get("/", authMiddleware, authorizeRoles("super_admin"), ProjectController.allProjects);
 
+router.get("/roles", authMiddleware, ProjectController.getProjectRoles);
+
 router.get("/details/:id", authMiddleware, ProjectController.individualProject);
 
 router.post(

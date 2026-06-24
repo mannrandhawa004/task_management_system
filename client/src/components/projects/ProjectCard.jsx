@@ -64,7 +64,7 @@ export default function ProjectCard({
 
                 <p className="mt-2">
                     <b>Role:</b>{" "}
-                    {project.role ? project.role : "—"}
+                    {user?.role?.toLowerCase() === "super_admin" ? "Super Admin" : (project.role || "Member")}
                 </p>
 
                 <p className="mt-2">

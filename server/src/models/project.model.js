@@ -1,6 +1,12 @@
 import { executeQuery } from "../utils/dbQuery.js";
 
 class ProjectModel {
+  // get all project roles
+  async getAllProjectRoles() {
+    const query = `SELECT id, name FROM project_roles ORDER BY id ASC`;
+    return await executeQuery(query);
+  }
+
   // query for creating project
   async createProject({ name, description, createdBy }) {
     const query = `
@@ -75,7 +81,7 @@ class ProjectModel {
       ON pm.project_id = p.id
       AND pm.user_id = ?
 
-    LEFT JOIN roles project_role
+    LEFT JOIN project_roles project_role
       ON pm.role_id = project_role.id
 
     WHERE p.id = ?
@@ -240,7 +246,7 @@ class ProjectModel {
             JOIN users u 
             ON pm.user_id = u.id
 
-            LEFT JOIN roles r
+            LEFT JOIN project_roles r
             ON pm.role_id = r.id
             WHERE pm.project_id = ?
             ORDER BY pm.joined_at DESC`;
@@ -261,7 +267,7 @@ class ProjectModel {
     const query = `
             SELECT r.name AS role 
             FROM project_members pm
-            JOIN roles r ON pm.role_id = r.id
+            JOIN project_roles r ON pm.role_id = r.id
             WHERE pm.project_id = ? AND pm.user_id = ?
             LIMIT 1`;
 
@@ -314,7 +320,7 @@ class ProjectModel {
     JOIN users u
         ON p.created_by = u.id
 
-    JOIN roles r
+    JOIN project_roles r
         ON pm.role_id = r.id
 
     WHERE pm.user_id = ?

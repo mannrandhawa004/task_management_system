@@ -20,6 +20,10 @@ class ProjectServices {
     return project;
   }
 
+  async getProjectRoles() {
+    return await ProjectModel.getAllProjectRoles();
+  }
+
   async allProjects({ limit, offset, page = 1 }) {
     const result = await ProjectModel.getAllProjects({ limit, offset });
     const total = await ProjectModel.getTotalProjectsCount();
