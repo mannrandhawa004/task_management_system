@@ -6,7 +6,7 @@ import { ForbiddenError } from "../utils/errorHandler.js";
 export const projectAccessMiddleware = async (req, res, next) => {
   const { projectId } = req.params;
   const userId = req.user.id;
-  if (req.user.role === "admin") {  
+  if (req.user.role === "super_admin" || "admin") {
     return next();
   }
   const member = await ProjectModel.getProjectMember(projectId, userId);
@@ -21,7 +21,7 @@ export const taskAssigneeMiddleware = async (req, res, next) => {
   const { taskId } = req.params;
   const userId = req.user.id;
 
-  if (req.user.role === "admin") {
+  if (req.user.role === "super_admin" || "admin") {
     return next();
   }
 
@@ -34,7 +34,7 @@ export const taskAssigneeMiddleware = async (req, res, next) => {
 
 export const taskAccessMiddleware = async (req, res, next) => {
   const { taskId } = req.params;
-  if (req.user.role === "admin") {
+  if (req.user.role === "super_admin" || "admin") {
     return next();
   }
   const task = await TaskModel.getTaskProject(taskId);
