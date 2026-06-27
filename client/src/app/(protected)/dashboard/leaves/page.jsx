@@ -6,12 +6,13 @@ import { Calendar, Filter, Plus, FileText, CheckCircle, XCircle, AlertTriangle, 
 import { getMyLeavesThunk, getManageLeavesThunk, applyLeaveThunk, updateLeaveStatusThunk, getColleaguesOnLeaveThunk, getPoliciesThunk, getMyBalancesThunk, allocateQuotasThunk, getSalaryReportThunk } from "@/features/leaves/thunks/leaveThunks";
 import AppLoader from "@/components/common/AppLoader";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import Pagination from "@/components/common/Pagination";
 import { showToast } from "@/lib/toast";
 
 export default function LeavesPage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { myLeaves, manageLeaves, colleaguesOnLeave, policies, balances, salaryReport, loading } = useSelector((state) => state.leaves);
+  const { myLeaves, myLeavesMeta, manageLeaves, manageLeavesMeta, colleaguesOnLeave, policies, balances, salaryReport, loading } = useSelector((state) => state.leaves);
 
   const role = user?.role?.toLowerCase() || "";
   const isManagement = ["super_admin", "admin", "hr", "dept_head"].includes(role);
@@ -32,18 +33,26 @@ export default function LeavesPage() {
 
   useEffect(() => {
     if (!isAdminOrSuper) {
-      dispatch(getMyLeavesThunk());
+      dispatch(getMyLeavesThunk({ page: 1, limit: 10 }));
       dispatch(getMyBalancesThunk());
     }
     dispatch(getColleaguesOnLeaveThunk());
     if (isManagement) {
-      dispatch(getManageLeavesThunk());
+      dispatch(getManageLeavesThunk({ page: 1, limit: 10 }));
       dispatch(getSalaryReportThunk({ year: new Date().getFullYear() }));
     }
     if (isSuperAdmin) {
       dispatch(getPoliciesThunk());
     }
   }, [dispatch, isManagement, isSuperAdmin, isAdminOrSuper]);
+
+  const handleMyLeavesPageChange = ({ page, limit }) => {
+    dispatch(getMyLeavesThunk({ page, limit }));
+  };
+
+  const handleManageLeavesPageChange = ({ page, limit }) => {
+    dispatch(getManageLeavesThunk({ page, limit }));
+  };
 
   // Live calculation of duration and LWP split
   const start = formData.startDate ? new Date(formData.startDate) : null;
@@ -370,6 +379,13 @@ export default function LeavesPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={activeTab === "my_leaves" ? myLeavesMeta.page : manageLeavesMeta.page}
+            limit={activeTab === "my_leaves" ? myLeavesMeta.limit : manageLeavesMeta.limit}
+            total={activeTab === "my_leaves" ? myLeavesMeta.total : manageLeavesMeta.total}
+            totalPages={activeTab === "my_leaves" ? myLeavesMeta.totalPages : manageLeavesMeta.totalPages}
+            onPageChange={activeTab === "my_leaves" ? handleMyLeavesPageChange : handleManageLeavesPageChange}
+          />
         </div>
       )}
 

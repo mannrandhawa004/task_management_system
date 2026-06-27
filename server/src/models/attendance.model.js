@@ -68,14 +68,21 @@ class AttendanceModel {
     return rows[0]?.weekly_hours || 0;
   }
 
-  async getHistory({ userId, startDate, endDate }) {
-    const query = `
+  async getHistory({ userId, startDate, endDate, page = 1, limit = 10 }) {
+    const offset = (page - 1) * limit;
+    const countQuery = `SELECT COUNT(*) as total FROM attendance WHERE user_id = ? AND date BETWEEN ? AND ?`;
+    const dataQuery = `
       SELECT * FROM attendance
       WHERE user_id = ?
         AND date BETWEEN ? AND ?
       ORDER BY date DESC
+      LIMIT ? OFFSET ?
     `;
-    return await executeQuery(query, [userId, startDate, endDate]);
+    const [countResult, rows] = await Promise.all([
+      executeQuery(countQuery, [userId, startDate, endDate]),
+      executeQuery(dataQuery, [userId, startDate, endDate, limit, offset])
+    ]);
+    return { rows, total: countResult[0]?.total || 0 };
   }
 
   async getSummary({ userId, startDate, endDate }) {
@@ -97,27 +104,60 @@ class AttendanceModel {
     return rows[0] || null;
   }
 
-  async getDailyLogs({ date, departmentId = null }) {
-    let query = `
+  async getDailyLogs({ date, departmentId = null, page = 1, limit = 10 }) {
+    let baseWhere = `WHERE u.status = 'active'`;
+    const params = [date];
+
+    if (departmentId) {
+      baseWhere += ` AND u.department_id = ? `;
+      params.push(departmentId);
+    }
+
+    const countQuery = `SELECT COUNT(*) as total FROM users u ${baseWhere.replace('u.status', 'u.status')}`;
+    // Clone params for count (without date for LEFT JOIN, but we still need active filter)
+    const countParams = departmentId ? [date, departmentId] : [date];
+
+    let dataQuery = `
       SELECT a.*, u.name as user_name, u.email as user_email, u.avatar as user_avatar, d.name as department_name
       FROM users u
       LEFT JOIN attendance a ON u.id = a.user_id AND a.date = ?
       LEFT JOIN departments d ON u.department_id = d.id
-      WHERE u.status = 'active'
+      ${baseWhere}
+      ORDER BY u.name ASC
+      LIMIT ? OFFSET ?
     `;
-    const params = [date];
+    const offset = (page - 1) * limit;
+    const dataParams = [...params, limit, offset];
 
-    if (departmentId) {
-      query += ` AND u.department_id = ? `;
-      params.push(departmentId);
-    }
+    // For the count we just count users matching the filter
+    const countQ = `SELECT COUNT(*) as total FROM users u LEFT JOIN departments d ON u.department_id = d.id ${baseWhere}`;
+    const cParams = departmentId ? [date, departmentId] : [date];
+    // Actually count doesn't need the date for LEFT JOIN, just active users
+    const countSimple = `SELECT COUNT(*) as total FROM users u ${departmentId ? 'WHERE u.status = \'active\' AND u.department_id = ?' : 'WHERE u.status = \'active\''}`;
+    const cSimpleParams = departmentId ? [departmentId] : [];
 
-    query += ` ORDER BY u.name ASC `;
-    return await executeQuery(query, params);
+    const [countResult, rows] = await Promise.all([
+      executeQuery(countSimple, cSimpleParams),
+      executeQuery(dataQuery, dataParams)
+    ]);
+    return { rows, total: countResult[0]?.total || 0 };
   }
 
-  async getMonthlySummary({ startDate, endDate, departmentId = null }) {
-    let query = `
+  async getMonthlySummary({ startDate, endDate, departmentId = null, page = 1, limit = 10 }) {
+    const offset = (page - 1) * limit;
+    let baseWhere = `WHERE u.status = 'active'`;
+    const countParams = [];
+    const dataParams = [startDate, endDate];
+
+    if (departmentId) {
+      baseWhere += ` AND u.department_id = ?`;
+      countParams.push(departmentId);
+      dataParams.push(departmentId);
+    }
+
+    const countQuery = `SELECT COUNT(*) as total FROM users u ${baseWhere}`;
+
+    let dataQuery = `
       SELECT 
         u.id as user_id, u.name as user_name, u.email as user_email,
         d.name as department_name,
@@ -132,17 +172,17 @@ class AttendanceModel {
       FROM users u
       LEFT JOIN departments d ON u.department_id = d.id
       LEFT JOIN attendance a ON u.id = a.user_id AND a.date BETWEEN ? AND ?
-      WHERE u.status = 'active'
+      ${baseWhere}
+      GROUP BY u.id, u.name, u.email, d.name
+      ORDER BY u.name ASC
+      LIMIT ? OFFSET ?
     `;
-    const params = [startDate, endDate];
 
-    if (departmentId) {
-      query += ` AND u.department_id = ? `;
-      params.push(departmentId);
-    }
-
-    query += ` GROUP BY u.id, u.name, u.email, d.name ORDER BY u.name ASC `;
-    return await executeQuery(query, params);
+    const [countResult, rows] = await Promise.all([
+      executeQuery(countQuery, countParams),
+      executeQuery(dataQuery, [...dataParams, limit, offset])
+    ]);
+    return { rows, total: countResult[0]?.total || 0 };
   }
 
   async updateStatus({ id, status, working_hours }) {

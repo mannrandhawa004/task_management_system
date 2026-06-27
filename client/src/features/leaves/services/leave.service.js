@@ -5,14 +5,14 @@ export const applyLeave = async (data) => {
   return response.data.data;
 };
 
-export const getMyLeaves = async () => {
-  const response = await api.get("/leaves/my");
-  return response.data.data;
+export const getMyLeaves = async ({ page = 1, limit = 10 } = {}) => {
+  const response = await api.get(`/leaves/my?page=${page}&limit=${limit}`);
+  return { data: response.data.data, meta: response.data.meta };
 };
 
-export const getManageLeaves = async () => {
-  const response = await api.get("/leaves/manage");
-  return response.data.data;
+export const getManageLeaves = async ({ page = 1, limit = 10 } = {}) => {
+  const response = await api.get(`/leaves/manage?page=${page}&limit=${limit}`);
+  return { data: response.data.data, meta: response.data.meta };
 };
 
 export const updateLeaveStatus = async ({ id, status }) => {

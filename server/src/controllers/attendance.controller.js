@@ -2,7 +2,7 @@ import AttendanceService from "../services/attendance.service.js";
 import AuditService from "../services/audit.service.js";
 import { AUDIT_ACTIONS } from "../constants/auditActions.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { successResponse } from "../utils/response.js";
+import { successResponse, paginatedResponse } from "../utils/response.js";
 import { getSocketIO } from "../socket/socket.js";
 
 class AttendanceController {
@@ -96,21 +96,34 @@ class AttendanceController {
   getMyHistory = asyncHandler(async (req, res) => {
     const userId = req.user.id;
     const { month, year } = req.query;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
 
-    const history = await AttendanceService.getMyHistory({ userId, month, year });
-    return successResponse(res, "Attendance history fetched successfully", history, 200);
+    const result = await AttendanceService.getMyHistory({ userId, month, year, page, limit });
+    return res.status(200).json({
+      success: true,
+      message: "Attendance history fetched successfully",
+      data: { rows: result.rows, summary: result.summary },
+      meta: { page, limit, total: result.total, totalPages: Math.ceil(result.total / limit) },
+    });
   });
 
   getDailyLogs = asyncHandler(async (req, res) => {
     const { date, departmentId } = req.query;
-    const logs = await AttendanceService.getDailyLogs({ date, departmentId });
-    return successResponse(res, "Daily attendance logs fetched", logs, 200);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    const result = await AttendanceService.getDailyLogs({ date, departmentId, page, limit });
+    return paginatedResponse(res, "Daily attendance logs fetched", result.rows, { page, limit, total: result.total });
   });
 
   getMonthlySummary = asyncHandler(async (req, res) => {
     const { month, year, departmentId } = req.query;
-    const summary = await AttendanceService.getMonthlySummary({ month, year, departmentId });
-    return successResponse(res, "Monthly attendance summary fetched", summary, 200);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    const result = await AttendanceService.getMonthlySummary({ month, year, departmentId, page, limit });
+    return paginatedResponse(res, "Monthly attendance summary fetched", result.rows, { page, limit, total: result.total });
   });
 
   updateAttendance = asyncHandler(async (req, res) => {

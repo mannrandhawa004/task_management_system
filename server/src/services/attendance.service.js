@@ -64,7 +64,7 @@ class AttendanceService {
     return { record, weeklyHours };
   }
 
-  async getMyHistory({ userId, month, year }) {
+  async getMyHistory({ userId, month, year, page, limit }) {
     // If month and year not provided, default to current month
     const now = new Date();
     const targetMonth = month !== undefined ? parseInt(month) : now.getMonth() + 1; // 1-indexed
@@ -75,18 +75,18 @@ class AttendanceService {
     const lastDay = new Date(targetYear, targetMonth, 0).getDate();
     const endDate = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${lastDay}`;
 
-    const rows = await AttendanceModel.getHistory({ userId, startDate, endDate });
+    const result = await AttendanceModel.getHistory({ userId, startDate, endDate, page, limit });
     const summary = await AttendanceModel.getSummary({ userId, startDate, endDate });
 
-    return { rows, summary };
+    return { rows: result.rows, total: result.total, summary };
   }
 
-  async getDailyLogs({ date, departmentId }) {
+  async getDailyLogs({ date, departmentId, page, limit }) {
     const targetDate = date || new Date().toISOString().split("T")[0];
-    return await AttendanceModel.getDailyLogs({ date: targetDate, departmentId });
+    return await AttendanceModel.getDailyLogs({ date: targetDate, departmentId, page, limit });
   }
 
-  async getMonthlySummary({ month, year, departmentId }) {
+  async getMonthlySummary({ month, year, departmentId, page, limit }) {
     const now = new Date();
     const targetMonth = month !== undefined ? parseInt(month) : now.getMonth() + 1;
     const targetYear = year !== undefined ? parseInt(year) : now.getFullYear();
@@ -95,7 +95,7 @@ class AttendanceService {
     const lastDay = new Date(targetYear, targetMonth, 0).getDate();
     const endDate = `${targetYear}-${String(targetMonth).padStart(2, "0")}-${lastDay}`;
 
-    return await AttendanceModel.getMonthlySummary({ startDate, endDate, departmentId });
+    return await AttendanceModel.getMonthlySummary({ startDate, endDate, departmentId, page, limit });
   }
 
   async updateAttendance(id, { status, working_hours }) {

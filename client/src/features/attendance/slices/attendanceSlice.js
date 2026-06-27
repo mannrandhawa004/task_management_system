@@ -11,13 +11,18 @@ import {
   endBreakThunk,
 } from "../thunks/attendanceThunks";
 
+const defaultMeta = { page: 1, limit: 10, total: 0, totalPages: 1 };
+
 const initialState = {
   todayRecord: null, // current day checkin/checkout/break status
   weeklyHours: 0,
   history: [],
+  historyMeta: { ...defaultMeta },
   summary: null,
   dailyLogs: [],
+  dailyLogsMeta: { ...defaultMeta },
   monthlySummary: [],
+  monthlySummaryMeta: { ...defaultMeta },
   loading: false,
   error: null,
 };
@@ -106,43 +111,63 @@ const attendanceSlice = createSlice({
         state.error = action.payload;
       })
 
-      // getMyHistory
+      // getMyHistory — now paginated
       .addCase(getMyHistoryThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getMyHistoryThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.history = action.payload?.rows || [];
-        state.summary = action.payload?.summary || null;
+        const payload = action.payload;
+        // Support both old format and new paginated format
+        if (payload?.data) {
+          state.history = payload.data?.rows || [];
+          state.summary = payload.data?.summary || null;
+          state.historyMeta = payload.meta || { ...defaultMeta };
+        } else {
+          state.history = payload?.rows || [];
+          state.summary = payload?.summary || null;
+        }
       })
       .addCase(getMyHistoryThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // getDailyLogs
+      // getDailyLogs — now paginated
       .addCase(getDailyLogsThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getDailyLogsThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.dailyLogs = action.payload || [];
+        const payload = action.payload;
+        if (payload?.data) {
+          state.dailyLogs = payload.data || [];
+          state.dailyLogsMeta = payload.meta || { ...defaultMeta };
+        } else {
+          state.dailyLogs = payload || [];
+        }
       })
       .addCase(getDailyLogsThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
 
-      // getMonthlySummary
+      // getMonthlySummary — now paginated
       .addCase(getMonthlySummaryThunk.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(getMonthlySummaryThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.monthlySummary = action.payload || [];
+        const payload = action.payload;
+        if (payload?.data) {
+          state.monthlySummary = payload.data || [];
+          state.monthlySummaryMeta = payload.meta || { ...defaultMeta };
+        } else {
+          state.monthlySummary = payload || [];
+        }
       })
       .addCase(getMonthlySummaryThunk.rejected, (state, action) => {
         state.loading = false;

@@ -53,8 +53,8 @@ class LeaveService {
     return leave;
   }
 
-  async getMyLeaves(userId) {
-    return await LeaveModel.getMyLeaves(userId);
+  async getMyLeaves(userId, { page, limit } = {}) {
+    return await LeaveModel.getMyLeaves(userId, { page, limit });
   }
 
   async getColleaguesOnLeave(departmentId, currentUserId) {
@@ -62,12 +62,12 @@ class LeaveService {
     return await LeaveModel.getColleaguesOnLeave(departmentId, currentUserId, today);
   }
 
-  async getDepartmentLeaves(departmentId) {
-    return await LeaveModel.getDepartmentLeaves(departmentId);
+  async getDepartmentLeaves(departmentId, { page, limit } = {}) {
+    return await LeaveModel.getDepartmentLeaves(departmentId, { page, limit });
   }
 
-  async getAllLeaves() {
-    return await LeaveModel.getAllLeaves();
+  async getAllLeaves({ page, limit } = {}) {
+    return await LeaveModel.getAllLeaves({ page, limit });
   }
 
   async updateLeaveStatus({ id, status, approvedBy, userRole, userDepartmentId }) {

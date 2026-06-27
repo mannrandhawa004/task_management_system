@@ -23,6 +23,7 @@ import { getColleaguesOnLeaveThunk } from "@/features/leaves/thunks/leaveThunks"
 import { getDepartmentsThunk } from "@/features/departments/thunks/departmentThunks";
 import AppLoader from "@/components/common/AppLoader";
 import AttendanceWidget from "@/components/attendance/AttendanceWidget";
+import Pagination from "@/components/common/Pagination";
 
 const statusTone = {
   working: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
@@ -38,7 +39,7 @@ const statusTone = {
 export default function AttendancePage() {
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { history, summary, dailyLogs, loading: attLoading } = useSelector((state) => state.attendance);
+  const { history, summary, dailyLogs, dailyLogsMeta, loading: attLoading } = useSelector((state) => state.attendance);
   const { colleaguesOnLeave, loading: leaveLoading } = useSelector((state) => state.leaves);
   const { departmentsList } = useSelector((state) => state.departments);
   const loading = attLoading || leaveLoading;
@@ -82,7 +83,7 @@ export default function AttendancePage() {
   // Fetch super admin daily logs when filters change
   useEffect(() => {
     if (isSuperAdmin) {
-      dispatch(getDailyLogsThunk({ date: filterDate, departmentId: filterDept }));
+      dispatch(getDailyLogsThunk({ date: filterDate, departmentId: filterDept, page: 1, limit: 10 }));
     }
   }, [dispatch, isSuperAdmin, filterDate, filterDept]);
 
@@ -141,6 +142,10 @@ export default function AttendancePage() {
         /* SUPER ADMIN VIEW */
         <SuperAdminAttendanceView 
           dailyLogs={dailyLogs} 
+          dailyLogsMeta={dailyLogsMeta}
+          onPageChange={({ page, limit }) => {
+            dispatch(getDailyLogsThunk({ date: filterDate, departmentId: filterDept, page, limit }));
+          }}
           filterDate={filterDate} 
           setFilterDate={setFilterDate} 
           filterDept={filterDept} 
@@ -320,7 +325,7 @@ export default function AttendancePage() {
 // ----------------------------------------------------------------------
 // SUPER ADMIN COMPANY VIEW COMPONENT
 // ----------------------------------------------------------------------
-function SuperAdminAttendanceView({ dailyLogs, filterDate, setFilterDate, filterDept, setFilterDept, departmentsList, loading }) {
+function SuperAdminAttendanceView({ dailyLogs, dailyLogsMeta, onPageChange, filterDate, setFilterDate, filterDept, setFilterDept, departmentsList, loading }) {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Calculate quick stats
@@ -501,6 +506,15 @@ function SuperAdminAttendanceView({ dailyLogs, filterDate, setFilterDate, filter
             </tbody>
           </table>
         </div>
+        {dailyLogsMeta && (
+          <Pagination
+            page={dailyLogsMeta.page}
+            limit={dailyLogsMeta.limit}
+            total={dailyLogsMeta.total}
+            totalPages={dailyLogsMeta.totalPages}
+            onPageChange={onPageChange}
+          />
+        )}
       </div>
     </div>
   );

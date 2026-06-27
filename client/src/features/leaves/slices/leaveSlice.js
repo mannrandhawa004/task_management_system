@@ -1,9 +1,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { applyLeaveThunk, getMyLeavesThunk, getManageLeavesThunk, updateLeaveStatusThunk, getColleaguesOnLeaveThunk, getPoliciesThunk, createPolicyThunk, updatePolicyThunk, allocateQuotasThunk, getMyBalancesThunk, getSalaryReportThunk } from "../thunks/leaveThunks";
 
+const defaultMeta = { page: 1, limit: 10, total: 0, totalPages: 1 };
+
 const initialState = {
   myLeaves: [],
+  myLeavesMeta: { ...defaultMeta },
   manageLeaves: [],
+  manageLeavesMeta: { ...defaultMeta },
   colleaguesOnLeave: [],
   policies: [],
   balances: [],
@@ -35,7 +39,8 @@ const leaveSlice = createSlice({
       })
       .addCase(getMyLeavesThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.myLeaves = action.payload || [];
+        state.myLeaves = action.payload?.data || [];
+        state.myLeavesMeta = action.payload?.meta || { ...defaultMeta };
       })
       .addCase(getMyLeavesThunk.rejected, (state, action) => {
         state.loading = false;
@@ -46,7 +51,8 @@ const leaveSlice = createSlice({
       })
       .addCase(getManageLeavesThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.manageLeaves = action.payload || [];
+        state.manageLeaves = action.payload?.data || [];
+        state.manageLeavesMeta = action.payload?.meta || { ...defaultMeta };
       })
       .addCase(getManageLeavesThunk.rejected, (state, action) => {
         state.loading = false;

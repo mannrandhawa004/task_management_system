@@ -14,9 +14,9 @@ export const applyLeaveThunk = createAsyncThunk(
 
 export const getMyLeavesThunk = createAsyncThunk(
   "leaves/getMy",
-  async (_, thunkAPI) => {
+  async (params = {}, thunkAPI) => {
     try {
-      return await getMyLeaves();
+      return await getMyLeaves(params);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch leaves");
     }
@@ -25,9 +25,9 @@ export const getMyLeavesThunk = createAsyncThunk(
 
 export const getManageLeavesThunk = createAsyncThunk(
   "leaves/getManage",
-  async (_, thunkAPI) => {
+  async (params = {}, thunkAPI) => {
     try {
-      return await getManageLeaves();
+      return await getManageLeaves(params);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch manage leaves");
     }

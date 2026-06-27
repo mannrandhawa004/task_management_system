@@ -1,6 +1,6 @@
 import LeaveService from "../services/leave.service.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { successResponse } from "../utils/response.js";
+import { successResponse, paginatedResponse } from "../utils/response.js";
 import AuditService from "../services/audit.service.js";
 import { AUDIT_ACTIONS } from "../constants/auditActions.js";
 
@@ -27,8 +27,11 @@ class LeaveController {
 
   getMyLeaves = asyncHandler(async (req, res) => {
     const userId = req.user.id;
-    const leaves = await LeaveService.getMyLeaves(userId);
-    return successResponse(res, "My leaves fetched", leaves, 200);
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    const result = await LeaveService.getMyLeaves(userId, { page, limit });
+    return paginatedResponse(res, "My leaves fetched", result.rows, { page, limit, total: result.total });
   });
 
   getColleaguesOnLeave = asyncHandler(async (req, res) => {
@@ -53,16 +56,17 @@ class LeaveController {
   });
 
   getManageLeaves = asyncHandler(async (req, res) => {
-    let leaves = [];
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.max(parseInt(req.query.limit) || 10, 1);
+
+    let result = { rows: [], total: 0 };
     const role = req.user.role ? req.user.role.toLowerCase() : "";
     if (role === 'admin' || role === 'super_admin' || role === 'hr') {
-      leaves = await LeaveService.getAllLeaves();
+      result = await LeaveService.getAllLeaves({ page, limit });
     } else if (role === 'dept_head') {
-      leaves = await LeaveService.getDepartmentLeaves(req.user.department_id);
-    } else {
-      leaves = [];
+      result = await LeaveService.getDepartmentLeaves(req.user.department_id, { page, limit });
     }
-    return successResponse(res, "Manage leaves fetched", leaves, 200);
+    return paginatedResponse(res, "Manage leaves fetched", result.rows, { page, limit, total: result.total });
   });
 
   updateStatus = asyncHandler(async (req, res) => {
