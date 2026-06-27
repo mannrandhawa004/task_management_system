@@ -113,7 +113,7 @@ class AuthController {
       tokens.refreshToken,
       cookieOptionsForRefreshToken,
     );
-    return successResponse(res, "Token refreshed", tokens);
+    return successResponse(res, "Token refreshed");
   });
 
   logout = asyncHandler(async (req, res) => {

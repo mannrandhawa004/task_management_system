@@ -24,3 +24,33 @@ export const getColleaguesOnLeave = async () => {
   const response = await api.get("/leaves/colleagues");
   return response.data.data;
 };
+
+export const getPolicies = async () => {
+  const response = await api.get("/leaves/policies");
+  return response.data.data;
+};
+
+export const createPolicy = async (data) => {
+  const response = await api.post("/leaves/policies", data);
+  return response.data.data;
+};
+
+export const updatePolicy = async ({ id, ...data }) => {
+  const response = await api.put(`/leaves/policies/${id}`, data);
+  return response.data.data;
+};
+
+export const allocateQuotas = async (year) => {
+  const response = await api.post("/leaves/allocate", { year });
+  return response.data.data;
+};
+
+export const getMyBalances = async (year) => {
+  const response = await api.get(`/leaves/balances${year ? `?year=${year}` : ""}`);
+  return response.data.data;
+};
+
+export const getSalaryReport = async (params = {}) => {
+  const response = await api.get("/leaves/salary-report", { params });
+  return response.data.data;
+};

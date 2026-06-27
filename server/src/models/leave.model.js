@@ -1,13 +1,21 @@
 import { executeQuery } from "../utils/dbQuery.js";
 
 class LeaveModel {
-  async applyLeave({ userId, type, startDate, endDate, reason }) {
+  async applyLeave({ userId, type, leavePolicyId, startDate, endDate, totalDays, lwpDays, attachment, reason }) {
     const query = `
-      INSERT INTO leaves (user_id, type, start_date, end_date, reason)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO leaves (user_id, type, leave_policy_id, start_date, end_date, total_days, lwp_days, attachment, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
-    const res = await executeQuery(query, [userId, type, startDate, endDate, reason]);
+    const res = await executeQuery(query, [userId, type, leavePolicyId || null, startDate, endDate, totalDays || 1, lwpDays || 0, attachment || null, reason]);
     return this.getLeaveById(res.insertId);
+  }
+
+  async recordLwp({ employeeId, leaveRequestId, lwpDays }) {
+    const query = `
+      INSERT INTO leave_without_pay (employee_id, leave_request_id, lwp_days)
+      VALUES (?, ?, ?)
+    `;
+    await executeQuery(query, [employeeId, leaveRequestId, lwpDays]);
   }
 
   async getLeaveById(id) {
