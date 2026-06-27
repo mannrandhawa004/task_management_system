@@ -73,7 +73,6 @@ class ProjectController {
     if (["super_admin", "admin"].includes(req.user.role)) {
       projects = await ProjectServices.allProjects({ limit, offset, page });
     } else {
-      console.log("else case")
       projects = await ProjectServices.getUserProjects(req.user.id, { limit, offset, page });
     }
 
