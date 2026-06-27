@@ -48,12 +48,17 @@ export default function LeavesPage() {
   const handleConfirmStatusUpdate = () => {
     if (!confirmAction) return;
     const { id, status } = confirmAction;
-    dispatch(updateLeaveStatusThunk({ id, status })).then(() => {
-      showToast.success(
-        "Leave Updated",
-        `Leave request has been ${status} successfully.`
-      );
-    });
+    dispatch(updateLeaveStatusThunk({ id, status }))
+      .unwrap()
+      .then(() => {
+        showToast.success(
+          "Leave Updated",
+          `Leave request has been ${status} successfully.`
+        );
+      })
+      .catch((err) => {
+        showToast.error("Error", err || "Failed to update leave request");
+      });
     setConfirmAction(null);
   };
 

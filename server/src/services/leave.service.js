@@ -30,10 +30,13 @@ class LeaveService {
     const leave = await LeaveModel.getLeaveById(id);
     if (!leave) throw new NotFoundError("Leave request not found");
 
-    if (userRole === 'dept_head') {
-      // Ensure the dept head can only approve leaves for their own department
-      // We would need to join users to check. For safety, it's checked at the controller level or we can trust the controller.
-    } else if (userRole !== 'admin' && userRole !== 'super_admin' && userRole !== 'hr') {
+    const role = userRole ? userRole.toLowerCase() : "";
+
+    if (role === 'dept_head') {
+      if (leave.user_department_id !== userDepartmentId) {
+        throw new ForbiddenError("Not authorized to approve leaves for other departments");
+      }
+    } else if (role !== 'admin' && role !== 'super_admin' && role !== 'hr') {
       throw new ForbiddenError("Not authorized to approve leaves");
     }
 

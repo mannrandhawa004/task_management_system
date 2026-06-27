@@ -11,7 +11,12 @@ class LeaveModel {
   }
 
   async getLeaveById(id) {
-    const query = `SELECT * FROM leaves WHERE id = ? LIMIT 1`;
+    const query = `
+      SELECT l.*, u.department_id as user_department_id 
+      FROM leaves l
+      JOIN users u ON l.user_id = u.id
+      WHERE l.id = ? LIMIT 1
+    `;
     const rows = await executeQuery(query, [id]);
     return rows[0] || null;
   }
