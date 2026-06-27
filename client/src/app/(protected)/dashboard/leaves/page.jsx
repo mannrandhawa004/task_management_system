@@ -224,13 +224,13 @@ export default function LeavesPage() {
       {/* CONFIRM DIALOG COMPONENT */}
       {confirmAction && (
         <ConfirmDialog
-          isOpen={true}
+          open={true}
           title={`${confirmAction.status === "approved" ? "Approve" : "Reject"} Leave`}
           message={`Are you sure you want to ${confirmAction.status} this leave request?`}
           onConfirm={handleConfirmStatusUpdate}
-          onCancel={() => setConfirmAction(null)}
-          confirmText={`Yes, ${confirmAction.status}`}
-          cancelText="Cancel"
+          onClose={() => setConfirmAction(null)}
+          confirmLabel={`Yes, ${confirmAction.status}`}
+          cancelLabel="Cancel"
           variant={confirmAction.status === "approved" ? "warning" : "danger"}
         />
       )}

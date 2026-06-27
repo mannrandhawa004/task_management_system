@@ -14,7 +14,7 @@ class LeaveController {
     try {
       await AuditService.log({
         user_id: userId,
-        action: AUDIT_ACTIONS.CREATE_PROJECT, // Repurposing or ideally add CREATE_LEAVE
+        action: AUDIT_ACTIONS.CREATE_LEAVE, // Repurposing or ideally add CREATE_LEAVE
         entity_type: "leave",
         entity_id: leave.id,
         ip_address: req.clientIp,
@@ -54,7 +54,7 @@ class LeaveController {
 
   getManageLeaves = asyncHandler(async (req, res) => {
     let leaves = [];
-    const role = req.user.role;
+    const role = req.user.role ? req.user.role.toLowerCase() : "";
     if (role === 'admin' || role === 'super_admin' || role === 'hr') {
       leaves = await LeaveService.getAllLeaves();
     } else if (role === 'dept_head') {
