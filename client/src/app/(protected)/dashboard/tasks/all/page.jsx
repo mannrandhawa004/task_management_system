@@ -31,6 +31,7 @@ import {
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import AppLoader from "@/components/common/AppLoader";
 import AssignTaskDrawer from "@/components/tasks/AssignTaskDrawer";
+import Pagination from "@/components/common/Pagination";
 
 const STATUS_FILTERS = [
     { key: "all", label: "All Tasks", icon: Layers },
@@ -76,7 +77,7 @@ export default function AllTasksPage() {
     // ─── Filters / pagination ────────────────────────────────────────────────
     const [activeFilter, setActiveFilter] = useState("all");
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
+    const [limit, setLimit] = useState(10);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
 
     // ─── UI state ────────────────────────────────────────────────────────────
@@ -442,29 +443,21 @@ export default function AllTasksPage() {
                 )}
 
                 {/* PAGINATION */}
-                {pagination && pagination.totalPages > 1 && (
-                    <div className="flex justify-center items-center gap-2 text-xs font-bold pt-2">
-                        <button
-                            type="button"
-                            disabled={!pagination.hasPrevPage || taskLoading}
-                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-                            className="p-2 rounded-xl border transition bg-[var(--card)] border-[var(--border)] disabled:opacity-40 hover:bg-[var(--hover)] cursor-pointer"
-                        >
-                            <ChevronLeft size={16} />
-                        </button>
-                        <span className="text-[var(--muted)] px-3">
-                            Page {pagination.page} of {pagination.totalPages}
-                        </span>
-                        <button
-                            type="button"
-                            disabled={!pagination.hasNextPage || taskLoading}
-                            onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
-                            className="p-2 rounded-xl border transition bg-[var(--card)] border-[var(--border)] disabled:opacity-40 hover:bg-[var(--hover)] cursor-pointer"
-                        >
-                            <ChevronRight size={16} />
-                        </button>
-                    </div>
-                )}
+                <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs mt-4">
+                    <Pagination
+                        page={pagination?.currentPage || page}
+                        limit={pagination?.perPage || limit}
+                        total={pagination?.total || tasks.length}
+                        totalPages={pagination?.totalPages || 1}
+                        onPageChange={({ page: newPage, limit: newLimit }) => {
+                            setPage(newPage);
+                            if (newLimit !== limit) {
+                                setLimit(newLimit);
+                                setPage(1);
+                            }
+                        }}
+                    />
+                </div>
             </div>
 
             {/* EDIT MODAL */}

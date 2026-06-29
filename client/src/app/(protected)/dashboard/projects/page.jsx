@@ -7,6 +7,7 @@ import { getProjectsThunk } from "@/features/projects/thunks/projectThunk";
 import { canCreateProject } from "@/lib/permissions";
 import ProjectTable from "@/components/projects/ProjectTable";
 import CreateProjectDrawer from "@/components/projects/CreateProjectDrawer";
+import Pagination from "@/components/common/Pagination";
 
 const PROJECT_STATUS_FILTERS = [
   { key: "all", label: "All Projects" },
@@ -163,83 +164,16 @@ export default function Page() {
 
       {/* PAGINATION CONTROLS */}
       {!isApiEmpty && projects.length > 0 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-          <div className="text-sm text-center sm:text-left" style={{ color: "var(--muted)" }}>
-            Showing <span style={{ color: "var(--text)" }} className="font-semibold">{(pagination.currentPage - 1) * pagination.pageSize + 1}</span> to <span style={{ color: "var(--text)" }} className="font-semibold">{Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)}</span> of <span style={{ color: "var(--text)" }} className="font-semibold">{pagination.totalItems}</span> projects
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                if (pagination.currentPage > 1) {
-                  dispatch(getProjectsThunk({ page: pagination.currentPage - 1, limit: pagination.pageSize }));
-                }
-              }}
-              disabled={pagination.currentPage <= 1 || loading}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: "var(--input)",
-                color: pagination.currentPage <= 1 ? "var(--muted)" : "var(--text)",
-              }}
-            >
-              <ChevronLeft size={16} />
-              Previous
-            </button>
-
-            <div className="flex items-center gap-1 px-3 py-2">
-              {[...Array(pagination.totalPages)].map((_, index) => {
-                const pageNum = index + 1;
-                // Show current page, first page, last page, and pages adjacent to current
-                const showPage =
-                  pageNum === 1 ||
-                  pageNum === pagination.totalPages ||
-                  Math.abs(pageNum - pagination.currentPage) <= 1;
-
-                if (!showPage) {
-                  if (pageNum === 2 || pageNum === pagination.totalPages - 1) {
-                    return <span key={`ellipsis-${pageNum}`} style={{ color: "var(--muted)" }}>...</span>;
-                  }
-                  return null;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => {
-                      dispatch(getProjectsThunk({ page: pageNum, limit: pagination.pageSize }));
-                    }}
-                    disabled={loading}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg font-semibold transition-all"
-                    style={{
-                      background: pageNum === pagination.currentPage ? "var(--primary)" : "var(--input)",
-                      color: pageNum === pagination.currentPage ? "#fff" : "var(--text)",
-                      opacity: loading ? 0.5 : 1,
-                      cursor: loading ? "not-allowed" : "pointer",
-                    }}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => {
-                if (pagination.currentPage < pagination.totalPages) {
-                  dispatch(getProjectsThunk({ page: pagination.currentPage + 1, limit: pagination.pageSize }));
-                }
-              }}
-              disabled={pagination.currentPage >= pagination.totalPages || loading}
-              className="flex items-center gap-1 px-3 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{
-                background: "var(--input)",
-                color: pagination.currentPage >= pagination.totalPages ? "var(--muted)" : "var(--text)",
-              }}
-            >
-              Next
-              <ChevronRight size={16} />
-            </button>
-          </div>
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs mt-4">
+          <Pagination
+            page={pagination?.currentPage || 1}
+            limit={pagination?.pageSize || 10}
+            total={pagination?.totalItems || projects.length}
+            totalPages={pagination?.totalPages || 1}
+            onPageChange={({ page, limit }) => {
+              dispatch(getProjectsThunk({ page, limit }));
+            }}
+          />
         </div>
       )}
 

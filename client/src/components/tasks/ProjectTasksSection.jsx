@@ -9,6 +9,7 @@ import TaskCard from "./TaskCard";
 import { TaskCardSkeleton } from "./TaskCardSkeleton";
 import { deleteTaskThunk, updateTaskStatusThunk, updateTaskThunk } from "@/features/tasks/thunks/taskThunk";
 import { showToast } from "@/lib/toast";
+import Pagination from "@/components/common/Pagination";
 
 const STATUS_FILTERS = [
   { key: "all", label: "All Items" },
@@ -181,33 +182,15 @@ export default function ProjectTasksSection({
       </div>
 
       {/* PAGINATION COMPONENT */}
-      {pagination && pagination.totalPages > 1 && (
-        <div className="flex justify-center items-center gap-5 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-          <button
-            type="button"
-            disabled={page === 1}
-            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            className="p-2 rounded-xl border transition disabled:opacity-40 cursor-pointer active:scale-95 text-[var(--text)]"
-            style={{ background: "var(--card)", borderColor: "var(--border)" }}
-          >
-            <ChevronLeft size={16} strokeWidth={2.5} />
-          </button>
-
-          <span className="text-xs font-bold tracking-wide uppercase opacity-80" style={{ color: "var(--text)" }}>
-            Matrix Page {page} / {pagination.totalPages}
-          </span>
-
-          <button
-            type="button"
-            disabled={page === pagination.totalPages}
-            onClick={() => setPage((prev) => Math.min(prev + 1, pagination.totalPages))}
-            className="p-2 rounded-xl border transition disabled:opacity-40 cursor-pointer active:scale-95 text-[var(--text)]"
-            style={{ background: "var(--card)", borderColor: "var(--border)" }}
-          >
-            <ChevronRight size={16} strokeWidth={2.5} />
-          </button>
-        </div>
-      )}
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs mt-4">
+        <Pagination
+          page={page}
+          limit={pagination?.limit || 10}
+          total={pagination?.total || tasks.length}
+          totalPages={pagination?.totalPages || 1}
+          onPageChange={({ page: newPage }) => setPage(newPage)}
+        />
+      </div>
     </section>
   );
 }

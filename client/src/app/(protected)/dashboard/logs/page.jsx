@@ -25,6 +25,7 @@ import {
     Eye
 } from "lucide-react";
 import AppLoader from "@/components/common/AppLoader";
+import Pagination from "@/components/common/Pagination";
 
 export default function AuditLogPage() {
     const dispatch = useDispatch();
@@ -33,6 +34,7 @@ export default function AuditLogPage() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
     const [entityFilter, setEntityFilter] = useState("all");
     const [actionFilter, setActionFilter] = useState("all");
     const [targetEntityId, setTargetEntityId] = useState("");
@@ -51,11 +53,11 @@ export default function AuditLogPage() {
 
         dispatch(getAllLogsThunk({
             page,
-            limit: 10,
+            limit,
             entity_type: entityFilter,
             action_group: actionFilter
         }));
-    }, [dispatch, page, entityFilter, actionFilter, targetEntityId]);
+    }, [dispatch, page, limit, entityFilter, actionFilter, targetEntityId]);
 
     const handleInspectLog = (logId) => {
         dispatch(getLogByIdThunk(logId));
@@ -275,25 +277,21 @@ export default function AuditLogPage() {
                     </div>
 
                     {/* PAGINATION CONTROLS */}
-                    {pagination && pagination.totalPages > 1 && targetEntityId === "" && (
-                        <div className="flex justify-center items-center gap-2 text-xs font-bold mt-4">
-                            <button
-                                disabled={page === 1}
-                                onClick={() => setPage((prev) => prev - 1)}
-                                className="p-2 rounded-xl border transition bg-[var(--card)] border-[var(--border)] disabled:opacity-40 hover:bg-[var(--hover)] cursor-pointer"
-                            >
-                                <ChevronLeft size={16} />
-                            </button>
-                            <span className="text-[var(--muted)] px-3">
-                                Page {page} of {pagination.totalPages}
-                            </span>
-                            <button
-                                disabled={page === pagination.totalPages}
-                                onClick={() => setPage((prev) => prev + 1)}
-                                className="p-2 rounded-xl border transition bg-[var(--card)] border-[var(--border)] disabled:opacity-40 hover:bg-[var(--hover)] cursor-pointer"
-                            >
-                                <ChevronRight size={16} />
-                            </button>
+                    {targetEntityId === "" && (
+                        <div className="mt-4 bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs">
+                            <Pagination
+                                page={pagination?.currentPage || page}
+                                limit={pagination?.perPage || limit}
+                                total={pagination?.total || logs.length}
+                                totalPages={pagination?.totalPages || 1}
+                                onPageChange={({ page: newPage, limit: newLimit }) => {
+                                    setPage(newPage);
+                                    if (newLimit !== limit) {
+                                        setLimit(newLimit);
+                                        setPage(1);
+                                    }
+                                }}
+                            />
                         </div>
                     )}
                 </>

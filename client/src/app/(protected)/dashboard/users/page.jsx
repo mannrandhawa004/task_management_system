@@ -28,6 +28,7 @@ import UserTable from "@/components/users/UserTable";
 import UserCardGrid from "@/components/users/UserCardGrid";
 import AddUserDrawer from "@/components/users/AddUserDrawer";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
+import Pagination from "@/components/common/Pagination";
 import { showToast } from "@/lib/toast";
 import { api } from "@/lib/axios";
 
@@ -35,6 +36,7 @@ export default function UsersPage() {
   const dispatch = useDispatch();
 
   const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(9);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [viewMode, setViewMode] = useState("card"); // "table" | "card"
@@ -60,7 +62,6 @@ export default function UsersPage() {
   });
 
   const [actionLoading, setActionLoading] = useState(false);
-  const limit = 9;
 
   const { users, pagination, loading, roles } = useSelector((state) => state.auth);
   const { departmentsList } = useSelector((state) => state.departments);
@@ -419,38 +420,21 @@ export default function UsersPage() {
       </div>
 
       {/* PAGINATION TOOL BAR DOCK */}
-      {pagination && (
-        <div 
-          className="pt-6 border-t flex justify-between items-center text-xs font-semibold tracking-wide" 
-          style={{ borderColor: "var(--border)" }}
-        >
-          <p style={{ color: "var(--muted)" }} className="opacity-90">
-            Showing <span className="text-[var(--text)] font-bold">{users.length}</span> of <span className="text-[var(--text)] font-bold">{pagination.total}</span> registered employees
-          </p>
-
-          <div className="flex items-center gap-3">
-            <button
-              disabled={!pagination.hasPrevPage || loading}
-              onClick={() => setPage((prev) => prev - 1)}
-              className="p-2 rounded-lg border transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none cursor-pointer text-[var(--text)] bg-[var(--card)] border-[var(--border)] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] active:scale-95"
-            >
-              <ChevronLeft size={14} />
-            </button>
-
-            <span className="text-xs select-none" style={{ color: "var(--muted)" }}>
-              Page <strong className="text-[var(--text)] font-bold bg-black/5 dark:bg-white/5 px-2 py-1 rounded-md mx-0.5">{page}</strong> of {Math.ceil(pagination.total / limit) || 1}
-            </span>
-
-            <button
-              disabled={!pagination.hasNextPage || loading}
-              onClick={() => setPage((prev) => prev + 1)}
-              className="p-2 rounded-lg border transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none cursor-pointer text-[var(--text)] bg-[var(--card)] border-[var(--border)] hover:bg-black/[0.04] dark:hover:bg-white/[0.04] active:scale-95"
-            >
-              <ChevronRight size={14} />
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs mt-4">
+        <Pagination
+          page={pagination?.page || page}
+          limit={pagination?.limit || limit}
+          total={pagination?.total || users.length}
+          totalPages={pagination?.totalPages || Math.ceil((pagination?.total || users.length) / limit) || 1}
+          onPageChange={({ page: newPage, limit: newLimit }) => {
+            setPage(newPage);
+            if (newLimit !== limit) {
+              setLimit(newLimit);
+              setPage(1);
+            }
+          }}
+        />
+      </div>
 
       {/* DRAWERS & DIALOG INJECTIONS */}
       <AddUserDrawer

@@ -33,6 +33,7 @@ import {
   getDailyTaskProgressThunk,
 } from "@/features/dashboard/thunks/dashboardThunks";
 import { getSocket } from "@/lib/socket";
+import Pagination from "@/components/common/Pagination";
 
 import { ProjectDistributionChart, TaskBreakdownChart, ProjectStatusChart } from "../../../components/dashboard/DashboardCharts";
 import CriticalDeadlinesRadar from "../../../components/dashboard/CriticalDeadlinesRadar";
@@ -275,17 +276,19 @@ export default function DashboardPage() {
     dispatch(clearCurrentTask());
   };
 
-  const handlePageChange = (newPage) => {
+  const handlePageChange = (param) => {
+    const newPage = typeof param === "object" && param !== null ? param.page : param;
+    const newLimit = typeof param === "object" && param !== null ? param.limit || 10 : 10;
     if (overviewFilterKey === "projects") {
-      dispatch(getProjectStatsThunk({ page: newPage, limit: 10 }));
+      dispatch(getProjectStatsThunk({ page: newPage, limit: newLimit }));
     } else if (overviewFilterKey === "completed") {
-      dispatch(getCompletedTasksThunk({ page: newPage, limit: 10 }));
+      dispatch(getCompletedTasksThunk({ page: newPage, limit: newLimit }));
     } else if (overviewFilterKey === "upcoming") {
-      dispatch(getUpcomingTasksThunk({ page: newPage, limit: 10 }));
+      dispatch(getUpcomingTasksThunk({ page: newPage, limit: newLimit }));
     } else if (overviewFilterKey === "in_progress") {
-      dispatch(getInProgressTasksThunk({ page: newPage, limit: 10 }));
+      dispatch(getInProgressTasksThunk({ page: newPage, limit: newLimit }));
     } else if (overviewFilterKey === "overdue") {
-      dispatch(getOverdueTasksThunk({ page: newPage, limit: 10 }));
+      dispatch(getOverdueTasksThunk({ page: newPage, limit: newLimit }));
     }
   };
 
@@ -856,29 +859,15 @@ function OverviewModal({ open, title, items, type, pagination, loading, onClose,
         </div>
 
         {/* Modal footer (Pagination Controls) */}
-        {totalPages > 1 && (
-          <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-between shrink-0 bg-[var(--card)]">
-            <span className="text-xs text-[var(--muted)] font-semibold">
-              Page {page} of {totalPages}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                disabled={!hasPrevPage}
-                onClick={() => onPageChange(page - 1)}
-                className="px-3 py-1.5 text-xs font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--hover)] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Previous
-              </button>
-              <button
-                disabled={!hasNextPage}
-                onClick={() => onPageChange(page + 1)}
-                className="px-3 py-1.5 text-xs font-bold rounded-xl border border-[var(--border)] hover:bg-[var(--hover)] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="shrink-0 bg-[var(--card)]">
+          <Pagination
+            page={page}
+            limit={10}
+            total={total}
+            totalPages={totalPages}
+            onPageChange={onPageChange}
+          />
+        </div>
       </div>
     </div>
   );
