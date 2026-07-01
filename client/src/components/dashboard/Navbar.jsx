@@ -92,23 +92,36 @@ export default function Navbar() {
         >
             {/* SEARCH LAYOUT BAR LINK */}
             <div className="relative w-full max-w-sm focus-within:scale-[1.01] transition-transform">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] opacity-60" />
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                     type="text"
-                    placeholder="Search resources, nodes, task scopes..."
-                    className="w-full text-xs font-medium rounded-xl border py-2.5 pl-10 pr-4 outline-none transition-all focus:border-[var(--primary)]/50 focus:ring-4 focus:ring-[var(--primary)]/5"
+                    placeholder="Search task"
+                    className="w-full text-xs font-semibold rounded-2xl border py-2.5 pl-10 pr-12 outline-none transition-all focus:border-[var(--primary)]/50 focus:ring-4 focus:ring-[var(--primary)]/5"
                     style={{ background: "var(--input)", borderColor: "var(--border)", color: "var(--text)" }}
                 />
+                {/* ⌘ F keyboard shortcut helper */}
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9.5px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-lg select-none">
+                    ⌘ F
+                </span>
             </div>
 
             {/* RIGHT ACTION ITEMS LINK ROW */}
             <div className="flex items-center gap-3.5" ref={dropdownRef}>
                 <ThemeToggle />
 
+                {/* Message Mail icon mock */}
+                <button
+                    type="button"
+                    className="flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)] border border-[var(--border)] text-slate-400 dark:text-slate-500 cursor-pointer"
+                    style={{ background: "var(--input)" }}
+                >
+                    <Mail size={15} />
+                </button>
+
                 {/* Notification Stack Indicator Icon */}
                 <button
                     onClick={() => setNotificationOpen((prev) => !prev)}
-                    className="relative flex h-9 w-9 items-center justify-center rounded-xl transition-colors hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] cursor-pointer"
+                    className="relative flex h-9 w-9 items-center justify-center rounded-full transition-colors hover:bg-[var(--hover)] border border-[var(--border)] text-slate-400 dark:text-slate-500 cursor-pointer"
                     style={{ background: "var(--input)" }}
                 >
                     <Bell size={15} />
@@ -182,11 +195,11 @@ export default function Navbar() {
                     className="
     group
     flex items-center gap-3
-    rounded-2xl
-    px-2.5 py-1.5
+    rounded-full
+    px-3 py-1.5
     border
     transition-all
-    hover:shadow-lg
+    hover:shadow-sm
     cursor-pointer
     "
                     style={{
@@ -198,13 +211,13 @@ export default function Navbar() {
                         className="
         relative
         flex
-        h-11 w-11
+        h-9 w-9
         items-center justify-center
-        rounded-2xl
+        rounded-full
         overflow-hidden
         shrink-0
         font-bold
-        text-sm
+        text-xs
         text-white
         "
                         style={{
@@ -224,11 +237,13 @@ export default function Navbar() {
                         )}
                     </div>
 
-                    <div className="hidden md:block text-left max-w-[120px]">
-                        <p className="truncate text-sm font-bold text-[var(--text)]">
+                    <div className="hidden md:flex flex-col text-left max-w-[150px]">
+                        <p className="truncate text-xs font-black text-[var(--text)] leading-tight">
                             {user?.name || "Anonymous"}
                         </p>
-
+                        <p className="truncate text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                            {user?.email || "user@taskflow.com"}
+                        </p>
                     </div>
 
                     <motion.div
@@ -236,8 +251,8 @@ export default function Navbar() {
                         transition={{ duration: 0.18 }}
                     >
                         <ChevronDown
-                            size={15}
-                            className="text-[var(--muted)]"
+                            size={14}
+                            className="text-slate-400 dark:text-slate-500"
                         />
                     </motion.div>
                 </button>

@@ -1,39 +1,51 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
-    LineChart,
-    Line,
+    AreaChart,
+    Area,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
     Legend,
     ResponsiveContainer,
-    Area,
-    AreaChart,
 } from "recharts";
-import { TrendingUp, Loader2 } from "lucide-react";
+import { TrendingUp, Loader2, ArrowUpRight } from "lucide-react";
+
+// Reads the `.dark` class directly from the document — instant, no flash.
+function useIsDark() {
+    const [isDark, setIsDark] = useState(false);
+    useEffect(() => {
+        const el = document.documentElement;
+        const update = () => setIsDark(el.classList.contains("dark"));
+        update();
+        const observer = new MutationObserver(update);
+        observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+        return () => observer.disconnect();
+    }, []);
+    return isDark;
+}
 
 // Custom Tooltip with enhanced styling
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-[var(--card)] border border-[var(--border)] p-3 rounded-lg shadow-lg min-w-[150px] backdrop-blur-sm">
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--muted)] mb-2">{label}</p>
-                <div className="flex flex-col gap-1.5">
+            <div className="bg-[var(--card)] border border-[var(--border)] p-3.5 rounded-2xl shadow-xl min-w-[160px] backdrop-blur-md">
+                <p className="text-[11px] font-black uppercase tracking-wider text-[var(--muted)] mb-2 border-b border-[var(--border)]/60 pb-1.5">{label}</p>
+                <div className="flex flex-col gap-2">
                     {payload.map((entry, index) => (
-                        <div key={index} className="flex items-center justify-between gap-3 text-xs">
+                        <div key={index} className="flex items-center justify-between gap-4 text-xs font-bold">
                             <div className="flex items-center gap-2">
                                 <span
-                                    className="w-2 h-2 rounded-full shadow-sm"
+                                    className="w-2.5 h-2.5 rounded-full shadow-xs"
                                     style={{ backgroundColor: entry.color }}
                                 />
-                                <span className="text-[var(--muted)] font-medium">
+                                <span className="text-[var(--muted)] font-bold">
                                     {entry.name}
                                 </span>
                             </div>
-                            <span className="font-bold text-[var(--text)]">
+                            <span className="font-black text-[var(--text)]">
                                 {entry.value}
                             </span>
                         </div>
@@ -46,7 +58,14 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function DailyTaskProgressChart({ data = [], loading = false }) {
-    // Prepare data for chart
+    const isDark = useIsDark();
+
+
+    const s1 = isDark ? "#fed7aa" : "#0b573a";
+    const s2 = isDark ? "#fb923c" : "#16a34a";
+    const s3 = isDark ? "#ea580c" : "#4ade80";
+    const accentColor = isDark ? "#fb923c" : "#0b573a";
+
     const chartData = data.map((item) => ({
         date: new Date(item.date).toLocaleDateString(undefined, {
             month: "short",
@@ -58,209 +77,140 @@ export default function DailyTaskProgressChart({ data = [], loading = false }) {
         total: item.total_tasks_updated || 0,
     }));
 
-    // Calculate statistics
     const totalCompleted = chartData.reduce((sum, item) => sum + item.completed, 0);
     const totalInProgress = chartData.reduce((sum, item) => sum + item.inProgress, 0);
     const totalTodo = chartData.reduce((sum, item) => sum + item.todo, 0);
     const grandTotal = totalCompleted + totalInProgress + totalTodo;
     const completionRate = grandTotal > 0 ? Math.round((totalCompleted / grandTotal) * 100) : 0;
 
-    const stats = [
-        {
-            label: "Completed",
-            value: totalCompleted,
-            color: "#22C55E",
-            bgColor: "bg-emerald-500/10",
-            textColor: "text-emerald-600 dark:text-emerald-400",
-            borderColor: "border-emerald-500/30",
-        },
-        {
-            label: "In Progress",
-            value: totalInProgress,
-            color: "#F59E0B",
-            bgColor: "bg-amber-500/10",
-            textColor: "text-amber-600 dark:text-amber-400",
-            borderColor: "border-amber-500/30",
-        },
-        {
-            label: "To Do",
-            value: totalTodo,
-            color: "#3B82F6",
-            bgColor: "bg-blue-500/10",
-            textColor: "text-blue-600 dark:text-blue-400",
-            borderColor: "border-blue-500/30",
-        },
-        {
-            label: "Completion Rate",
-            value: `${completionRate}%`,
-            color: "#6366F1",
-            bgColor: "bg-indigo-500/10",
-            textColor: "text-indigo-600 dark:text-indigo-400",
-            borderColor: "border-indigo-500/30",
-        },
-    ];
-
     if (loading) {
         return (
-            <div className="border rounded-xl overflow-hidden bg-[var(--card)] border-[var(--border)] shadow-sm">
-                <div className="p-4 border-b flex items-center justify-between border-[var(--border)]">
-                    <div className="flex items-center gap-2">
-                        <TrendingUp size={16} className="text-emerald-500" />
-                        <h2 className="text-sm font-bold tracking-tight">Task Progress Trend</h2>
-                    </div>
-                </div>
-                <div className="flex flex-col items-center justify-center py-24 gap-3 text-[var(--muted)]">
-                    <Loader2 className="animate-spin w-6 h-6 text-[var(--primary)]" />
-                    <p className="text-xs font-bold uppercase tracking-widest opacity-60">Loading…</p>
-                </div>
+            <div className="p-6 rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-sm h-80 flex flex-col items-center justify-center">
+                <Loader2 className="animate-spin w-7 h-7 text-[var(--primary)] mb-3" />
+                <p className="text-xs font-black uppercase tracking-widest text-[var(--muted)]">Loading activity trend…</p>
             </div>
         );
     }
 
     return (
-        <div className="border rounded-xl overflow-hidden bg-[var(--card)] border-[var(--border)] shadow-sm hover:shadow-md transition-shadow duration-200">
+        <div className="p-5 md:p-6 rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 flex flex-col justify-between h-full">
             {/* Header */}
-            <div className="p-4 border-b flex items-center justify-between border-[var(--border)] bg-gradient-to-r from-[var(--card)] to-[var(--hover)]">
+            <div className="flex items-start justify-between pb-4 border-b border-[var(--border)]/60 mb-4 gap-2 flex-wrap">
+                <div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: accentColor }}>
+                        <TrendingUp size={13} />
+                        <span>Performance & Velocity</span>
+                    </div>
+                    <h3 className="text-lg font-black tracking-tight text-[var(--text)]">
+                        Task Progress Trend
+                    </h3>
+                </div>
                 <div className="flex items-center gap-2">
-                    <TrendingUp size={16} className="text-emerald-500" />
-                    <h2 className="text-sm font-bold tracking-tight">Task Progress Trend</h2>
+                    <span className="px-2.5 py-1 rounded-full text-xs font-black border" style={{ backgroundColor: `${accentColor}18`, borderColor: `${accentColor}35`, color: accentColor }}>
+                        {completionRate}% Completion Rate
+                    </span>
                 </div>
             </div>
 
-            {/* Stats Row - 4 columns */}
-            {/* <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 border-b border-[var(--border)] bg-[var(--hover)]/30">
-                {stats.map((stat) => (
-                    <div
-                        key={stat.label}
-                        className={`p-3 rounded-lg border transition-colors ${stat.bgColor} ${stat.borderColor} hover:border-opacity-60`}
-                    >
-                        <p className="text-[8px] font-black uppercase tracking-wider text-[var(--muted)] mb-0.5">
-                            {stat.label}
-                        </p>
-                        <p className={`text-lg font-black ${stat.textColor}`}>{stat.value}</p>
-                    </div>
-                ))}
-            </div> */}
-
             {/* Chart Area */}
-            <div className="p-3 pt-4 pb-2 overflow-x-auto w-full">
+            <div className="w-full pt-1">
                 {chartData.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center text-center p-12">
-                        <div className="w-10 h-10 rounded-full bg-[var(--muted)]/10 flex items-center justify-center mb-3">
-                            <TrendingUp size={20} className="text-[var(--muted)] opacity-40" />
+                    <div className="flex flex-col items-center justify-center text-center py-16">
+                        <div className="w-12 h-12 rounded-full bg-[var(--muted)]/10 flex items-center justify-center mb-3">
+                            <TrendingUp size={22} className="text-[var(--muted)] opacity-40" />
                         </div>
-                        <p className="text-xs text-[var(--muted)] font-bold uppercase tracking-widest">
+                        <p className="text-xs text-[var(--muted)] font-black uppercase tracking-widest">
                             No data available
                         </p>
                     </div>
                 ) : (
-                    <div className="h-[280px] w-full min-w-[500px]">
+                    <div className="h-[240px] w-full -ml-3">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData} margin={{ top: 0, right: 5, left: -20, bottom: 0 }}>
+                            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorCompleted" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#22C55E" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
+                                    <linearGradient id="themedCompleted" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={s1} stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor={s1} stopOpacity={0} />
                                     </linearGradient>
-                                    <linearGradient id="colorInProgress" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#F59E0B" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0} />
+                                    <linearGradient id="themedInProgress" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={s2} stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor={s2} stopOpacity={0} />
                                     </linearGradient>
-                                    <linearGradient id="colorTodo" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                                    <linearGradient id="themedTodo" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor={s3} stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor={s3} stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid
                                     strokeDasharray="3 3"
                                     vertical={false}
                                     stroke="var(--border)"
-                                    opacity={0.3}
+                                    opacity={0.35}
                                 />
                                 <XAxis
                                     dataKey="date"
-                                    stroke="var(--muted)"
-                                    fontSize={12}
+                                    stroke="var(--border)"
+                                    fontSize={11}
+                                    fontWeight={700}
                                     tickLine={false}
-                                    axisLine={false}
-                                    tickMargin={14}
-                                    height={55}
-
-                                    interval="preserveStartEnd"
-
-                                    angle={-35}
-                                    textAnchor="end"
-
-                                    tick={{
-                                        fill: "var(--muted)",
-                                        fontWeight: 600,
-                                        fontSize: 11,
-                                    }}
+                                    axisLine={{ stroke: "var(--border)" }}
+                                    tick={{ fill: "var(--muted)" }}
+                                    dy={10}
                                 />
                                 <YAxis
-                                    stroke="var(--muted)"
+                                    stroke="var(--border)"
                                     fontSize={11}
+                                    fontWeight={700}
                                     tickLine={false}
                                     axisLine={false}
-                                    tickMargin={8}
-                                    fontWeight={500}
-                                    width={35}
+                                    tick={{ fill: "var(--muted)" }}
+                                    dx={-5}
                                 />
                                 <Tooltip
                                     content={<CustomTooltip />}
                                     cursor={{
-                                        stroke: "var(--primary)",
+                                        stroke: "var(--border)",
                                         strokeWidth: 2,
-                                        opacity: 0.3,
-                                    }}
-                                    contentStyle={{
-                                        backgroundColor: "transparent",
-                                        border: "none",
                                     }}
                                 />
                                 <Legend
                                     iconType="circle"
                                     wrapperStyle={{
                                         fontSize: "11px",
-                                        fontWeight: 600,
-                                        paddingTop: "13px",
-                                        paddingBottom: "0",
+                                        fontWeight: 700,
+                                        paddingTop: "15px",
                                         color: "var(--muted)"
                                     }}
-                                    verticalAlign="top"
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="completed"
                                     name="Completed"
-                                    stroke="#22C55E"
+                                    stroke={s1}
                                     strokeWidth={2.5}
-                                    fill="url(#colorCompleted)"
+                                    fill="url(#themedCompleted)"
                                     dot={false}
-                                    activeDot={{ r: 5, fill: "#22C55E", stroke: "#fff", strokeWidth: 2 }}
-                                    isAnimationActive={true}
+                                    activeDot={{ r: 5, fill: s1, stroke: "#fff", strokeWidth: 2 }}
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="inProgress"
                                     name="In Progress"
-                                    stroke="#F59E0B"
+                                    stroke={s2}
                                     strokeWidth={2.5}
-                                    fill="url(#colorInProgress)"
+                                    fill="url(#themedInProgress)"
                                     dot={false}
-                                    activeDot={{ r: 5, fill: "#F59E0B", stroke: "#fff", strokeWidth: 2 }}
-                                    isAnimationActive={true}
+                                    activeDot={{ r: 5, fill: s2, stroke: "#fff", strokeWidth: 2 }}
                                 />
                                 <Area
                                     type="monotone"
                                     dataKey="todo"
                                     name="To Do"
-                                    stroke="#3B82F6"
+                                    stroke={s3}
                                     strokeWidth={2.5}
-                                    fill="url(#colorTodo)"
+                                    fill="url(#themedTodo)"
                                     dot={false}
-                                    activeDot={{ r: 5, fill: "#3B82F6", stroke: "#fff", strokeWidth: 2 }}
-                                    isAnimationActive={true}
+                                    activeDot={{ r: 5, fill: s3, stroke: "#fff", strokeWidth: 2 }}
                                 />
                             </AreaChart>
                         </ResponsiveContainer>

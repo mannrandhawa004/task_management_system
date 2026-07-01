@@ -16,6 +16,7 @@ import {
   Clock3,
   Sparkles,
   BarChart3,
+  ArrowUpRight,
 } from "lucide-react";
 
 import { myTaskThunk, getTaskByIdThunk } from "@/features/tasks/thunks/taskThunk";
@@ -35,7 +36,7 @@ import {
 import { getSocket } from "@/lib/socket";
 import Pagination from "@/components/common/Pagination";
 
-import { ProjectDistributionChart, TaskBreakdownChart, ProjectStatusChart } from "../../../components/dashboard/DashboardCharts";
+import { ProjectDistributionChart, TaskBreakdownChart, ProjectStatusChart, ProjectProgressGaugeChart } from "../../../components/dashboard/DashboardCharts";
 import CriticalDeadlinesRadar from "../../../components/dashboard/CriticalDeadlinesRadar";
 import RecentlyActiveProjects from "../../../components/dashboard/RecentlyActiveProjects";
 import RecentlyActiveTasks from "../../../components/dashboard/RecentlyActiveTasks";
@@ -59,6 +60,62 @@ function getTodayLabel() {
   });
 }
 
+function useIsDark() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const el = document.documentElement;
+    const update = () => setIsDark(el.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
+function LiveClockTile({ clockTime, clockDate }) {
+  const isDark = useIsDark();
+  const bgImg = isDark ? "/clock-bg-dark.png" : "/clock-bg-light.png";
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between p-6 h-full min-h-[300px] group bg-[var(--card)]">
+      {/* Background image clearly visible without heavy blur or dark mask */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+        style={{ backgroundImage: `url('${bgImg}')` }}
+      />
+      {/* Light subtle overlay just for contrast */}
+      <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-[#141414]/90 via-[#141414]/40 to-[#141414]/20" : "bg-gradient-to-t from-white/90 via-white/40 to-white/20"}`} />
+
+      {/* Top Header */}
+      <div className="relative z-10 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className={`w-2 h-2 rounded-full animate-pulse ${isDark ? "bg-[#F69D39]" : "bg-[#0b573a]"}`} />
+          <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isDark ? "text-orange-400" : "text-emerald-800"}`}>
+            Live Clock
+          </span>
+        </div>
+      </div>
+
+      {/* Center Time Display */}
+      <div className="relative z-10 my-auto py-6 flex flex-col items-center text-center">
+        <span className={`text-4xl xl:text-5xl font-black tabular-nums tracking-tight leading-none ${isDark ? "text-white drop-shadow-md" : "text-slate-900 drop-shadow-sm"}`}>
+          {clockTime || "--:--:--"}
+        </span>
+        <span className={`text-xs font-bold uppercase tracking-widest mt-2 ${isDark ? "text-white/80" : "text-slate-700"}`}>
+          {clockDate || "--"}
+        </span>
+      </div>
+
+      {/* Footer */}
+      <div className="relative z-10 flex items-center justify-between border-t border-current/10 pt-3 text-[10px] font-bold opacity-75">
+        <span>Standard Time</span>
+        <span className="font-mono">ONLINE</span>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -67,6 +124,20 @@ export default function DashboardPage() {
   const [overviewFilterKey, setOverviewFilterKey] = useState("all");
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [clockTime, setClockTime] = useState("");
+  const [clockDate, setClockDate] = useState("");
+
+  // Live clock ticker
+  useEffect(() => {
+    const tick = () => {
+      const now = new Date();
+      setClockTime(now.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+      setClockDate(now.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const { user, loading: authLoading } = useSelector((state) => state.auth);
   const { currentTask, taskLoading } = useSelector((state) => state.task);
@@ -352,7 +423,7 @@ export default function DashboardPage() {
 
 
   return (
-    <main className="min-h-screen p-5 md:p-8 space-y-6 bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
+    <main className="min-h-screen p-3 md:p-2 space-y-6 bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
 
       {/* ── HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-[var(--border)]/60">
@@ -385,15 +456,11 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right: role badge */}
-        {/* <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border uppercase tracking-wider ${roleColor}`}>
-          <Sparkles size={11} />
-          {user?.role || "Member"}
-        </span> */}
+    
       </div>
 
-      {/* ── STAT CARDS ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* ── STAT CARDS BENTO ROW ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, i) => (
           <StatCard key={i} {...s} onClick={() => {
             handleOpenOverview(s.filterKey || "all", s.title);
@@ -401,75 +468,65 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* ── CHARTS ROW ── */}
-      <div className="space-y-4">
-        <SectionLabel icon={<BarChart3 size={14} />} title="Analytics" />
-
-        {isAdmin ? (
-          <div className="space-y-4">
-            {/* Full-width distribution chart */}
+      {/* ── MASTER BENTO GRID ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch">
+        {/* Row 1: Bar Chart (wide) */}
+        {isAdmin && (
+          <div className="lg:col-span-12 flex flex-col">
             <ProjectDistributionChart data={projectDistributionData} />
-
-            {/* 2-column status charts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <ProjectStatusChart projectData={projectStatusData} totalProjects={totalProjectsCount} /> */}
-              <TaskBreakdownChart
-                chartData={taskStatusData}
-                totalTasks={totalTasksCount}
-                todoCount={totalUpcomingTasks.upcomingTodoCount || 0}
-                inProgressCount={inProgressMetrics.inProgressCount || 0}
-                completedCount={completedMetrics.completedCount || 0}
-                fullSpan={false}
-              />
-              <DailyTaskProgressChart data={dailyTaskProgressData} loading={dailyTaskProgressLoading} />
-            </div>
-
-            {/* Full-width progress trend chart */}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Full-width task breakdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-              <TaskBreakdownChart
-                chartData={taskStatusData}
-                totalTasks={totalTasksCount}
-                todoCount={totalUpcomingTasks.upcomingTodoCount || 0}
-                inProgressCount={inProgressMetrics.inProgressCount || 0}
-                completedCount={completedMetrics.completedCount || 0}
-                fullSpan={true}
-              />
-
-              {/* Full-width progress trend chart */}
-              <DailyTaskProgressChart data={dailyTaskProgressData} loading={dailyTaskProgressLoading} />
-            </div>
           </div>
         )}
-      </div>
 
-      {/* ── LOWER CONTENT ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Activity Section */}
-        <div className="lg:col-span-2">
-          <SectionLabel icon={<ListTodo size={14} />} title="Activity Timeline" />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <RecentlyActiveProjects
-              projects={recentlyActiveProjectsData}
-              loading={recentlyActiveProjectsLoading}
-            />
-            <RecentlyActiveTasks
-              tasks={recentlyActiveTasksData}
-              loading={recentlyActiveTasksLoading}
-            />
-          </div>
+        {/* Row 2: Three equal widgets */}
+        <div className={isAdmin ? "lg:col-span-4 flex flex-col" : "lg:col-span-6 flex flex-col"}>
+          <TaskBreakdownChart
+            chartData={taskStatusData}
+            totalTasks={totalTasksCount}
+            todoCount={totalUpcomingTasks.upcomingTodoCount || 0}
+            inProgressCount={inProgressMetrics.inProgressCount || 0}
+            completedCount={completedMetrics.completedCount || 0}
+          />
         </div>
 
-        {/* Right: Deadlines */}
-        <div>
-          <SectionLabel icon={<Clock3 size={14} />} title="Critical Deadlines" />
+        <div className={isAdmin ? "lg:col-span-4 flex flex-col" : "lg:col-span-6 flex flex-col"}>
+          <ProjectProgressGaugeChart
+            completedCount={completedMetrics.completedCount || 0}
+            inProgressCount={inProgressMetrics.inProgressCount || 0}
+            todoCount={totalUpcomingTasks.upcomingTodoCount || 0}
+            totalTasks={totalTasksCount}
+          />
+        </div>
+
+        <div className={isAdmin ? "lg:col-span-4 flex flex-col" : "lg:col-span-12 flex flex-col"}>
           <CriticalDeadlinesRadar overdueTasks={pendingUrgentTasks} deadlineTasks={upcomingDeadlineTasks} onInspectTask={handleOpenTaskModal} />
         </div>
+
+        {/* Row 3: Area chart + Live Clock side-by-side */}
+        <div className="lg:col-span-8 flex flex-col">
+          <DailyTaskProgressChart data={dailyTaskProgressData} loading={dailyTaskProgressLoading} />
+        </div>
+
+        <div className="lg:col-span-4 flex flex-col">
+          <LiveClockTile clockTime={clockTime} clockDate={clockDate} />
+        </div>
+
+        {/* Row 4: Activity feeds side-by-side */}
+        <div className="lg:col-span-6 flex flex-col">
+          <RecentlyActiveProjects
+            projects={recentlyActiveProjectsData}
+            loading={recentlyActiveProjectsLoading}
+          />
+        </div>
+
+        <div className="lg:col-span-6 flex flex-col">
+          <RecentlyActiveTasks
+            tasks={recentlyActiveTasksData}
+            loading={recentlyActiveTasksLoading}
+          />
+        </div>
       </div>
+
+     
 
       {/* ── TASK DETAIL MODAL ── */}
 
@@ -758,28 +815,51 @@ function SectionLabel({ icon, title }) {
   );
 }
 
-function StatCard({ title, value, sub, icon, accent, iconBg, border, onClick }) {
+function StatCard({ title, value, sub, onClick }) {
+  const isPrimary = title === "Total Projects";
+  
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`relative text-left w-full overflow-hidden rounded-2xl border p-5 md:p-6 bg-[var(--card)] border-[var(--border)] transition-all duration-200 hover:shadow-lg hover:-translate-y-1 ${border} focus:outline-none cursor-pointer`}
+      className={`relative text-left w-full overflow-hidden rounded-2xl border p-5 md:p-6 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 focus:outline-none cursor-pointer flex flex-col justify-between ${
+        isPrimary
+          ? "bg-[var(--primary)] border-[var(--primary)] text-white"
+          : "bg-[var(--card)] border-[var(--border)] text-[var(--text)]"
+      }`}
+      style={{ minHeight: "135px" }}
     >
-      {/* Background gradient accent */}
-      <div className={`absolute inset-0 bg-gradient-to-br ${accent} pointer-events-none`} />
-
-      <div className="relative flex items-start justify-between gap-3">
-        <div className="space-y-1.5 min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--muted)] truncate">
+      <div className="w-full flex items-start justify-between">
+        <div className="space-y-1 min-w-0">
+          <p className={`text-[10.5px] font-black uppercase tracking-wider ${
+            isPrimary ? "text-emerald-100/90" : "text-slate-400 dark:text-slate-500"
+          }`}>
             {title}
           </p>
-          <p className="text-2xl font-black tracking-tight leading-none">{value}</p>
-          <p className="text-[10px] font-semibold text-[var(--muted)] flex items-center gap-1">
-            <TrendingUp size={9} className="shrink-0" />
-            <span className="truncate">{sub}</span>
+          <p className="text-3xl font-black tracking-tight leading-none pt-1">
+            {value}
           </p>
         </div>
-        <div className={`p-2.5 rounded-lg ${iconBg} shrink-0`}>{icon}</div>
+        
+        {/* Donezo circular diagonal arrow icon */}
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border ${
+          isPrimary 
+            ? "bg-white border-white text-[#0b573a] dark:text-[#10b981]" 
+            : "bg-transparent border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500"
+        }`}>
+          <ArrowUpRight size={16} strokeWidth={2.6} />
+        </div>
+      </div>
+
+      <div className={`text-[10px] font-bold mt-4 flex items-center gap-1.5 ${
+        isPrimary ? "text-emerald-100/80" : "text-slate-400 dark:text-slate-500"
+      }`}>
+        <span className={`px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider ${
+          isPrimary ? "bg-white/10 text-white" : "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+        }`}>
+          {isPrimary ? "Active" : "Trend"}
+        </span>
+        <span className="truncate">{sub}</span>
       </div>
     </button>
   );

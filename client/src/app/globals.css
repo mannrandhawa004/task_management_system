@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --bg: #f5f7fb;
   --card: rgba(255, 255, 255, 0.7);
@@ -13,8 +15,8 @@
 
   --border: rgba(0, 0, 0, 0.06);
 
-  --primary: #FA6781;
-  --primary-hover: #e65570;
+  --primary: #0b573a;
+  --primary-hover: #083f2a;
 
   --input: rgba(255, 255, 255, 0.8);
 
@@ -27,6 +29,13 @@
   --hover: rgba(0, 0, 0, 0.04);
   --glass: rgba(255, 255, 255, 0.45);
   --ring: rgba(250, 103, 129, 0.25);
+
+  /* Chart Monochromatic Shades (Green theme for Light) */
+  --chart-s1: #0b573a;
+  --chart-s2: #16a34a;
+  --chart-s3: #4ade80;
+  --chart-grad-top: #15803d;
+  --chart-grad-bot: rgba(11, 87, 58, 0.1);
 }
 
 .dark {
@@ -54,6 +63,13 @@
   --hover: rgba(255, 255, 255, 0.06);
   --glass: rgba(255, 255, 255, 0.04);
   --ring: rgba(246, 157, 57, 0.25);
+
+  /* Chart Monochromatic Shades (Light Orange Gradient & Shades for Dark) */
+  --chart-s1: #fed7aa;
+  --chart-s2: #fb923c;
+  --chart-s3: #ea580c;
+  --chart-grad-top: #fed7aa;
+  --chart-grad-bot: rgba(249, 115, 22, 0.1);
 }
 
 /* Append inside your existing styles block */

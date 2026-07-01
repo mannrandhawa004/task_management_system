@@ -110,31 +110,23 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full text-[var(--text)]">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--border)] pb-6">
+      {/* HEADER */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[var(--border)]/60">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-3">
-            <Clock className="text-[var(--primary)]" />
+          <div className="flex items-center gap-2 mb-1">
+            <Clock className="text-[var(--primary)] w-5 h-5" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">
+              {isSuperAdmin ? "Admin View" : "Workplace"}
+            </span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text)]">
             {isSuperAdmin ? "Company Attendance Dashboard" : "Attendance Tracking"}
           </h1>
           <p className="mt-1 text-sm font-medium text-[var(--muted)]">
-            {isSuperAdmin 
+            {isSuperAdmin
               ? "Monitor live company-wide attendance logs and employee statuses."
               : "Manage your daily check-in, check-out, working hours, and view team status."}
           </p>
-        </div>
-
-        {/* Dynamic Clock Widget */}
-        <div className="flex items-center gap-3.5 bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow-[var(--shadow)] backdrop-blur-md">
-          <div className="p-2.5 bg-[var(--primary)]/10 text-[var(--primary)] rounded-xl">
-            <Clock className="w-5 h-5 animate-pulse" />
-          </div>
-          <div>
-            <div className="text-lg font-black tracking-tight">{time || "--:--:--"}</div>
-            <div className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-              {dateLabel || "Loading..."}
-            </div>
-          </div>
         </div>
       </div>
 
@@ -160,7 +152,7 @@ export default function AttendancePage() {
             {/* CHECK-IN/OUT WIDGET */}
             <AttendanceWidget />
 
-            {/* METRICS & SUMMARIES */}
+          {/* METRICS & SUMMARIES */}
             <div className="lg:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-[var(--shadow)] backdrop-blur-md">
               <div className="mb-6">
                 <h2 className="text-md font-bold tracking-tight mb-1 flex items-center gap-2">
@@ -175,7 +167,7 @@ export default function AttendancePage() {
               <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
                 <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
                   <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Present</div>
-                  <div className="text-2xl font-black text-blue-600 dark:text-blue-400">{summary?.present_days || 0}</div>
+                  <div className="text-2xl font-black text-[var(--primary)]">{summary?.present_days || 0}</div>
                 </div>
                 <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
                   <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Late</div>
