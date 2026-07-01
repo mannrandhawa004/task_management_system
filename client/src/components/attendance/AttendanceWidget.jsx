@@ -23,6 +23,19 @@ import {
   endBreakThunk,
 } from "@/features/attendance/thunks/attendanceThunks";
 
+function useIsDark() {
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    const el = document.documentElement;
+    const update = () => setIsDark(el.classList.contains("dark"));
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(el, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+  return isDark;
+}
+
 export default function AttendanceWidget() {
   const dispatch = useDispatch();
   const { todayRecord, weeklyHours, loading } = useSelector(
@@ -132,18 +145,23 @@ export default function AttendanceWidget() {
   };
 
   const cfg = getStatusConfig();
+  const isDark = useIsDark();
+  const bgImg = isDark ? "/attendance-bg-dark.png" : "/attendance-bg-light.png";
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] shadow-lg backdrop-blur-md bg-gradient-to-br from-[var(--card)] via-[var(--card)] to-[var(--primary)]/5">
-      {/* Top accent bar that matches the primary color */}
-      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] via-[var(--primary)]/60 to-transparent" />
-
-      {/* Background texture pattern */}
-      <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-        style={{ backgroundImage: "radial-gradient(circle at 20% 80%, var(--primary) 0%, transparent 50%), radial-gradient(circle at 80% 20%, var(--primary) 0%, transparent 50%)" }}
+    <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] shadow-xl bg-[var(--card)] transition-all duration-300 group">
+      {/* Dynamic Theme Background Image clearly visible */}
+      <div
+        className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
+        style={{ backgroundImage: `url('${bgImg}')` }}
       />
+      {/* Subtle overlay for legibility without hiding the background image */}
+      <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-[#141414]/92 via-[#141414]/55 to-[#141414]/25" : "bg-gradient-to-t from-white/92 via-white/55 to-white/25"}`} />
 
-      <div className="relative p-6">
+      {/* Top accent bar that matches the primary color */}
+      <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] via-[var(--primary)]/60 to-transparent z-10" />
+
+      <div className="relative p-6 z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2.5">
@@ -198,7 +216,7 @@ export default function AttendanceWidget() {
         </div>
 
         {/* Weekly hours strip */}
-        <div className="flex items-center justify-center gap-2 mb-5 px-4 py-2.5 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)]">
+        <div className="flex items-center justify-center gap-2 mb-5 px-4 py-2.5 rounded-2xl bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] shadow-sm">
           <TrendingUp size={13} className="text-[var(--primary)]" />
           <span className="text-xs font-bold text-[var(--muted)]">
             This Week:{" "}
@@ -211,14 +229,14 @@ export default function AttendanceWidget() {
         {/* Check-in/out timestamp strip */}
         {todayRecord && (
           <div className="grid grid-cols-3 gap-2.5 mb-5">
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)]">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] shadow-sm">
               <LogIn size={13} className="text-[var(--primary)] mb-1" />
               <span className="text-[9px] font-bold uppercase text-[var(--muted)] tracking-wider">In</span>
               <span className="text-sm font-black text-[var(--text)]">
                 {formatTimestamp(todayRecord.check_in)}
               </span>
             </div>
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)]">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] shadow-sm">
               <Coffee size={13} className="text-amber-500 mb-1" />
               <span className="text-[9px] font-bold uppercase text-[var(--muted)] tracking-wider">Break</span>
               <span className="text-sm font-black text-[var(--text)]">
@@ -228,7 +246,7 @@ export default function AttendanceWidget() {
                 )}
               </span>
             </div>
-            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--hover)]/50 border border-[var(--border)]">
+            <div className="flex flex-col items-center p-3 rounded-2xl bg-[var(--card)]/80 backdrop-blur-md border border-[var(--border)] shadow-sm">
               <LogOut size={13} className="text-[var(--primary)] mb-1" />
               <span className="text-[9px] font-bold uppercase text-[var(--muted)] tracking-wider">Out</span>
               <span className="text-sm font-black text-[var(--text)]">

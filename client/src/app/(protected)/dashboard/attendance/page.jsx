@@ -110,22 +110,25 @@ export default function AttendancePage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full text-[var(--text)]">
-      {/* HEADER */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-[var(--border)]/60">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="text-[var(--primary)] w-5 h-5" />
+      {/* HEADER CARD */}
+      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/5 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="p-1.5 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+              <Clock size={16} />
+            </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">
-              {isSuperAdmin ? "Admin View" : "Workplace"}
+              {isSuperAdmin ? "Admin Dashboard" : "Workplace Logs"}
             </span>
           </div>
           <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text)]">
-            {isSuperAdmin ? "Company Attendance Dashboard" : "Attendance Tracking"}
+            {isSuperAdmin ? "Company Attendance Overview" : "Attendance Tracking"}
           </h1>
-          <p className="mt-1 text-sm font-medium text-[var(--muted)]">
+          <p className="mt-1 text-xs md:text-sm font-medium text-[var(--muted)] max-w-xl">
             {isSuperAdmin
-              ? "Monitor live company-wide attendance logs and employee statuses."
-              : "Manage your daily check-in, check-out, working hours, and view team status."}
+              ? "Monitor live company-wide attendance logs, log-ins, check-outs, and department distributions."
+              : "Track your check-ins, breaks, active working hours, daily progress, and leave details."}
           </p>
         </div>
       </div>
@@ -148,38 +151,38 @@ export default function AttendancePage() {
       ) : (
         /* EMPLOYEE / REGULAR VIEW */
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
             {/* CHECK-IN/OUT WIDGET */}
             <AttendanceWidget />
 
           {/* METRICS & SUMMARIES */}
-            <div className="lg:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-[var(--shadow)] backdrop-blur-md">
+            <div className="lg:col-span-1 bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-xl flex flex-col justify-between">
               <div className="mb-6">
-                <h2 className="text-md font-bold tracking-tight mb-1 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-[var(--primary)]" />
+                <h2 className="text-lg font-black tracking-tight mb-1 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-[var(--primary)]" />
                   Monthly Performance ({currentMonthLabel})
                 </h2>
-                <p className="text-xs text-[var(--muted)]">
+                <p className="text-xs text-[var(--muted)] font-medium">
                   Aggregated operational metrics for the selected month window.
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
-                  <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Present</div>
-                  <div className="text-2xl font-black text-[var(--primary)]">{summary?.present_days || 0}</div>
+              <div className="grid grid-cols-2 gap-4 my-auto">
+                <div className="p-5 bg-[var(--hover)]/40 border border-[var(--border)] hover:bg-[var(--hover)]/70 transition-all duration-300 rounded-2xl text-center flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                  <div className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest mb-1.5">Present</div>
+                  <div className="text-3xl font-black text-[var(--primary)]">{summary?.present_days || 0}</div>
                 </div>
-                <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
-                  <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Late</div>
-                  <div className="text-2xl font-black text-amber-500">{summary?.late_days || 0}</div>
+                <div className="p-5 bg-[var(--hover)]/40 border border-[var(--border)] hover:bg-[var(--hover)]/70 transition-all duration-300 rounded-2xl text-center flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                  <div className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest mb-1.5">Late</div>
+                  <div className="text-3xl font-black text-amber-500">{summary?.late_days || 0}</div>
                 </div>
-                <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
-                  <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Absent</div>
-                  <div className="text-2xl font-black text-rose-500">{summary?.absent_days || 0}</div>
+                <div className="p-5 bg-[var(--hover)]/40 border border-[var(--border)] hover:bg-[var(--hover)]/70 transition-all duration-300 rounded-2xl text-center flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                  <div className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest mb-1.5">Absent</div>
+                  <div className="text-3xl font-black text-rose-500">{summary?.absent_days || 0}</div>
                 </div>
-                <div className="p-4 bg-[var(--hover)]/30 border border-[var(--border)] hover:bg-[var(--hover)]/60 transition-all duration-300 rounded-2xl text-center">
-                  <div className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider mb-1">Hours Logged</div>
-                  <div className="text-2xl font-black text-[var(--primary)]">
+                <div className="p-5 bg-[var(--hover)]/40 border border-[var(--border)] hover:bg-[var(--hover)]/70 transition-all duration-300 rounded-2xl text-center flex flex-col items-center justify-center shadow-sm hover:shadow-md hover:-translate-y-0.5">
+                  <div className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest mb-1.5">Hours Logged</div>
+                  <div className="text-3xl font-black text-[var(--primary)]">
                     {summary?.total_working_hours ? Math.round(Number(summary.total_working_hours)) : 0}h
                   </div>
                 </div>
@@ -189,38 +192,38 @@ export default function AttendancePage() {
 
           <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6">
             {/* MONTHLY CALENDAR GRID */}
-            <section className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-[var(--shadow)] backdrop-blur-md">
+            <section className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                  <div>
                     <h2 className="text-lg font-black tracking-tight flex items-center gap-2">
                       <Calendar className="text-[var(--primary)] w-5 h-5" />
                       Attendance Calendar
                     </h2>
-                    <p className="text-xs text-[var(--muted)] mt-1">Daily working hours and status logs.</p>
+                    <p className="text-xs text-[var(--muted)] mt-1 font-medium">Daily working hours and status logs.</p>
                  </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-1.5 bg-[var(--hover)]/40 p-1 border border-[var(--border)] rounded-2xl">
                     <button 
                       onClick={() => setCursorDate((date) => addMonths(date, -1))} 
-                      className="rounded-xl border border-[var(--border)] bg-[var(--hover)]/40 p-2 hover:bg-[var(--hover)] transition-all cursor-pointer active:scale-95"
+                      className="rounded-xl p-2 hover:bg-[var(--card)] hover:shadow-sm text-[var(--text)] transition-all cursor-pointer active:scale-95"
                     >
-                      <ChevronLeft size={18} />
+                      <ChevronLeft size={16} />
                     </button>
-                    <div className="min-w-[160px] rounded-xl border border-[var(--border)] bg-[var(--hover)]/20 px-4 py-2 text-center text-sm font-black">
+                    <div className="min-w-[140px] text-center text-xs font-black uppercase tracking-wider text-[var(--text)]">
                       {currentMonthLabel}
                     </div>
                     <button 
                       onClick={() => setCursorDate((date) => addMonths(date, 1))} 
-                      className="rounded-xl border border-[var(--border)] bg-[var(--hover)]/40 p-2 hover:bg-[var(--hover)] transition-all cursor-pointer active:scale-95"
+                      className="rounded-xl p-2 hover:bg-[var(--card)] hover:shadow-sm text-[var(--text)] transition-all cursor-pointer active:scale-95"
                     >
-                      <ChevronRight size={18} />
+                      <ChevronRight size={16} />
                     </button>
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
-                <div className="grid grid-cols-7 border-b border-[var(--border)] bg-[var(--hover)] text-center text-[10px] font-black uppercase tracking-wider text-[var(--muted)]">
+              <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-xs">
+                <div className="grid grid-cols-7 border-b border-[var(--border)] bg-[var(--hover)] text-center text-[10px] font-black uppercase tracking-widest text-[var(--muted)] py-2.5">
                   {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-                    <div key={day} className="p-3">{day}</div>
+                    <div key={day}>{day}</div>
                   ))}
                 </div>
 
@@ -234,34 +237,38 @@ export default function AttendancePage() {
                     return (
                       <div 
                         key={dateKey} 
-                        className={`min-h-[105px] p-2 flex flex-col justify-between transition-colors duration-200 ${
+                        className={`min-h-[110px] p-2.5 flex flex-col justify-between transition-all duration-200 border-none ${
                           isCurrentMonth 
-                            ? "bg-[var(--card)] hover:bg-[var(--hover)]/20" 
+                            ? isToday
+                              ? "bg-[var(--primary)]/5 hover:bg-[var(--primary)]/10 ring-2 ring-[var(--primary)]/30 ring-inset"
+                              : "bg-[var(--card)] hover:bg-[var(--hover)]/30" 
                             : "bg-[var(--hover)]/10 opacity-30 pointer-events-none"
                         }`}
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <span className={`flex h-7 w-7 items-center justify-center rounded-xl text-xs font-black transition-all ${
+                          <span className={`flex h-6 w-6 items-center justify-center rounded-lg text-xs font-black transition-all ${
                             isToday 
-                              ? "bg-[var(--primary)] text-white shadow-sm" 
-                              : "text-[var(--muted)]"
+                              ? "bg-[var(--primary)] text-white shadow-xs" 
+                              : isCurrentMonth
+                                ? "text-[var(--text)]"
+                                : "text-[var(--muted)]"
                           }`}>
                             {day.getDate()}
                           </span>
                           {record && (
-                             <span className={`px-1.5 py-0.5 rounded-full border text-[8px] font-bold uppercase tracking-wider ${statusTone[record.status] || statusTone.absent}`}>
+                             <span className={`px-1.5 py-0.5 rounded-full border text-[7px] font-black uppercase tracking-widest ${statusTone[record.status] || statusTone.absent}`}>
                                {record.status.replace("_", " ")}
                              </span>
                           )}
                         </div>
                         
                         {record && (
-                          <div className="mt-auto space-y-0.5 text-center bg-[var(--hover)]/40 rounded-xl p-1.5 border border-[var(--border)]/60 hover:bg-[var(--hover)]/70 transition-all duration-200">
+                          <div className="mt-auto space-y-0.5 text-center bg-[var(--hover)]/50 rounded-xl p-1.5 border border-[var(--border)]/40 hover:bg-[var(--hover)]/80 transition-all duration-200">
                              <div className="text-xs font-black text-[var(--text)]">
-                                {Number(record.working_hours).toFixed(1)} <span className="text-[10px] font-medium text-[var(--muted)]">hrs</span>
+                                {Number(record.working_hours).toFixed(1)} <span className="text-[9px] font-medium text-[var(--muted)]">hrs</span>
                              </div>
                              {(record.check_in || record.check_out) && (
-                               <div className="text-[9px] text-[var(--muted)] font-bold">
+                               <div className="text-[8px] text-[var(--muted)] font-black uppercase tracking-wider">
                                   {record.check_in && new Date(record.check_in).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} 
                                   {record.check_out && ` - ${new Date(record.check_out).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
                                </div>
@@ -276,31 +283,34 @@ export default function AttendancePage() {
             </section>
 
             {/* RIGHT SIDEBAR: COLLEAGUES ON LEAVE */}
-            <aside className="space-y-8">
-              <section className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-[var(--shadow)] backdrop-blur-md">
-                <div className="flex items-center gap-2 mb-4">
+            <aside className="space-y-6">
+              <section className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-5">
                    <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-xl">
-                     <Users size={18} />
+                     <Users size={16} />
                    </div>
-                   <h2 className="text-md font-bold tracking-tight">On Leave Today</h2>
+                   <div>
+                     <h2 className="text-md font-black tracking-tight text-[var(--text)]">On Leave Today</h2>
+                     <p className="text-[10px] font-medium text-[var(--muted)]">Active leave schedules</p>
+                   </div>
                 </div>
                 
                 <div className="space-y-3">
                   {colleaguesOnLeave && colleaguesOnLeave.length > 0 ? (
                     colleaguesOnLeave.map((leave) => (
                       <div key={leave.id} className="flex items-center gap-3 p-3 bg-[var(--hover)]/30 hover:bg-[var(--hover)]/60 transition-all border border-[var(--border)] rounded-2xl">
-                        <div className="h-10 w-10 rounded-full bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-black text-sm">
-                          {leave.user_name?.charAt(0).toUpperCase()}
+                        <div className="h-9 w-9 rounded-xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center font-black text-xs border border-indigo-500/20">
+                          {leave.user_name?.slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-[var(--text)]">{leave.user_name}</p>
-                          <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">{leave.type.replace("_", " ")} Leave</p>
+                          <p className="text-xs font-black text-[var(--text)]">{leave.user_name}</p>
+                          <p className="text-[9px] font-black text-indigo-500 uppercase tracking-widest mt-0.5">{leave.type.replace("_", " ")} Leave</p>
                         </div>
                       </div>
                     ))
                   ) : (
                     <div className="p-6 text-center border border-dashed border-[var(--border)] bg-[var(--hover)]/10 rounded-2xl">
-                      <AlertCircle className="w-8 h-8 text-[var(--muted)] mx-auto mb-2 opacity-50" />
+                      <AlertCircle className="w-6 h-6 text-[var(--muted)] mx-auto mb-2 opacity-50" />
                       <p className="text-xs font-bold text-[var(--muted)]">No colleagues are on leave today.</p>
                     </div>
                   )}
@@ -350,62 +360,62 @@ function SuperAdminAttendanceView({ dailyLogs, dailyLogsMeta, onPageChange, filt
       
       {/* QUICK STATS ROW */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:shadow-md transition-all duration-300 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[var(--primary)]" />
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Total Employees</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
+              <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest">Total Employees</p>
             </div>
-            <p className="text-2xl font-black text-[var(--text)]">{stats.total}</p>
+            <p className="text-3xl font-black text-[var(--text)]">{stats.total}</p>
           </div>
         </div>
 
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:shadow-md transition-all duration-300 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Currently Working</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest">Currently Working</p>
             </div>
-            <p className="text-2xl font-black text-emerald-500">{stats.working}</p>
+            <p className="text-3xl font-black text-emerald-500">{stats.working}</p>
           </div>
         </div>
 
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:shadow-md transition-all duration-300 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Present (Out)</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest">Present (Out)</p>
             </div>
-            <p className="text-2xl font-black text-blue-500">{stats.present}</p>
+            <p className="text-3xl font-black text-blue-500">{stats.present}</p>
           </div>
         </div>
 
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:shadow-md transition-all duration-300 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Late</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest">Late</p>
             </div>
-            <p className="text-2xl font-black text-amber-500">{stats.late}</p>
+            <p className="text-3xl font-black text-amber-500">{stats.late}</p>
           </div>
         </div>
 
-        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-[var(--shadow)] hover:shadow-md transition-all duration-300 backdrop-blur-md flex flex-col justify-between">
+        <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-              <p className="text-[10px] font-bold text-[var(--muted)] uppercase tracking-wider">Absent</p>
+            <div className="flex items-center gap-1.5 mb-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              <p className="text-[10px] font-black text-[var(--muted)] uppercase tracking-widest">Absent</p>
             </div>
-            <p className="text-2xl font-black text-rose-500">{stats.absent}</p>
+            <p className="text-3xl font-black text-rose-500">{stats.absent}</p>
           </div>
         </div>
       </div>
 
       {/* FILTER & DATA TABLE */}
-      <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-[var(--shadow)] backdrop-blur-md">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-sm">
         
         {/* FILTERS */}
-        <div className="p-5 border-b border-[var(--border)] flex flex-col sm:flex-row sm:items-center gap-4 bg-[var(--hover)]/40">
+        <div className="p-5 border-b border-[var(--border)] flex flex-col sm:flex-row sm:items-center gap-4 bg-[var(--hover)]/20">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--muted)]" />
             <input 
@@ -413,25 +423,25 @@ function SuperAdminAttendanceView({ dailyLogs, dailyLogsMeta, onPageChange, filt
               placeholder="Search employees..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-[var(--input)] text-[var(--text)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium outline-none focus:border-[var(--primary)] transition-all"
+              className="w-full bg-[var(--hover)]/30 text-[var(--text)] border border-[var(--border)] rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all"
             />
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-[var(--input)] border border-[var(--border)] rounded-xl px-3 py-1.5 focus-within:border-[var(--primary)] transition-all">
+            <div className="flex items-center gap-2 bg-[var(--hover)]/30 border border-[var(--border)] rounded-xl px-3 py-1.5 focus-within:border-[var(--primary)] focus-within:ring-1 focus-within:ring-[var(--primary)]/20 transition-all">
               <Calendar className="w-4 h-4 text-[var(--muted)]" />
               <input 
                 type="date" 
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
-                className="bg-transparent text-sm font-bold outline-none text-[var(--text)] border-none focus:ring-0 focus:shadow-none p-0 cursor-pointer"
+                className="bg-transparent text-xs font-black outline-none text-[var(--text)] border-none focus:ring-0 focus:shadow-none p-0 cursor-pointer"
               />
             </div>
-            <div className="flex items-center gap-2 bg-[var(--input)] border border-[var(--border)] rounded-xl px-3 py-1.5 focus-within:border-[var(--primary)] transition-all">
+            <div className="flex items-center gap-2 bg-[var(--hover)]/30 border border-[var(--border)] rounded-xl px-3 py-1.5 focus-within:border-[var(--primary)] focus-within:ring-1 focus-within:ring-[var(--primary)]/20 transition-all">
               <Filter className="w-4 h-4 text-[var(--muted)]" />
               <select 
                 value={filterDept}
                 onChange={(e) => setFilterDept(e.target.value)}
-                className="bg-transparent text-sm font-bold outline-none text-[var(--text)] border-none focus:ring-0 focus:shadow-none p-0 cursor-pointer pr-6"
+                className="bg-transparent text-xs font-black outline-none text-[var(--text)] border-none focus:ring-0 focus:shadow-none p-0 cursor-pointer pr-6"
               >
                 <option value="">All Departments</option>
                 {departmentsList?.map(dept => (
