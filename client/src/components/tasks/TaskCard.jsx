@@ -50,6 +50,7 @@ export default function TaskCard({
   const [assignOpen, setAssignOpen] = useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [rosterExpanded, setRosterExpanded] = useState(false);
 
   // Form states for full task modification payload
   const [editForm, setEditForm] = useState({
@@ -172,6 +173,13 @@ export default function TaskCard({
     ? new Date(task.due_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })
     : "Unscheduled";
 
+  // Assigned members collapsible logic
+  const assignedUsers = task?.assigned_users?.filter(Boolean) || [];
+  const maxVisible = view === "table" ? 1 : 2;
+  const hasMore = assignedUsers.length > maxVisible;
+  const visibleUsers = rosterExpanded ? assignedUsers : assignedUsers.slice(0, maxVisible);
+  const hiddenCount = assignedUsers.length - maxVisible;
+
   // TABLE VIEW
   if (view === "table") {
     return (
@@ -286,29 +294,57 @@ export default function TaskCard({
             )}
           </td>
 
-          {/* ASSIGNED MEMBERS WITH AVATAR / 2-LETTER INITIALS */}
+          {/* ASSIGNED MEMBERS COLLAPSIBLE ROSTER */}
           <td className="px-5 py-4">
-            <div className="flex flex-wrap items-center gap-1.5 max-w-[240px]">
-              {task?.assigned_users?.length > 0 ? (
-                task.assigned_users.filter(Boolean).map((user) => (
-                  <span
-                    key={user.id}
-                    className="pl-1 pr-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs"
-                  >
-                    <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
-                    <span className="truncate max-w-[85px]">{user.name}</span>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
-                        className="text-neutral-400 hover:text-rose-500 transition cursor-pointer ml-0.5"
-                        title="Remove member"
-                      >
-                        <X size={11} strokeWidth={3} />
-                      </button>
-                    )}
-                  </span>
-                ))
+            <div
+              className={`flex flex-wrap items-center gap-1.5 max-w-[260px] ${hasMore ? "cursor-pointer" : ""}`}
+              onClick={(e) => {
+                if (hasMore) {
+                  e.stopPropagation();
+                  setRosterExpanded(!rosterExpanded);
+                }
+              }}
+            >
+              {assignedUsers.length > 0 ? (
+                <>
+                  {visibleUsers.map((user) => (
+                    <span
+                      key={user.id}
+                      className="pl-1 pr-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs hover:border-[var(--primary)]/40 transition"
+                    >
+                      <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
+                      <span className="truncate max-w-[85px]">{user.name}</span>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
+                          className="text-neutral-400 hover:text-rose-500 transition cursor-pointer ml-0.5"
+                          title="Remove member"
+                        >
+                          <X size={11} strokeWidth={3} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+
+                  {!rosterExpanded && hasMore && (
+                    <span
+                      className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20 hover:bg-[var(--primary)] hover:text-white transition shadow-2xs select-none"
+                      title="Click to view all assigned members"
+                    >
+                      +{hiddenCount} more
+                    </span>
+                  )}
+
+                  {rosterExpanded && hasMore && (
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/5 dark:bg-white/5 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--border)] transition select-none"
+                      title="Click to collapse member list"
+                    >
+                      Less
+                    </span>
+                  )}
+                </>
               ) : (
                 <span className="text-xs italic text-[var(--muted)]">Unassigned</span>
               )}
@@ -527,29 +563,57 @@ export default function TaskCard({
           )}
         </div>
 
-        {/* ASSIGNED TEAM ROSTER WITH AVATAR / 2-LETTER INITIALS */}
+        {/* ASSIGNED TEAM COLLAPSIBLE ROSTER */}
         <div className="mt-4 pt-4 border-t flex items-center justify-between gap-2" style={{ borderColor: "var(--border)" }}>
-          <div className="flex items-center gap-1.5 overflow-hidden flex-wrap">
-            {task?.assigned_users?.length > 0 ? (
-              task.assigned_users.filter(Boolean).map((user) => (
-                <span
-                  key={user.id}
-                  className="group relative pl-1 pr-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs"
-                >
-                  <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
-                  <span className="truncate max-w-[90px] font-bold">{user.name}</span>
-                  {canEdit && (
-                    <button
-                      type="button"
-                      onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
-                      className="text-neutral-400 hover:text-rose-500 transition cursor-pointer text-[10px] ml-0.5"
-                      title="Remove member"
-                    >
-                      <X size={11} strokeWidth={3} />
-                    </button>
-                  )}
-                </span>
-              ))
+          <div
+            className={`flex items-center gap-1.5 overflow-hidden flex-wrap ${hasMore ? "cursor-pointer" : ""}`}
+            onClick={(e) => {
+              if (hasMore) {
+                e.stopPropagation();
+                setRosterExpanded(!rosterExpanded);
+              }
+            }}
+          >
+            {assignedUsers.length > 0 ? (
+              <>
+                {visibleUsers.map((user) => (
+                  <span
+                    key={user.id}
+                    className="group relative pl-1 pr-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs hover:border-[var(--primary)]/40"
+                  >
+                    <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
+                    <span className="truncate max-w-[90px] font-bold">{user.name}</span>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
+                        className="text-neutral-400 hover:text-rose-500 transition cursor-pointer text-[10px] ml-0.5"
+                        title="Remove member"
+                      >
+                        <X size={11} strokeWidth={3} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+
+                {!rosterExpanded && hasMore && (
+                  <span
+                    className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20 hover:bg-[var(--primary)] hover:text-white transition shadow-2xs select-none"
+                    title="Click to view all assigned members"
+                  >
+                    +{hiddenCount} more
+                  </span>
+                )}
+
+                {rosterExpanded && hasMore && (
+                  <span
+                    className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/5 dark:bg-white/5 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--border)] transition select-none"
+                    title="Click to collapse member list"
+                  >
+                    Less
+                  </span>
+                )}
+              </>
             ) : (
               <span className="text-xs italic text-[var(--muted)]">Unassigned Roster</span>
             )}

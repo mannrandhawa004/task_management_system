@@ -6,6 +6,35 @@ import { useState } from "react";
 import { assignTaskThunk } from "@/features/tasks/thunks/taskThunk";
 import { showToast } from "@/lib/toast";
 
+function getTwoInitials(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function DrawerMemberAvatar({ member }) {
+  const [imgError, setImgError] = useState(false);
+  const initials = getTwoInitials(member?.name || member?.member_name);
+
+  return (
+    <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 overflow-hidden bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/20 shadow-2xs">
+      {member?.avatar && !imgError ? (
+        <img
+          src={member.avatar}
+          alt={member?.name || "Member"}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  );
+}
+
 export default function AssignTaskDrawer({ open, onClose, task }) {
     const dispatch = useDispatch();
     const members = useSelector(state => state.project.members || []);
@@ -79,11 +108,9 @@ export default function AssignTaskDrawer({ open, onClose, task }) {
                                     }}
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--muted)] group-hover:text-[var(--primary)] transition-colors bg-black/5 dark:bg-white/5 shrink-0 border border-[var(--border)]">
-                                            <Users size={14} />
-                                        </div>
+                                        <DrawerMemberAvatar member={member} />
                                         <div className="min-w-0">
-                                            <h4 className="text-xs font-bold text-[var(--text)] truncate">{member.name}</h4>
+                                            <h4 className="text-xs font-bold text-[var(--text)] truncate">{member.name || member.member_name}</h4>
                                             <p className="text-[11px] truncate" style={{ color: "var(--muted)" }}>{member.email}</p>
                                         </div>
                                     </div>
@@ -98,30 +125,29 @@ export default function AssignTaskDrawer({ open, onClose, task }) {
                         <div className="h-full flex flex-col items-center justify-center text-center p-6 border border-dashed rounded-xl" style={{ borderColor: "var(--border)" }}>
                             <Users size={32} className="opacity-30 mb-2" style={{ color: "var(--muted)" }} />
                             <h3 className="font-bold text-xs" style={{ color: "var(--text)" }}>Roster Allocation Cap Reached</h3>
-                            <p className="text-[11px] mt-1 max-w-[220px]" style={{ color: "var(--muted)" }}>
-                                Every active project collaborator has already been mapped to this lifecycle unit.
-                            </p>
+                            <p className="text-[11px] mt-1 max-w-xs" style={{ color: "var(--muted)" }}>All project collaborators are currently integrated into this node's tracking array.</p>
                         </div>
                     )}
                 </div>
 
-                {/* EMISSION ACTIONS FOOTER */}
-                <div className="pt-4 border-t mt-4" style={{ borderColor: "var(--border)" }}>
+                {/* DRAWER FOOTER SUBMIT */}
+                <div className="pt-5 border-t mt-5 flex justify-end gap-2" style={{ borderColor: "var(--border)" }}>
                     <button
                         type="button"
-                        onClick={handleAssign}
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-bold hover:bg-black/5 dark:hover:bg-white/5 transition cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
                         disabled={loading || selectedUsers.length === 0}
-                        className="w-full py-3 rounded-xl text-white text-xs font-bold tracking-wide uppercase flex justify-center items-center gap-2 transition active:scale-98 disabled:opacity-40 cursor-pointer"
+                        onClick={handleAssign}
+                        className="px-5 py-2 rounded-xl text-xs font-bold text-white transition active:scale-98 disabled:opacity-50 flex items-center gap-2 cursor-pointer shadow-sm"
                         style={{ background: "var(--primary)" }}
                     >
-                        {loading ? (
-                            <>
-                                <Loader2 size={14} className="animate-spin" />
-                                Synchronizing...
-                            </>
-                        ) : (
-                            "Authorize Assignments"
-                        )}
+                        {loading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} strokeWidth={3} />}
+                        Authorize Selection ({selectedUsers.length})
                     </button>
                 </div>
             </aside>
