@@ -198,195 +198,185 @@ export default function UsersPage() {
     : teamsList;
 
   return (
-    <div className="space-y-6 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-4 animate-fade-in">
-      
-      {/* HEADER ACTION CONTAINER */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-2">
-        <div>
-          <h1 
-            className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-[var(--text)] to-[var(--muted)]"
-            style={{ color: "var(--text)" }}
-          >
+    <div className="space-y-5 max-w-[1600px] mx-auto w-full">
+
+      {/* PAGE HEADER */}
+      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/5 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="p-1.5 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+              <Users2 size={15} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Admin Panel</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text)]">
             Employee Directory
           </h1>
-          <p className="text-sm mt-1.5 font-medium opacity-80" style={{ color: "var(--muted)" }}>
+          <p className="mt-1 text-xs md:text-sm font-medium text-[var(--muted)] max-w-xl">
             Monitor organizational roles, departments, active workspace teams, and daily registry status.
           </p>
         </div>
-
         {isWriteAuthorized && (
           <button
-            onClick={() => {
-              setEditingUser(null);
-              setOpenDrawer(true);
-            }}
-            className="group relative flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all duration-300 hover:opacity-95 hover:shadow-[0_4px_20px_rgba(0,0,0,0.15)] active:scale-[0.98] cursor-pointer self-start sm:self-auto overflow-hidden dynamic-btn-shadow"
+            onClick={() => { setEditingUser(null); setOpenDrawer(true); }}
+            className="relative z-10 flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white transition-all hover:opacity-90 hover:shadow-lg active:scale-[0.98] cursor-pointer shrink-0"
             style={{ background: "var(--primary)" }}
           >
-            <Plus size={16} className="transition-transform duration-300 group-hover:rotate-90" />
+            <Plus size={16} />
             Add Employee
           </button>
         )}
       </div>
 
       {/* SEARCH AND FILTERS BAR */}
-      <div 
-        className="p-4 rounded-2xl border space-y-4 shadow-sm"
-        style={{ background: "var(--card)", borderColor: "var(--border)" }}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-5 shadow-sm space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* SEARCH */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3 focus-within:ring-2 focus-within:ring-[var(--primary)]/10 focus-within:border-[var(--primary)]">
-            <Search size={15} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] focus-within:ring-1 focus-within:ring-[var(--primary)]/20 transition-all">
+            <Search size={14} className="text-[var(--muted)] mr-2 shrink-0" />
             <input
               type="text"
-              placeholder="Search Name, Email, ID..."
+              placeholder="Search Name, Email, ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleSearchKeyPress}
-              className="text-xs font-semibold bg-transparent py-3 outline-none text-[var(--text)] w-full placeholder:opacity-50"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none text-[var(--text)] w-full placeholder:text-[var(--muted)]"
             />
           </div>
 
           {/* DEPARTMENT */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <Building2 size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <Building2 size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={deptFilter}
               onChange={(e) => { setDeptFilter(e.target.value); setTeamFilter("all"); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
               <option value="all">All Departments</option>
-              {departmentsList.map((d) => (
-                <option key={d.id} value={d.id}>{d.name}</option>
-              ))}
+              {departmentsList.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
           {/* ROLE */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <Shield size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <Shield size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={roleFilter}
               onChange={(e) => { setRoleFilter(e.target.value); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
               <option value="all">All Roles</option>
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>
-              ))}
+              {roles.map((r) => <option key={r.id} value={r.id}>{r.name.toUpperCase()}</option>)}
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
           {/* TEAM */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <Users2 size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <Users2 size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={teamFilter}
               onChange={(e) => { setTeamFilter(e.target.value); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
               <option value="all">All Teams</option>
-              {filteredTeamOptions.map((t) => (
-                <option key={t.id} value={t.id}>{t.name}</option>
-              ))}
+              {filteredTeamOptions.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-1">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* STATUS */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <Activity size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <Activity size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={statusFilter}
               onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
-              <option value="all">All States</option>
-              <option value="active">Active State</option>
-              <option value="inactive">Pending Hold</option>
-              <option value="suspended">Suspended Vault</option>
+              <option value="all">All Statuses</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="suspended">Suspended</option>
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
           {/* MANAGER */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <User size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <User size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={managerFilter}
               onChange={(e) => { setManagerFilter(e.target.value); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
               <option value="all">All Managers</option>
-              {managers.map((m) => (
-                <option key={m.id} value={m.id}>{m.name}</option>
-              ))}
+              {managers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
           {/* ATTENDANCE STATUS */}
-          <div className="relative flex items-center bg-[var(--input)] rounded-xl border border-[var(--border)] px-3">
-            <Clock size={14} className="text-[var(--muted)] mr-2" />
+          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
+            <Clock size={13} className="text-[var(--muted)] mr-2 shrink-0" />
             <select
               value={attendanceFilter}
               onChange={(e) => { setAttendanceFilter(e.target.value); setPage(1); }}
-              className="text-xs font-semibold bg-transparent py-3 outline-none appearance-none cursor-pointer text-[var(--text)] w-full focus:outline-none"
+              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
             >
               <option value="all">All Attendance</option>
-              <option value="present">🟢 Present</option>
-              <option value="late">🟡 Late Check-In</option>
-              <option value="remote">🌐 Remote / WFH</option>
-              <option value="on_leave">🏖️ On Leave</option>
-              <option value="absent">🔴 Absent / No Logs</option>
+              <option value="present">Present</option>
+              <option value="working">Working</option>
+              <option value="late">Late</option>
+              <option value="remote">Remote / WFH</option>
+              <option value="on_leave">On Leave</option>
+              <option value="absent">Absent</option>
             </select>
-            <ChevronDown size={14} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
-          {/* TRIGGER BUTTONS */}
+          {/* TRIGGER BUTTONS + VIEW TOGGLE */}
           <div className="flex gap-2">
             <button
               onClick={() => { setPage(1); fetchUsers(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-3 rounded-xl font-bold text-xs text-white hover:opacity-95 transition cursor-pointer"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-2xl font-black text-xs text-white hover:opacity-90 transition cursor-pointer shadow-sm"
               style={{ background: "var(--primary)" }}
             >
-              <Search size={14} />
-              Filter
+              <Search size={13} />
+              Search
             </button>
             <button
               onClick={handleResetFilters}
-              className="flex items-center justify-center p-3 rounded-xl border transition hover:bg-neutral-500/10 cursor-pointer text-[var(--text)] border-[var(--border)] bg-[var(--input)]"
-              title="Reset All Filters"
+              className="h-10 w-10 flex items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--hover)]/40 hover:bg-[var(--hover)]/80 transition cursor-pointer text-[var(--text)] shrink-0"
+              title="Reset Filters"
             >
-              <RotateCcw size={14} />
+              <RotateCcw size={13} />
             </button>
 
-            {/* VIEW TOGGLING */}
-            <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-xl border border-[var(--border)] shrink-0">
+            {/* VIEW TOGGLE */}
+            <div className="flex items-center gap-1 bg-[var(--hover)]/40 p-1 rounded-2xl border border-[var(--border)] shrink-0">
               <button
                 onClick={() => setViewMode("table")}
-                className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                  viewMode === "table" 
-                    ? "bg-[var(--card)] text-[var(--primary)] border border-neutral-200/50 dark:border-neutral-700/30" 
+                className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                  viewMode === "table"
+                    ? "bg-[var(--card)] text-[var(--primary)] shadow-sm border border-[var(--border)]"
                     : "text-[var(--muted)] hover:text-[var(--text)]"
                 }`}
-                title="Tabular Matrix View"
+                title="Table View"
               >
                 <List size={14} />
               </button>
               <button
                 onClick={() => setViewMode("card")}
-                className={`p-2 rounded-lg transition-all duration-200 cursor-pointer ${
-                  viewMode === "card" 
-                    ? "bg-[var(--card)] text-[var(--primary)] border border-neutral-200/50 dark:border-neutral-700/30" 
+                className={`p-2 rounded-xl transition-all duration-200 cursor-pointer ${
+                  viewMode === "card"
+                    ? "bg-[var(--card)] text-[var(--primary)] shadow-sm border border-[var(--border)]"
                     : "text-[var(--muted)] hover:text-[var(--text)]"
                 }`}
-                title="Symmetric Card View"
+                title="Card View"
               >
                 <LayoutGrid size={14} />
               </button>
