@@ -146,7 +146,7 @@ export default function AttendanceWidget() {
 
   const cfg = getStatusConfig();
   const isDark = useIsDark();
-  const bgImg = isDark ? "/attendance-bg-dark.png" : "/attendance-bg-light.png";
+  const bgImg = isDark ? "/dark_clock.png" : "/light_clock.jpeg";
 
   return (
     <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] shadow-xl bg-[var(--card)] transition-all duration-300 group">
@@ -156,7 +156,7 @@ export default function AttendanceWidget() {
         style={{ backgroundImage: `url('${bgImg}')` }}
       />
       {/* Subtle overlay for legibility without hiding the background image */}
-      <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-[#141414]/92 via-[#141414]/55 to-[#141414]/25" : "bg-gradient-to-t from-white/92 via-white/55 to-white/25"}`} />
+      {/* <div className={`absolute inset-0 ${isDark ? "bg-gradient-to-t from-[#141414]/92 via-[#141414]/55 to-[#141414]/25" : "bg-gradient-to-t from-white/92 via-white/55 to-white/25"}`} /> */}
 
       {/* Top accent bar that matches the primary color */}
       <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-[var(--primary)] via-[var(--primary)]/60 to-transparent z-10" />

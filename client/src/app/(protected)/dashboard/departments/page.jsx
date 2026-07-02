@@ -3,479 +3,503 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Building2,
-  Users,
-  FolderKanban,
-  CheckCircle,
-  Plus,
-  Edit2,
-  Trash2,
-  X,
-  Save,
-  Briefcase,
-  ChevronRight,
-  TrendingUp,
+  Building2, Users, FolderKanban, CheckCircle, Plus, Edit2, Trash2, X,
+  Save, Briefcase, TrendingUp, LayoutGrid, List, Shield,
 } from "lucide-react";
 import {
-  getDepartmentsThunk,
-  createDepartmentThunk,
-  updateDepartmentThunk,
-  deleteDepartmentThunk,
-  getDepartmentUsersThunk,
-  getDepartmentStatsThunk,
+  getDepartmentsThunk, createDepartmentThunk, updateDepartmentThunk,
+  deleteDepartmentThunk, getDepartmentUsersThunk, getDepartmentStatsThunk,
 } from "@/features/departments/thunks/departmentThunks";
-import { getAllUsersThunk } from "@/features/auth/thunks/authThunk";
 import AppLoader from "@/components/common/AppLoader";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 
+// ── Dark-aware status badge ───────────────────────────────────────────────────
+function StatusBadge({ status }) {
+  const cfg = status === "active"
+    ? { bg: "bg-emerald-500/10 dark:bg-emerald-400/[0.12]", text: "text-emerald-600 dark:text-emerald-300", border: "border-emerald-500/20 dark:border-emerald-400/20", dot: "bg-emerald-400" }
+    : { bg: "bg-neutral-500/10 dark:bg-neutral-400/[0.10]", text: "text-neutral-500 dark:text-neutral-400", border: "border-neutral-500/20 dark:border-neutral-400/20", dot: "bg-neutral-400" };
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest border ${cfg.bg} ${cfg.text} ${cfg.border}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {status}
+    </span>
+  );
+}
+
+// ── Re-usable form field ──────────────────────────────────────────────────────
+function Field({ label, children }) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = "w-full px-3 py-2.5 border border-[var(--border)] rounded-xl bg-[var(--hover)]/30 dark:bg-white/[0.04] text-xs font-bold text-[var(--text)] focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all placeholder:text-[var(--muted)]";
+
+// ── Modal shell ───────────────────────────────────────────────────────────────
+function Modal({ open, onClose, title, subtitle, children, footer }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+      <div className="bg-[var(--bg)] border border-[var(--border)] shadow-2xl rounded-3xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
+          <div>
+            <h3 className="font-black text-sm text-[var(--text)]">{title}</h3>
+            {subtitle && <p className="text-[10px] text-[var(--muted)] font-bold uppercase tracking-widest mt-0.5">{subtitle}</p>}
+          </div>
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer">
+            <X size={16} />
+          </button>
+        </div>
+        {/* Body */}
+        <div className="p-6 space-y-4">{children}</div>
+        {/* Footer */}
+        {footer && (
+          <div className="px-6 py-4 border-t border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.02] flex justify-end gap-3">
+            {footer}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export default function DepartmentsPage() {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
-  const { departmentsList, departmentUsers, departmentStats, loading } = useSelector(
-    (state) => state.departments
-  );
+  const { user } = useSelector((s) => s.auth);
+  const { departmentsList, departmentUsers, departmentStats, loading } = useSelector((s) => s.departments);
 
+  const [viewMode, setViewMode]       = useState("card"); // "card" | "table"
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen]     = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // Form states
-  const [name, setName] = useState("");
+  const [name, setName]             = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("active");
+  const [status, setStatus]         = useState("active");
   const [selectedId, setSelectedId] = useState(null);
 
-  // Only super_admin can create/edit/delete departments — it is a structural operation
-  const isSuperAdminUser = user?.role?.toLowerCase() === "super_admin";
+  const isSuperAdmin = user?.role?.toLowerCase() === "super_admin";
 
-  // Confirm dialog state
-  const [confirmDialog, setConfirmDialog] = useState({
-    open: false,
-    title: "",
-    message: "",
-    confirmLabel: "Confirm",
-    onConfirm: null,
-  });
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", message: "", confirmLabel: "Confirm", onConfirm: null });
+  const closeConfirm = () => setConfirmDialog((p) => ({ ...p, open: false, onConfirm: null }));
 
-  const closeConfirm = () =>
-    setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
-
-  useEffect(() => {
-    dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
-  }, [dispatch]);
+  useEffect(() => { dispatch(getDepartmentsThunk({ page: 1, limit: 100 })); }, [dispatch]);
 
   const handleCreate = () => {
-    dispatch(createDepartmentThunk({ name, description, status })).then(() => {
-      setIsCreateOpen(false);
-      resetForm();
-    });
+    dispatch(createDepartmentThunk({ name, description, status })).then(() => { setIsCreateOpen(false); resetForm(); });
   };
-
   const handleUpdate = () => {
-    dispatch(updateDepartmentThunk({ id: selectedId, data: { name, description, status } })).then(() => {
-      setIsEditOpen(false);
-      resetForm();
-    });
+    dispatch(updateDepartmentThunk({ id: selectedId, data: { name, description, status } })).then(() => { setIsEditOpen(false); resetForm(); });
   };
-
   const handleDelete = (id) => {
     setConfirmDialog({
-      open: true,
-      title: "Delete Department",
-      message: "Are you sure you want to delete this department? All associated teams and data will be affected. This action cannot be undone.",
-      confirmLabel: "Delete Department",
-      onConfirm: () => {
-        dispatch(deleteDepartmentThunk(id));
-        closeConfirm();
-      },
+      open: true, title: "Delete Department",
+      message: "Are you sure you want to delete this department? All associated teams and data will be affected.",
+      confirmLabel: "Delete",
+      onConfirm: () => { dispatch(deleteDepartmentThunk(id)); closeConfirm(); },
     });
   };
-
   const handleOpenDetails = (dept) => {
-    setSelectedId(dept.id);
-    setName(dept.name);
+    setSelectedId(dept.id); setName(dept.name);
     dispatch(getDepartmentUsersThunk(dept.id));
     dispatch(getDepartmentStatsThunk(dept.id));
     setIsDetailsOpen(true);
   };
-
   const handleOpenEdit = (dept, e) => {
-    e.stopPropagation();
-    setSelectedId(dept.id);
-    setName(dept.name);
-    setDescription(dept.description || "");
-    setStatus(dept.status || "active");
+    e?.stopPropagation();
+    setSelectedId(dept.id); setName(dept.name); setDescription(dept.description || ""); setStatus(dept.status || "active");
     setIsEditOpen(true);
   };
-
-  const resetForm = () => {
-    setName("");
-    setDescription("");
-    setStatus("active");
-    setSelectedId(null);
-  };
+  const resetForm = () => { setName(""); setDescription(""); setStatus("active"); setSelectedId(null); };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 text-[var(--text)]">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black tracking-tight bg-gradient-to-r from-[var(--text)] to-[var(--muted)] bg-clip-text text-transparent">
-            Department Management
-          </h1>
-          <p className="text-xs text-[var(--muted)]">
+    <div className="space-y-6 max-w-7xl mx-auto w-full text-[var(--text)]">
+
+      {/* ── PAGE HEADER CARD ── */}
+      <div className="relative overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] p-6 md:p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="absolute inset-0 bg-gradient-to-r from-[var(--primary)]/5 via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="p-1.5 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]">
+              <Building2 size={15} />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--primary)]">Admin Panel</span>
+          </div>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--text)]">Department Management</h1>
+          <p className="mt-1 text-xs md:text-sm font-medium text-[var(--muted)] max-w-xl">
             Create, view, and organize operational department layers across the company.
           </p>
         </div>
+        <div className="relative z-10 flex items-center gap-3 shrink-0">
+          {/* View toggle */}
+          <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-2xl border border-[var(--border)]">
+            <button
+              onClick={() => setViewMode("card")}
+              className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === "card" ? "bg-[var(--card)] text-[var(--primary)] shadow-sm border border-[var(--border)]" : "text-[var(--muted)] hover:text-[var(--text)]"}`}
+              title="Card View"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <button
+              onClick={() => setViewMode("table")}
+              className={`p-2 rounded-xl transition-all cursor-pointer ${viewMode === "table" ? "bg-[var(--card)] text-[var(--primary)] shadow-sm border border-[var(--border)]" : "text-[var(--muted)] hover:text-[var(--text)]"}`}
+              title="Table View"
+            >
+              <List size={14} />
+            </button>
+          </div>
 
-        {isSuperAdminUser && (
-          <button
-            type="button"
-            onClick={() => {
-              resetForm();
-              setIsCreateOpen(true);
-            }}
-            className="px-4 py-2.5 bg-[var(--primary)] hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md shadow-[var(--primary)]/10 transition-all flex items-center gap-2 cursor-pointer active:scale-98"
-          >
-            <Plus className="w-4 h-4" />
-            Add Department
-          </button>
-        )}
+          {isSuperAdmin && (
+            <button
+              onClick={() => { resetForm(); setIsCreateOpen(true); }}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl font-bold text-sm text-white hover:opacity-90 hover:shadow-lg active:scale-[0.98] transition-all cursor-pointer shadow-sm"
+              style={{ background: "var(--primary)" }}
+            >
+              <Plus size={16} />
+              Add Department
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* DEPARTMENTS LIST/GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {departmentsList && departmentsList.length > 0 ? (
-          departmentsList.map((dept) => (
+      {/* ── LOADING ── */}
+      {loading && (
+        <div className="flex justify-center py-16">
+          <AppLoader />
+        </div>
+      )}
+
+      {/* ── EMPTY STATE ── */}
+      {!loading && (!departmentsList || departmentsList.length === 0) && (
+        <div className="flex flex-col items-center justify-center py-20 bg-[var(--card)] border border-dashed border-[var(--border)] rounded-3xl">
+          <div className="p-4 bg-[var(--primary)]/10 rounded-2xl mb-4 text-[var(--primary)]"><Building2 size={28} /></div>
+          <h3 className="font-black text-base text-[var(--text)]">No Departments Yet</h3>
+          <p className="text-xs text-[var(--muted)] mt-1">Create your first department to get started.</p>
+        </div>
+      )}
+
+      {/* ══════════════ CARD VIEW ══════════════ */}
+      {!loading && departmentsList?.length > 0 && viewMode === "card" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {departmentsList.map((dept) => (
             <div
               key={dept.id}
               onClick={() => handleOpenDetails(dept)}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-xs backdrop-blur-md hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group min-h-[220px]"
+              className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer flex flex-col group"
             >
-              <div className="space-y-3">
+              {/* Top accent */}
+              <div className="h-[3px] bg-gradient-to-r from-[var(--primary)] via-[var(--primary)]/40 to-transparent" />
+
+              <div className="p-5 flex-1 flex flex-col gap-4">
+                {/* Icon row + status */}
                 <div className="flex items-start justify-between">
                   <div className="p-3 bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl group-hover:scale-105 transition-transform">
-                    <Building2 className="w-5 h-5" />
+                    <Building2 size={20} />
                   </div>
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
-                      dept.status === "active"
-                        ? "bg-green-500/10 text-green-500 border border-green-500/20"
-                        : "bg-gray-500/10 text-gray-500 border border-gray-500/20"
-                    }`}
-                  >
-                    {dept.status}
-                  </span>
+                  <StatusBadge status={dept.status} />
                 </div>
 
+                {/* Name + description */}
                 <div>
-                  <h3 className="font-extrabold text-sm tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+                  <h3 className="font-black text-sm tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
                     {dept.name}
                   </h3>
-                  <p className="text-[11px] text-[var(--muted)] line-clamp-2 mt-1">
+                  <p className="text-[11px] text-[var(--muted)] line-clamp-2 mt-1 leading-relaxed">
                     {dept.description || "No description provided."}
                   </p>
                 </div>
-              </div>
 
-              <div className="border-t border-[var(--border)]/40 pt-4 mt-4 flex items-center justify-between">
-                <div className="flex items-center gap-4 text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5" />
-                    <span>{dept.user_count || 0}</span>
+                {/* Stats strip */}
+                <div className="grid grid-cols-2 gap-2 mt-auto">
+                  <div className="flex items-center gap-2 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl px-3 py-2 border border-[var(--border)]/60">
+                    <Users size={12} className="text-[var(--primary)] shrink-0" />
+                    <div>
+                      <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">Employees</div>
+                      <div className="text-sm font-black text-[var(--text)]">{dept.user_count || 0}</div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <FolderKanban className="w-3.5 h-3.5" />
-                    <span>{dept.project_count || 0}</span>
+                  <div className="flex items-center gap-2 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl px-3 py-2 border border-[var(--border)]/60">
+                    <FolderKanban size={12} className="text-amber-500 dark:text-amber-400 shrink-0" />
+                    <div>
+                      <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">Projects</div>
+                      <div className="text-sm font-black text-[var(--text)]">{dept.project_count || 0}</div>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {isSuperAdminUser && (
-                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Footer actions */}
+              {isSuperAdmin && (
+                <div className="px-5 pb-4 pt-0">
+                  <div className="flex gap-2 pt-3 border-t border-[var(--border)]/60">
                     <button
-                      type="button"
                       onClick={(e) => handleOpenEdit(dept, e)}
-                      className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black border border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.03] text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all active:scale-95 cursor-pointer"
                     >
-                      <Edit2 className="w-3.5 h-3.5" />
+                      <Edit2 size={12} /> Edit
                     </button>
                     <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(dept.id);
-                      }}
-                      className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors"
+                      onClick={(e) => { e.stopPropagation(); handleDelete(dept.id); }}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-black border border-transparent text-[var(--muted)] hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 transition-all active:scale-95 cursor-pointer"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 size={12} /> Delete
                     </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12 bg-[var(--card)] border border-[var(--border)] rounded-3xl">
-            <Building2 className="w-12 h-12 text-[var(--muted)] mx-auto mb-2 animate-bounce" />
-            <h3 className="text-xs font-bold text-[var(--muted)]">No departments created yet</h3>
-          </div>
-        )}
-      </div>
-
-      {/* CREATE MODAL */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[var(--bg)] border border-[var(--border)] shadow-2xl rounded-3xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-[var(--border)] flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-sm">Create Department</h3>
-                <p className="text-[10px] text-[var(--muted)] uppercase font-bold">
-                  Add a new operational layer
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="p-1 rounded-lg hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  Department Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Engineering, Sales..."
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  Description
-                </label>
-                <textarea
-                  placeholder="Summarize department tasks and roles..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows="3"
-                  className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-[var(--border)] bg-[var(--hover)]/40 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsCreateOpen(false)}
-                className="px-4 py-2 border border-[var(--border)] rounded-xl text-xs font-bold hover:bg-[var(--hover)] transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleCreate}
-                className="px-4 py-2 bg-[var(--primary)] hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md shadow-[var(--primary)]/10 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add Department
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* EDIT MODAL */}
-      {isEditOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-[var(--bg)] border border-[var(--border)] shadow-2xl rounded-3xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-[var(--border)] flex justify-between items-center">
-              <div>
-                <h3 className="font-extrabold text-sm">Edit Department</h3>
-                <p className="text-[10px] text-[var(--muted)] uppercase font-bold">
-                  Modify department parameters
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(false)}
-                className="p-1 rounded-lg hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  Department Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  Description
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows="3"
-                  className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)]">
-                  Status
-                </label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-[var(--border)] bg-[var(--hover)]/40 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(false)}
-                className="px-4 py-2 border border-[var(--border)] rounded-xl text-xs font-bold hover:bg-[var(--hover)] transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleUpdate}
-                className="px-4 py-2 bg-[var(--primary)] hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md shadow-[var(--primary)]/10 transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Save className="w-3.5 h-3.5" />
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* DETAILS / DASHBOARD DRAWER */}
-      {isDetailsOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex justify-end z-50 animate-in fade-in duration-200">
-          <div className="bg-[var(--bg)] border-l border-[var(--border)] w-full max-w-2xl h-full shadow-2xl flex flex-col justify-between overflow-hidden animate-in slide-in-from-right duration-300">
-            <div className="p-6 border-b border-[var(--border)] flex justify-between items-center bg-[var(--card)]">
-              <div>
-                <h3 className="font-extrabold text-md tracking-tight text-[var(--primary)]">
-                  {name} Department
-                </h3>
-                <p className="text-[10px] text-[var(--muted)] uppercase font-bold">
-                  Overview & Member roster
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsDetailsOpen(false)}
-                className="p-2 rounded-xl hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* CONTENT SPACE */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-              
-              {/* STATS TILES */}
-              {departmentStats && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl text-center">
-                    <TrendingUp className="w-5 h-5 text-indigo-500 mx-auto mb-1" />
-                    <div className="text-[9px] uppercase font-bold tracking-wider text-[var(--muted)]">Employees</div>
-                    <div className="text-xl font-black">{departmentStats.user_count || 0}</div>
-                  </div>
-                  <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl text-center">
-                    <FolderKanban className="w-5 h-5 text-amber-500 mx-auto mb-1" />
-                    <div className="text-[9px] uppercase font-bold tracking-wider text-[var(--muted)]">Projects</div>
-                    <div className="text-xl font-black">{departmentStats.project_count || 0}</div>
-                  </div>
-                  <div className="p-4 bg-[var(--card)] border border-[var(--border)] rounded-2xl text-center">
-                    <CheckCircle className="w-5 h-5 text-green-500 mx-auto mb-1" />
-                    <div className="text-[9px] uppercase font-bold tracking-wider text-[var(--muted)]">Tasks</div>
-                    <div className="text-xl font-black">{departmentStats.task_count || 0}</div>
                   </div>
                 </div>
               )}
+            </div>
+          ))}
+        </div>
+      )}
 
-              {/* MEMBERS LIST */}
-              <div className="space-y-4">
-                <h4 className="text-xs uppercase font-extrabold tracking-wider text-[var(--muted)] flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[var(--primary)]" />
-                  Active Employee Members
+      {/* ══════════════ TABLE VIEW ══════════════ */}
+      {!loading && departmentsList?.length > 0 && viewMode === "table" && (
+        <div className="overflow-hidden rounded-3xl border border-[var(--border)] shadow-sm bg-[var(--card)]">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.03]">
+                  {["Department", "Description", "Status", "Employees", "Projects", "Actions"].map((h) => (
+                    <th key={h} className="px-5 py-3.5 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted)] whitespace-nowrap">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {departmentsList.map((dept, idx) => (
+                  <tr
+                    key={dept.id}
+                    className={`hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors duration-150 cursor-pointer ${idx !== departmentsList.length - 1 ? "border-b border-[var(--border)]/60" : ""}`}
+                    onClick={() => handleOpenDetails(dept)}
+                  >
+                    {/* Name */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center shrink-0">
+                          <Building2 size={16} />
+                        </div>
+                        <span className="text-sm font-black text-[var(--text)]">{dept.name}</span>
+                      </div>
+                    </td>
+
+                    {/* Description */}
+                    <td className="px-5 py-4 max-w-[220px]">
+                      <p className="text-xs text-[var(--muted)] line-clamp-1">{dept.description || "—"}</p>
+                    </td>
+
+                    {/* Status */}
+                    <td className="px-5 py-4">
+                      <StatusBadge status={dept.status} />
+                    </td>
+
+                    {/* Employees */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5">
+                        <Users size={13} className="text-[var(--primary)]" />
+                        <span className="text-sm font-black text-[var(--text)]">{dept.user_count || 0}</span>
+                      </div>
+                    </td>
+
+                    {/* Projects */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5">
+                        <FolderKanban size={13} className="text-amber-500 dark:text-amber-400" />
+                        <span className="text-sm font-black text-[var(--text)]">{dept.project_count || 0}</span>
+                      </div>
+                    </td>
+
+                    {/* Actions */}
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        {isSuperAdmin ? (
+                          <>
+                            <button
+                              onClick={(e) => handleOpenEdit(dept, e)}
+                              className="h-8 w-8 rounded-xl border border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.04] flex items-center justify-center text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all active:scale-95 cursor-pointer"
+                              title="Edit"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(dept.id)}
+                              className="h-8 w-8 rounded-xl border border-transparent flex items-center justify-center text-[var(--muted)] hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/20 transition-all active:scale-95 cursor-pointer"
+                              title="Delete"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-[11px] text-[var(--muted)]">—</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ══════════════ CREATE MODAL ══════════════ */}
+      <Modal
+        open={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        title="Create Department"
+        subtitle="Add a new operational layer"
+        footer={
+          <>
+            <button onClick={() => setIsCreateOpen(false)} className="px-4 py-2 border border-[var(--border)] rounded-xl text-xs font-bold hover:bg-[var(--hover)] transition-colors cursor-pointer text-[var(--text)]">
+              Cancel
+            </button>
+            <button onClick={handleCreate} disabled={!name.trim()} className="flex items-center gap-2 px-5 py-2 bg-[var(--primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50">
+              <Plus size={14} /> Create
+            </button>
+          </>
+        }
+      >
+        <Field label="Department Name">
+          <input type="text" placeholder="e.g. Engineering, Sales…" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="Description">
+          <textarea placeholder="Summarize department tasks and roles…" value={description} onChange={(e) => setDescription(e.target.value)} rows="3" className={inputCls} />
+        </Field>
+      </Modal>
+
+      {/* ══════════════ EDIT MODAL ══════════════ */}
+      <Modal
+        open={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Edit Department"
+        subtitle="Modify department parameters"
+        footer={
+          <>
+            <button onClick={() => setIsEditOpen(false)} className="px-4 py-2 border border-[var(--border)] rounded-xl text-xs font-bold hover:bg-[var(--hover)] transition-colors cursor-pointer text-[var(--text)]">
+              Cancel
+            </button>
+            <button onClick={handleUpdate} disabled={!name.trim()} className="flex items-center gap-2 px-5 py-2 bg-[var(--primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50">
+              <Save size={14} /> Save Changes
+            </button>
+          </>
+        }
+      >
+        <Field label="Department Name">
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} className={inputCls} />
+        </Field>
+        <Field label="Description">
+          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows="3" className={inputCls} />
+        </Field>
+        <Field label="Status">
+          <select value={status} onChange={(e) => setStatus(e.target.value)} className={inputCls}>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </Field>
+      </Modal>
+
+      {/* ══════════════ DETAILS DRAWER ══════════════ */}
+      {isDetailsOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-50 animate-in fade-in duration-200">
+          <div className="bg-[var(--bg)] border-l border-[var(--border)] w-full max-w-xl h-full shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-right duration-300">
+            {/* Drawer header */}
+            <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between bg-[var(--card)] shrink-0">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <div className="p-1.5 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)]"><Building2 size={14} /></div>
+                  <h3 className="font-black text-sm text-[var(--primary)]">{name}</h3>
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Department Overview & Members</p>
+              </div>
+              <button onClick={() => setIsDetailsOpen(false)} className="p-2 rounded-xl hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Drawer body */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Stats tiles */}
+              {departmentStats && (
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { icon: <Users size={18} className="text-[var(--primary)]" />, label: "Employees", value: departmentStats.user_count || 0 },
+                    { icon: <FolderKanban size={18} className="text-amber-500 dark:text-amber-400" />, label: "Projects",  value: departmentStats.project_count || 0 },
+                    { icon: <CheckCircle size={18} className="text-emerald-500 dark:text-emerald-400" />, label: "Tasks", value: departmentStats.task_count || 0 },
+                  ].map(({ icon, label, value }) => (
+                    <div key={label} className="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 text-center flex flex-col items-center gap-1.5">
+                      {icon}
+                      <div className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">{label}</div>
+                      <div className="text-2xl font-black text-[var(--text)]">{value}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Members list */}
+              <div className="space-y-3">
+                <h4 className="text-[10px] uppercase font-black tracking-widest text-[var(--muted)] flex items-center gap-2">
+                  <Users size={13} className="text-[var(--primary)]" /> Active Members
                 </h4>
 
-                <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden divide-y divide-[var(--border)]/40">
+                <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden divide-y divide-[var(--border)]/50">
                   {departmentUsers && departmentUsers.length > 0 ? (
                     departmentUsers.map((member) => (
-                      <div
-                        key={member.id}
-                        className="p-4 flex items-center justify-between hover:bg-[var(--hover)]/30 transition-colors"
-                      >
+                      <div key={member.id} className="px-4 py-3.5 flex items-center justify-between hover:bg-black/[0.02] dark:hover:bg-white/[0.02] transition-colors">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-[var(--border)] relative bg-[var(--border)]">
-                            {member.avatar ? (
-                              <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs text-[var(--muted)] font-black uppercase">
-                                {member.name?.substring(0, 2)}
-                              </div>
-                            )}
+                          {/* Avatar */}
+                          <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 border border-[var(--border)] bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-black text-sm">
+                            {member.avatar
+                              ? <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                              : (member.name?.substring(0, 1).toUpperCase())
+                            }
                           </div>
                           <div>
-                            <div className="text-xs font-black">{member.name}</div>
-                            <div className="text-[10px] text-[var(--muted)] leading-none">{member.email}</div>
+                            <div className="text-xs font-black text-[var(--text)]">{member.name}</div>
+                            <div className="text-[10px] text-[var(--muted)]">{member.email}</div>
                           </div>
                         </div>
-
-                        <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-[var(--hover)] text-[var(--muted)]">
+                        <span className="px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest bg-black/[0.04] dark:bg-white/[0.05] text-[var(--muted)] border border-[var(--border)]">
                           {member.role || "Employee"}
                         </span>
                       </div>
                     ))
                   ) : (
-                    <div className="p-8 text-center">
-                      <Briefcase className="w-10 h-10 text-[var(--muted)] mx-auto mb-1" />
-                      <p className="text-xs font-bold text-[var(--muted)]">No employees assigned to this department yet</p>
+                    <div className="p-10 text-center flex flex-col items-center gap-3">
+                      <Briefcase size={32} className="text-[var(--muted)] opacity-40" />
+                      <p className="text-xs font-bold text-[var(--muted)]">No employees assigned yet</p>
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-[var(--border)] bg-[var(--card)] flex justify-end">
+            {/* Drawer footer */}
+            <div className="px-6 py-4 border-t border-[var(--border)] bg-[var(--card)] flex items-center justify-between shrink-0">
+              {isSuperAdmin && (
+                <button
+                  onClick={() => { setIsDetailsOpen(false); handleOpenEdit({ id: selectedId, name, description: "", status: "active" }); }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[var(--border)] text-xs font-black text-[var(--primary)] hover:bg-[var(--primary)]/10 hover:border-[var(--primary)]/30 transition-all cursor-pointer"
+                >
+                  <Edit2 size={13} /> Edit Department
+                </button>
+              )}
               <button
-                type="button"
                 onClick={() => setIsDetailsOpen(false)}
-                className="px-5 py-2.5 bg-[var(--primary)] hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md shadow-[var(--primary)]/10 cursor-pointer"
+                className="ml-auto px-5 py-2 bg-[var(--primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
               >
-                Close Drawer
+                Close
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* CONFIRM DIALOG */}
+
+      {/* ══════════════ CONFIRM DIALOG ══════════════ */}
       <ConfirmDialog
         open={confirmDialog.open}
         onClose={closeConfirm}

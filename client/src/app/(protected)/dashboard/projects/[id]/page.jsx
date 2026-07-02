@@ -63,13 +63,18 @@ export default function Page({ params }) {
     );
   }
 
+  const tabs = [
+    { key: "members", label: `Members (${members?.length || 0})`, icon: Users },
+    { key: "tasks", label: `Tasks (${tasks?.length || 0})`, icon: Layers },
+  ];
+
   return (
-    <div className="space-y-8 max-w-7xl mx-auto px-4 sm:px-6 py-4">
+    <div className="space-y-5 max-w-7xl mx-auto w-full px-4 sm:px-6 py-4">
       {/* HEADER SECTION */}
       <ProjectDetailsHeader project={project} />
 
       {/* OVERVIEW STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <ProjectOverviewCard
           title="Total Members"
           value={members?.length || 0}
@@ -96,36 +101,26 @@ export default function Page({ params }) {
         />
       </div>
 
-      {/* SEGMENTED TAB SWITCH NAVIGATION */}
-      <div className="flex items-center justify-between border-b pb-1" style={{ borderColor: "var(--border)" }}>
-        <div className="flex gap-1 p-1 rounded-xl bg-black/5 dark:bg-white/5">
-          <button
-            type="button"
-            onClick={() => setActiveTab("members")}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all duration-200 cursor-pointer select-none"
-            style={{
-              background: activeTab === "members" ? "var(--card)" : "transparent",
-              color: activeTab === "members" ? "var(--primary)" : "var(--muted)",
-              boxShadow: activeTab === "members" ? "var(--shadow)" : "none",
-            }}
-          >
-            <Users size={16} strokeWidth={activeTab === "members" ? 2.5 : 2} />
-            Members ({members?.length || 0})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("tasks")}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all duration-200 cursor-pointer select-none"
-            style={{
-              background: activeTab === "tasks" ? "var(--card)" : "transparent",
-              color: activeTab === "tasks" ? "var(--primary)" : "var(--muted)",
-              boxShadow: activeTab === "tasks" ? "var(--shadow)" : "none",
-            }}
-          >
-            <Layers size={16} strokeWidth={activeTab === "tasks" ? 2.5 : 2} />
-            Tasks ({tasks?.length || 0})
-          </button>
-        </div>
+      {/* TAB PILL NAVIGATION */}
+      <div className="flex items-center gap-1 bg-black/[0.03] dark:bg-white/[0.03] p-1 rounded-2xl border border-[var(--border)] w-fit">
+        {tabs.map(({ key, label, icon: TabIcon }) => {
+          const isActive = activeTab === key;
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setActiveTab(key)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer select-none ${
+                isActive
+                  ? "bg-[var(--card)] text-[var(--primary)] shadow-sm border border-[var(--border)]"
+                  : "text-[var(--muted)] hover:text-[var(--text)]"
+              }`}
+            >
+              <TabIcon size={14} strokeWidth={isActive ? 2.5 : 2} />
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {/* ACTIVE MOUNT BLOCKS */}

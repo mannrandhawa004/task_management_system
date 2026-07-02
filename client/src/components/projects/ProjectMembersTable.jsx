@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Users, Plus, Trash2, ShieldCheck, User, UserMinus } from "lucide-react";
+import { Users, Plus, Trash2, UserMinus } from "lucide-react";
 
 import ConfirmDialog from "../common/ConfirmDialog";
 import { getProjectMembersThunk, removeProjectMemberThunk } from "@/features/projects/thunks/projectThunk";
@@ -43,105 +43,105 @@ export default function ProjectMembersTable({
 
   return (
     <>
-      <div
-        className="rounded-3xl border overflow-hidden shadow-sm"
-        style={{
-          background: "var(--card)",
-          borderColor: "var(--border)",
-        }}
-      >
-        {/* DIRECTORY CONTROLLER HEADER */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center p-6 sm:p-7 border-b" style={{ borderColor: "var(--border)" }}>
+      <div className="overflow-hidden rounded-3xl border border-[var(--border)] shadow-sm bg-[var(--card)]">
+        {/* Card header */}
+        <div className="px-6 py-5 border-b border-[var(--border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-xl font-bold tracking-tight flex items-center gap-2.5" style={{ color: "var(--text)" }}>
-              <Users size={20} className="text-[var(--primary)]" />
-              Project Workspace Crew
+            <h2 className="font-black text-base text-[var(--text)] flex items-center gap-2">
+              <Users size={18} className="text-[var(--primary)]" />
+              Project Members
             </h2>
-            <p className="mt-1 text-xs font-medium" style={{ color: "var(--muted)" }}>
-              Manage and configure directory read/write security credentials.
+            <p className="text-[11px] text-[var(--muted)] mt-0.5">
+              Manage project collaborators and access levels
             </p>
           </div>
 
           {canManageMembers && (
             <button
               onClick={onAddMember}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold tracking-wide cursor-pointer select-none transition-all duration-200 active:scale-98 hover:opacity-95"
-              style={{
-                background: "var(--primary)",
-                color: "#fff",
-              }}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black text-white bg-[var(--primary)] hover:opacity-90 transition cursor-pointer select-none"
             >
-              <Plus size={15} strokeWidth={2.5} />
+              <Plus size={14} strokeWidth={2.5} />
               Add New Member
             </button>
           )}
         </div>
 
-        {/* CORE DIRECTORY DATA STREAM */}
+        {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse text-left">
             <thead>
-              <tr className="border-b text-xs font-bold uppercase tracking-wider opacity-75" style={{ background: "var(--input)", borderColor: "var(--border)", color: "var(--muted)" }}>
-                <th className="px-6 py-4">Identity / Handle</th>
-                <th className="px-6 py-4">Access Permission Tier</th>
-                <th className="px-6 py-4">Registered In</th>
-                {canManageMembers && <th className="px-6 py-4 text-right pr-8">Actions</th>}
+              <tr className="bg-black/[0.02] dark:bg-white/[0.03]">
+                <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">
+                  Member
+                </th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">
+                  Role
+                </th>
+                <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">
+                  Joined
+                </th>
+                {canManageMembers && (
+                  <th className="px-5 py-3.5 text-left text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">
+                    Actions
+                  </th>
+                )}
               </tr>
             </thead>
 
-            <tbody className="divide-y" style={{ borderColor: "var(--border)" }}>
+            <tbody>
               {members.length > 0 ? (
                 members.map((member) => (
-                  <tr key={member.id} className="transition-colors hover:bg-black/[0.01] dark:hover:bg-white/[0.01]">
-                    {/* AVATAR IDENTITY INFO BLOCK */}
-                    <td className="px-6 py-4.5">
+                  <tr
+                    key={member.id}
+                    className="hover:bg-black/[0.02] dark:hover:bg-white/[0.02] border-b border-[var(--border)]/60 last:border-b-0"
+                  >
+                    {/* Avatar + name + email */}
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="h-10 w-10 rounded-full border border-[var(--border)] flex items-center justify-center shrink-0 opacity-80"
-                          style={{ background: "var(--input)", color: "var(--text)" }}
-                        >
-                          <User size={16} />
+                        <div className="w-9 h-9 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-black text-sm shrink-0">
+                          {member.member_name?.charAt(0)?.toUpperCase() || "?"}
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-bold tracking-tight truncate" style={{ color: "var(--text)" }}>
+                          <p className="font-black text-sm text-[var(--text)] truncate">
                             {member.member_name}
-                          </h4>
-                          <p className="text-xs truncate" style={{ color: "var(--muted)" }}>
+                          </p>
+                          <p className="text-xs text-[var(--muted)] truncate">
                             {member.email}
                           </p>
                         </div>
                       </div>
                     </td>
 
-                    {/* DYNAMIC COMPONENT: SECURITY LABELS */}
-                    <td className="px-6 py-4.5">
+                    {/* Role badge */}
+                    <td className="px-5 py-4">
                       <span
-                        className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wide border"
-                        style={{
-                          background: member.role_name === "manager" ? "rgba(37, 99, 235, 0.1)" : "rgba(34, 197, 94, 0.1)",
-                          borderColor: member.role_name === "manager" ? "rgba(37, 99, 235, 0.2)" : "rgba(34, 197, 94, 0.2)",
-                          color: member.role_name === "manager" ? "#3b82f6" : "#22c55e",
-                        }}
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest border inline-flex items-center gap-1.5 ${
+                          member.role_name === "manager"
+                            ? "bg-blue-500/10 dark:bg-blue-400/[0.12] text-blue-600 dark:text-blue-300 border-blue-500/20 dark:border-blue-400/20"
+                            : "bg-emerald-500/10 dark:bg-emerald-400/[0.12] text-emerald-600 dark:text-emerald-300 border-emerald-500/20 dark:border-emerald-400/20"
+                        }`}
                       >
-                        <ShieldCheck size={13} strokeWidth={2.5} />
                         {member.role_name}
                       </span>
                     </td>
 
-                    {/* STAMP DATE */}
-                    <td className="px-6 py-4.5 text-xs font-semibold" style={{ color: "var(--muted)" }}>
-                      {new Date(member.joined_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                    {/* Joined date */}
+                    <td className="px-5 py-4">
+                      <span className="text-xs font-bold text-[var(--muted)]">
+                        {new Date(member.joined_at).toLocaleDateString(undefined, { dateStyle: "medium" })}
+                      </span>
                     </td>
 
-                    {/* DYNAMIC ACTION TRIGGER BUTTONS */}
+                    {/* Delete action */}
                     {canManageMembers && (
-                      <td className="px-6 py-4.5 text-right pr-8">
+                      <td className="px-5 py-4">
                         <button
                           onClick={() => setSelectedMember(member)}
-                          className="inline-flex items-center justify-center p-2 rounded-xl text-red-500 hover:bg-red-500/10 transition-all cursor-pointer active:scale-95"
-                          title="Revoke Permission Access"
+                          title="Remove member"
+                          className="h-8 w-8 rounded-xl border border-transparent flex items-center justify-center text-[var(--muted)] hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-500/10 dark:hover:bg-rose-400/10 hover:border-rose-500/20 transition-all active:scale-95 cursor-pointer"
                         >
-                          <Trash2 size={15} />
+                          <Trash2 size={14} />
                         </button>
                       </td>
                     )}
@@ -150,15 +150,17 @@ export default function ProjectMembersTable({
               ) : (
                 <tr>
                   <td colSpan={canManageMembers ? 4 : 3} className="py-20 text-center">
-                    <div className="p-4 rounded-full bg-black/5 dark:bg-white/5 inline-block text-[var(--muted)] mb-3">
-                      <UserMinus size={26} />
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl p-4 inline-flex">
+                        <UserMinus size={28} />
+                      </div>
+                      <h3 className="font-black text-base text-[var(--text)]">
+                        No Members Yet
+                      </h3>
+                      <p className="text-[11px] text-[var(--muted)] max-w-xs mx-auto">
+                        Add collaborators to co-manage this project.
+                      </p>
                     </div>
-                    <h3 className="text-base font-bold tracking-tight" style={{ color: "var(--text)" }}>
-                      No Workspace Members Added
-                    </h3>
-                    <p className="text-xs max-w-xs mx-auto mt-1" style={{ color: "var(--muted)" }}>
-                      Add collaborators to co-manage operational parameters.
-                    </p>
                   </td>
                 </tr>
               )}
@@ -183,10 +185,27 @@ export default function ProjectMembersTable({
 
 function MembersSkeleton() {
   return (
-    <div className="rounded-3xl border p-6 space-y-3.5 animate-pulse" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-      <div className="flex justify-between items-center pb-4"><div className="h-6 w-1/4 bg-neutral-400/20 rounded-lg" /><div className="h-9 w-24 bg-neutral-400/20 rounded-xl" /></div>
-      {[...Array(3)].map((item) => (
-        <div key={item} className="h-16 rounded-xl bg-neutral-400/10" />
+    <div className="rounded-3xl border border-[var(--border)] bg-[var(--card)] overflow-hidden animate-pulse">
+      {/* Header skeleton */}
+      <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
+        <div className="space-y-2">
+          <div className="h-4 w-36 bg-neutral-400/20 rounded-lg" />
+          <div className="h-3 w-52 bg-neutral-400/10 rounded-md" />
+        </div>
+        <div className="h-8 w-28 bg-neutral-400/20 rounded-xl" />
+      </div>
+      {/* Row skeletons */}
+      {[...Array(5)].map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-4 px-6 py-4 border-b border-[var(--border)]/60 last:border-b-0"
+        >
+          <div className="w-9 h-9 rounded-xl bg-neutral-400/20 shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="h-3 w-32 bg-neutral-400/20 rounded-md" />
+            <div className="h-2.5 w-48 bg-neutral-400/10 rounded-md" />
+          </div>
+        </div>
       ))}
     </div>
   );
