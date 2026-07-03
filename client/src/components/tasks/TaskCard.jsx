@@ -84,22 +84,25 @@ export default function TaskCard({
       bg: "bg-blue-500/10 dark:bg-blue-400/[0.12]",
       text: "text-blue-600 dark:text-blue-300",
       border: "border-blue-500/20 dark:border-blue-400/20",
-      dot: "bg-blue-400",
-      label: "TO DO"
+      dot: "bg-blue-500",
+      label: "TO DO",
+      accent: "#3b82f6"
     },
     in_progress: {
       bg: "bg-amber-500/10 dark:bg-amber-400/[0.12]",
       text: "text-amber-600 dark:text-amber-300",
       border: "border-amber-500/20 dark:border-amber-400/20",
-      dot: "bg-amber-400",
-      label: "IN PROGRESS"
+      dot: "bg-amber-500",
+      label: "IN PROGRESS",
+      accent: "#f59e0b"
     },
     completed: {
       bg: "bg-emerald-500/10 dark:bg-emerald-400/[0.12]",
       text: "text-emerald-600 dark:text-emerald-300",
       border: "border-emerald-500/20 dark:border-emerald-400/20",
-      dot: "bg-emerald-400",
-      label: "COMPLETED"
+      dot: "bg-emerald-500",
+      label: "COMPLETED",
+      accent: "#10b981"
     },
   };
 
@@ -115,47 +118,27 @@ export default function TaskCard({
     low: {
       bg: "bg-emerald-500/10 dark:bg-emerald-400/[0.12]",
       text: "text-emerald-600 dark:text-emerald-300",
-      border: "border-emerald-500/20 dark:border-emerald-400/20"
+      border: "border-emerald-500/20 dark:border-emerald-400/20",
+      label: "Low",
+      iconBg: "bg-emerald-500/12 text-emerald-600 dark:text-emerald-400"
     },
     medium: {
       bg: "bg-blue-500/10 dark:bg-blue-400/[0.12]",
       text: "text-blue-600 dark:text-blue-300",
-      border: "border-blue-500/20 dark:border-blue-400/20"
+      border: "border-blue-500/20 dark:border-blue-400/20",
+      label: "Medium",
+      iconBg: "bg-blue-500/12 text-blue-600 dark:text-blue-400"
     },
     high: {
       bg: "bg-rose-500/10 dark:bg-rose-400/[0.12]",
       text: "text-rose-600 dark:text-rose-300",
-      border: "border-rose-500/20 dark:border-rose-400/20"
+      border: "border-rose-500/20 dark:border-rose-400/20",
+      label: "High",
+      iconBg: "bg-rose-500/12 text-rose-600 dark:text-rose-400"
     }
   };
 
   const currentPriority = priorityConfig[task.priority] || priorityConfig.medium;
-
-  // Single unified background tone for all cards inspired by the clean layout
-  const pastelStyles = {
-    high: {
-      cardBg: "bg-[var(--card)]",
-      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
-      iconTone: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
-    },
-    medium: {
-      cardBg: "bg-[var(--card)]",
-      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
-      iconTone: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
-    },
-    low: {
-      cardBg: "bg-[var(--card)]",
-      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
-      iconTone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
-    },
-    default: {
-      cardBg: "bg-[var(--card)]",
-      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
-      iconTone: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
-    }
-  };
-
-  const currentPastel = pastelStyles[task.priority] || pastelStyles.default;
 
   const handleStatusChange = (e, newStatus) => {
     e.stopPropagation();
@@ -211,12 +194,15 @@ export default function TaskCard({
 
   // Assigned members logic
   const assignedUsers = task?.assigned_users?.filter(Boolean) || [];
-  const maxVisible = view === "table" ? 3 : 3;
+  const maxVisible = 3;
   const hasMore = assignedUsers.length > maxVisible;
   const visibleUsers = rosterExpanded ? assignedUsers : assignedUsers.slice(0, maxVisible);
   const hiddenCount = assignedUsers.length - maxVisible;
+  const projectName = task.project?.name || task.projectName;
 
+  // ════════════════════════════════════════════════════════════════════════════
   // TABLE VIEW
+  // ════════════════════════════════════════════════════════════════════════════
   if (view === "table") {
     return (
       <Fragment>
@@ -227,7 +213,7 @@ export default function TaskCard({
           }`}
         >
           {/* TASK TITLE & DESC */}
-          <td className="px-5 py-4 min-w-[240px] max-w-[340px]">
+          <td className="px-5 py-4 min-w-[280px]">
             {isEditing ? (
               <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                 <input
@@ -244,16 +230,24 @@ export default function TaskCard({
               </div>
             ) : (
               <div className="flex items-start gap-3">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${currentPastel.iconTone}`}>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${currentPriority.iconBg}`}>
                   <Activity size={15} strokeWidth={2.5} />
                 </div>
-                <div className="min-w-0">
-                  <h4 className="font-black text-sm text-[var(--text)] tracking-tight truncate">
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-bold text-[13px] text-[var(--text)] tracking-tight leading-snug">
                     {task.title}
                   </h4>
-                  <p className="text-xs text-[var(--muted)] truncate mt-0.5 font-medium">
-                    {task.description || "No description provided."}
-                  </p>
+                  {projectName && (
+                    <span className="inline-flex items-center gap-1 mt-1 px-1.5 py-0.5 rounded bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-semibold text-[var(--muted)]">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: currentStatus.accent }} />
+                      {projectName}
+                    </span>
+                  )}
+                  {task.description && (
+                    <p className="text-[11px] text-[var(--muted)] mt-1 font-medium leading-relaxed line-clamp-2">
+                      {task.description}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -268,7 +262,7 @@ export default function TaskCard({
                   e.stopPropagation();
                   setStatusDropdownOpen(!statusDropdownOpen);
                 }}
-                className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${currentStatus.dot}`} />
                 {currentStatus.label}
@@ -285,7 +279,7 @@ export default function TaskCard({
                       key={key}
                       type="button"
                       onClick={(e) => handleStatusChange(e, key)}
-                      className={`w-full text-left px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors ${
+                      className={`w-full text-left px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer ${
                         task.status === key
                           ? "bg-black/10 dark:bg-white/10 text-[var(--primary)]"
                           : "hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text)]"
@@ -313,7 +307,7 @@ export default function TaskCard({
               </select>
             ) : (
               <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${currentPriority.bg} ${currentPriority.text} ${currentPriority.border}`}>
-                • {task.priority}
+                {currentPriority.label}
               </span>
             )}
           </td>
@@ -362,7 +356,7 @@ export default function TaskCard({
                       )}
                     </>
                   ) : (
-                    <span className="text-xs italic text-[var(--muted)] mr-2">Unassigned</span>
+                    <span className="text-[11px] text-[var(--muted)] font-medium">Unassigned</span>
                   )}
                 </div>
               ) : (
@@ -454,21 +448,10 @@ export default function TaskCard({
         {/* EXPANDED ROW DETAILS (WHEN SELECTED IN TABLE) */}
         {isSelected && (
           <tr className="bg-black/[0.02] dark:bg-white/[0.02] border-b border-[var(--border)]">
-            <td colSpan={6} className="px-6 py-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="flex items-center gap-2 text-[var(--muted)]">
-                  <UserCheck size={14} className="text-[var(--primary)]" />
-                  <span>Created by: <strong className="text-[var(--text)]">{task.created_by?.name || "System"}</strong></span>
-                </div>
-                {task.status !== "completed" && !isEditing && (
-                  <button
-                    type="button"
-                    onClick={() => setAssignOpen(true)}
-                    className="px-3 py-1.5 rounded-xl font-bold tracking-wide text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer w-fit"
-                  >
-                    + Assign Team Member
-                  </button>
-                )}
+            <td colSpan={6} className="px-6 py-3">
+              <div className="flex items-center gap-2 text-xs text-[var(--muted)]">
+                <UserCheck size={13} className="text-[var(--primary)]" />
+                <span>Created by: <strong className="text-[var(--text)] font-semibold">{task.created_by?.name || "System"}</strong></span>
               </div>
             </td>
           </tr>
@@ -489,21 +472,28 @@ export default function TaskCard({
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // CARD VIEW (INSPIRED BY PASTEL SCREENSHOT DESIGN)
-  // ══════════════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
+  // CARD VIEW — Clean, consistent premium design
+  // ════════════════════════════════════════════════════════════════════════════
   return (
     <>
       <article
         onClick={onSelect}
-        className={`rounded-3xl p-5 border cursor-pointer transition-all duration-200 ease-in-out hover:shadow-md transform-gpu relative overflow-hidden group ${currentPastel.cardBg} ${isSelected ? "border-[var(--primary)] ring-1 ring-[var(--primary)]" : currentPastel.cardBorder}`}
+        className={`relative overflow-hidden rounded-2xl border bg-[var(--card)] cursor-pointer transition-all duration-200 hover:shadow-md group ${
+          isSelected
+            ? "border-[var(--primary)] ring-1 ring-[var(--primary)]/30 shadow-md"
+            : "border-[var(--border)] shadow-sm hover:border-[var(--border)]"
+        }`}
       >
-        {/* Top Header Row: Icon + Title + Due Date */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3 min-w-0 flex-1">
-            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs ${currentPastel.iconTone}`}>
-              <Activity size={18} strokeWidth={2.5} />
-            </div>
+        {/* Accent stripe on left edge */}
+        <div
+          className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl"
+          style={{ background: currentStatus.accent }}
+        />
+
+        <div className="p-5 pl-6">
+          {/* Row 1: Title + Due date */}
+          <div className="flex items-start justify-between gap-1">
             <div className="min-w-0 flex-1">
               {isEditing ? (
                 <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
@@ -511,224 +501,235 @@ export default function TaskCard({
                     type="text"
                     value={editForm.title}
                     onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                    className="w-full text-base font-black bg-white/60 dark:bg-black/40 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+                    className="w-full text-sm font-bold bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
                   />
                   <textarea
                     value={editForm.description}
                     onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                    className="w-full text-xs bg-white/60 dark:bg-black/40 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
+                    className="w-full text-xs bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
                   />
                 </div>
               ) : (
                 <>
-                  <h3 className="text-base font-black tracking-tight text-[var(--text)] truncate">{task.title}</h3>
-                  <p className="text-xs sm:text-sm font-medium leading-relaxed line-clamp-2 mt-1.5 text-[var(--muted)]">
-                    {task.description || "No supplemental details provided for this work item."}
-                  </p>
+                  <h3 className="text-[15px] font-bold tracking-tight text-[var(--text)] leading-snug">
+                    {task.title}
+                  </h3>
+                  {projectName && (
+                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-semibold text-[var(--muted)]">
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: currentStatus.accent }} />
+                      {projectName}
+                    </div>
+                  )}
+                  {task.description && (
+                    <p className="text-[13px] font-medium leading-relaxed mt-2 text-[var(--muted)]">
+                      {task.description}
+                    </p>
+                  )}
                 </>
               )}
             </div>
-          </div>
 
-          {/* Due date badge top right */}
-          <div className="shrink-0 flex flex-col items-end gap-1">
-            <span className="text-[11px] font-black uppercase tracking-wider text-[var(--muted)] bg-white/50 dark:bg-black/30 px-2.5 py-1 rounded-xl border border-[var(--border)]/40 flex items-center gap-1">
-              <Clock size={11} />
-              {formattedDueDate}
-            </span>
-          </div>
-        </div>
-
-        {/* Edit fields if editing */}
-        {isEditing && (
-          <div className="mt-4 flex flex-wrap items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-black/30 border border-[var(--border)]/60 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center gap-2">
-              <span>Due:</span>
-              <input
-                type="date"
-                value={editForm.due_date}
-                onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
-                className="bg-white dark:bg-black border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)]"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <span>Priority:</span>
-              <select
-                value={editForm.priority}
-                onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                className="bg-white dark:bg-black border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] uppercase font-bold"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
+            {/* Due date badge top right */}
+            <div className="shrink-0">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] bg-black/[0.04] dark:bg-white/[0.06] px-2 py-1 rounded-lg flex items-center gap-1">
+                <Clock size={10} />
+                {formattedDueDate}
+              </span>
             </div>
           </div>
-        )}
 
-        {/* Bottom Row: Circular Overlapping Avatars + Purple (+) Button + Status Badge */}
-        <div className="mt-5 pt-3.5 border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-3 flex-wrap">
-          <div className="flex items-center">
-            {!rosterExpanded ? (
-              /* Collapsed Circular Overlapping View */
-              <div
-                className="flex items-center -space-x-2.5 cursor-pointer group"
-                onClick={(e) => {
-                  if (assignedUsers.length > 0) {
+          {/* Edit fields for priority & due date when editing */}
+          {isEditing && (
+            <div className="mt-3 flex flex-wrap items-center gap-3 p-3 rounded-xl bg-black/[0.03] dark:bg-white/[0.03] border border-[var(--border)]/60 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-2">
+                <span className="text-[var(--muted)]">Due:</span>
+                <input
+                  type="date"
+                  value={editForm.due_date}
+                  onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+                  className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)]"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[var(--muted)]">Priority:</span>
+                <select
+                  value={editForm.priority}
+                  onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+                  className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] uppercase font-bold"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Row 2: Bottom bar — Avatars + Priority + Status */}
+          <div className="mt-4 pt-3 border-t border-[var(--border)]/50 flex items-center justify-between gap-2 flex-wrap">
+            {/* Left: Avatars */}
+            <div className="flex items-center">
+              {!rosterExpanded ? (
+                <div
+                  className="flex items-center -space-x-2 cursor-pointer"
+                  onClick={(e) => {
+                    if (assignedUsers.length > 0) {
+                      e.stopPropagation();
+                      setRosterExpanded(true);
+                    }
+                  }}
+                  title="Click to expand assigned members"
+                >
+                  {assignedUsers.length > 0 ? (
+                    <>
+                      {visibleUsers.map((user) => (
+                        <UserAvatar key={user.id} user={user} sizeClass="w-8 h-8" textClass="text-[10px]" borderClass="border-2 border-[var(--card)]" />
+                      ))}
+                      {hasMore && (
+                        <div className="w-8 h-8 rounded-full border-2 border-[var(--card)] bg-neutral-200 dark:bg-neutral-700 text-[var(--text)] font-bold text-[10px] flex items-center justify-center shrink-0 z-10">
+                          +{hiddenCount}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-[11px] text-[var(--muted)] font-medium">Unassigned</span>
+                  )}
+                </div>
+              ) : (
+                <div
+                  className="flex flex-wrap items-center gap-1.5 cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); setRosterExpanded(false); }}
+                  title="Click to collapse"
+                >
+                  {assignedUsers.map((user) => (
+                    <span
+                      key={user.id}
+                      className="pl-0.5 pr-2 py-0.5 rounded-full text-[11px] font-semibold flex items-center gap-1 bg-black/[0.04] dark:bg-white/[0.06] border border-[var(--border)] text-[var(--text)]"
+                    >
+                      <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" borderClass="border border-[var(--border)]" />
+                      <span className="truncate max-w-[80px]">{user.name}</span>
+                      {canEdit && (
+                        <button
+                          type="button"
+                          onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
+                          className="text-neutral-400 hover:text-rose-500 transition cursor-pointer"
+                          title="Remove member"
+                        >
+                          <X size={10} strokeWidth={3} />
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Assign button */}
+              {task.status !== "completed" && (
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setAssignOpen(true); }}
+                  className="w-8 h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white flex items-center justify-center border-2 border-[var(--card)] shadow-xs transition hover:scale-105 shrink-0 ml-1 cursor-pointer"
+                  title="Assign collaborator"
+                >
+                  <Plus size={14} strokeWidth={3} />
+                </button>
+              )}
+            </div>
+
+            {/* Right: Priority badge + Status dropdown */}
+            <div className="flex items-center gap-2">
+              {/* Priority badge — only show when NOT editing */}
+              {!isEditing && (
+                <span className={`px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-widest border ${currentPriority.bg} ${currentPriority.text} ${currentPriority.border}`}>
+                  {currentPriority.label}
+                </span>
+              )}
+
+              {/* Status Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => {
                     e.stopPropagation();
-                    setRosterExpanded(true);
-                  }
-                }}
-                title="Click to expand assigned members"
-              >
-                {assignedUsers.length > 0 ? (
-                  <>
-                    {visibleUsers.map((user) => (
-                      <UserAvatar key={user.id} user={user} sizeClass="w-9 h-9" textClass="text-xs" borderClass="border-2 border-[var(--card)]" />
+                    setStatusDropdownOpen(!statusDropdownOpen);
+                  }}
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition cursor-pointer ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+                >
+                  <span className={`w-1.5 h-1.5 rounded-full ${currentStatus.dot}`} />
+                  {currentStatus.label}
+                  <ChevronDown size={10} strokeWidth={2.5} />
+                </button>
+
+                {statusDropdownOpen && (
+                  <div
+                    className="absolute right-0 bottom-full mb-1 w-36 rounded-xl border p-1 shadow-xl z-30"
+                    style={{ background: "var(--card)", borderColor: "var(--border)" }}
+                  >
+                    {statusOptions.map((key) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={(e) => handleStatusChange(e, key)}
+                        className={`w-full text-left px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors cursor-pointer ${
+                          task.status === key
+                            ? "bg-black/10 dark:bg-white/10 text-[var(--primary)]"
+                            : "hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text)]"
+                        }`}
+                      >
+                        {statusConfig[key].label}
+                      </button>
                     ))}
-                    {hasMore && (
-                      <div className="w-9 h-9 rounded-full border-2 border-[var(--card)] bg-neutral-200 dark:bg-neutral-800 text-[var(--text)] font-black text-[11px] flex items-center justify-center shrink-0 z-10 shadow-xs hover:scale-105 transition">
-                        +{hiddenCount}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <span className="text-xs italic text-[var(--muted)] mr-2">Unassigned</span>
+                  </div>
                 )}
               </div>
-            ) : (
-              /* Expanded View */
-              <div
-                className="flex flex-wrap items-center gap-1.5 cursor-pointer max-w-[280px]"
-                onClick={(e) => { e.stopPropagation(); setRosterExpanded(false); }}
-                title="Click to fold member list"
-              >
-                {assignedUsers.map((user) => (
-                  <span
-                    key={user.id}
-                    className="pl-1 pr-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white/80 dark:bg-black/50 border border-[var(--border)] text-[var(--text)] shadow-2xs"
-                  >
-                    <UserAvatar user={user} sizeClass="w-6 h-6" textClass="text-[9px]" borderClass="border border-[var(--border)]" />
-                    <span className="truncate max-w-[85px]">{user.name}</span>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
-                        className="text-neutral-400 hover:text-rose-500 transition cursor-pointer ml-0.5"
-                        title="Remove member"
-                      >
-                        <X size={11} strokeWidth={3} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/10 dark:bg-white/10 text-[var(--text)]">Less</span>
-              </div>
-            )}
-
-            {/* Circular vibrant purple (+) button */}
-            {!isSelected && task.status !== "completed" && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setAssignOpen(true); }}
-                className="w-9 h-9 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white flex items-center justify-center border-2 border-[var(--card)] shadow-sm transition hover:scale-105 shrink-0 ml-1.5 cursor-pointer"
-                title="Assign collaborator"
-              >
-                <Plus size={16} strokeWidth={3} />
-              </button>
-            )}
+            </div>
           </div>
 
-          {/* Status Dropdown / Interactive Badge */}
-          <div className="relative shrink-0 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setStatusDropdownOpen(!statusDropdownOpen);
-              }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition shadow-2xs bg-white/80 dark:bg-black/40 ${currentStatus.text} ${currentStatus.border}`}
-            >
-              <span className={`w-1.5 h-1.5 rounded-full ${currentStatus.dot}`} />
-              {currentStatus.label}
-              <ChevronDown size={11} strokeWidth={2.5} />
-            </button>
+          {/* EXPANDED SECTION (WHEN CARD IS CLICKED) */}
+          {isSelected && (
+            <div className="mt-3 pt-3 border-t border-[var(--border)]/50 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-1.5 text-[var(--muted)]">
+                <UserCheck size={13} className="text-[var(--primary)]" />
+                Owner: <strong className="text-[var(--text)] font-semibold">{task.created_by?.name || "System"}</strong>
+              </div>
 
-            {statusDropdownOpen && (
-              <div
-                className="absolute right-0 bottom-full mb-1 w-36 rounded-xl border p-1 shadow-xl z-30"
-                style={{ background: "var(--card)", borderColor: "var(--border)" }}
-              >
-                {statusOptions.map((key) => (
+              <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                {canEdit && (
+                  isEditing ? (
+                    <button
+                      type="button"
+                      onClick={handleSaveDetails}
+                      className="h-8 w-8 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition active:scale-95 cursor-pointer"
+                      title="Save changes"
+                    >
+                      <Check size={15} strokeWidth={2.5} />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(true)}
+                      className="h-8 w-8 rounded-xl flex items-center justify-center text-[var(--muted)] hover:text-[var(--primary)] hover:bg-black/5 dark:hover:bg-white/5 transition active:scale-95 cursor-pointer"
+                      title="Edit task"
+                    >
+                      <Edit2 size={15} />
+                    </button>
+                  )
+                )}
+
+                {canDelete && task.status !== "completed" && !isEditing && (
                   <button
-                    key={key}
                     type="button"
-                    onClick={(e) => handleStatusChange(e, key)}
-                    className={`w-full text-left px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-colors ${
-                      task.status === key
-                        ? "bg-black/10 dark:bg-white/10 text-[var(--primary)]"
-                        : "hover:bg-black/5 dark:hover:bg-white/5 text-[var(--text)]"
-                    }`}
+                    onClick={handleDeleteTaskClick}
+                    className="h-8 w-8 rounded-xl flex items-center justify-center text-[var(--muted)] hover:text-rose-500 hover:bg-rose-500/10 transition active:scale-95 cursor-pointer"
+                    title="Delete task"
                   >
-                    {statusConfig[key].label}
+                    <Trash2 size={15} />
                   </button>
-                ))}
+                )}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* EXPANDED ACCORDION LAYER (WHEN CARD IS CLICKED) */}
-        {isSelected && (
-          <div className="mt-4 pt-3.5 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
-            <div className="flex items-center gap-1.5 text-[var(--muted)]">
-              <UserCheck size={14} className="text-[var(--primary)]" />
-              Owner: <strong className="text-[var(--text)] font-semibold">{task.created_by?.name || "System"}</strong>
-            </div>
-
-            <div className="flex items-center gap-2 w-full sm:w-auto" onClick={(e) => e.stopPropagation()}>
-              {canEdit && (
-                isEditing ? (
-                  <button
-                    type="button"
-                    onClick={handleSaveDetails}
-                    className="flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl font-bold tracking-wide text-white bg-emerald-600 hover:bg-emerald-700 transition active:scale-98 cursor-pointer shadow-xs"
-                  >
-                    <Check size={13} /> Save
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(true)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-bold tracking-wide border border-[var(--border)] text-[var(--text)] bg-white/60 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition active:scale-98 cursor-pointer"
-                  >
-                    <Edit2 size={13} /> Edit
-                  </button>
-                )
-              )}
-
-              {task.status !== "completed" && !isEditing && (
-                <button
-                  type="button"
-                  onClick={() => setAssignOpen(true)}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl font-bold tracking-wide text-white transition active:scale-98 cursor-pointer shadow-xs bg-indigo-500 hover:bg-indigo-600"
-                >
-                  Assign member
-                </button>
-              )}
-
-              {canDelete && task.status !== "completed" && !isEditing && (
-                <button
-                  type="button"
-                  onClick={handleDeleteTaskClick}
-                  className="px-3 py-1.5 rounded-xl font-bold tracking-wide bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500 hover:text-white transition active:scale-98 cursor-pointer"
-                >
-                  Delete Task
-                </button>
-              )}
-            </div>
-          </div>
-        )}
       </article>
 
       {task.status !== "completed" && (

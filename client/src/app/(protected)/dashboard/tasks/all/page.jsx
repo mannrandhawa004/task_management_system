@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
     getAllTasksThunk,
@@ -22,16 +22,17 @@ import {
     ListTodo,
     Layers,
     Edit3,
-    ChevronLeft,
-    ChevronRight,
     FolderKanban,
     UserCheck,
+    LayoutGrid,
+    Table as TableIcon,
 } from "lucide-react";
 
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import AppLoader from "@/components/common/AppLoader";
 import AssignTaskDrawer from "@/components/tasks/AssignTaskDrawer";
 import Pagination from "@/components/common/Pagination";
+import TaskCard from "@/components/tasks/TaskCard";
 
 const STATUS_FILTERS = [
     { key: "all", label: "All Tasks", icon: Layers },
@@ -79,6 +80,8 @@ export default function AllTasksPage() {
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [selectedProjectId, setSelectedProjectId] = useState("all");
+    const [view, setView] = useState("card");
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
 
     // ─── UI state ────────────────────────────────────────────────────────────
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, taskId: null });
@@ -196,6 +199,29 @@ export default function AllTasksPage() {
         setEditingTask(null);
     };
 
+    // ─── Computed tasks list (handles unpaginated My Tasks array from backend) ───
+    const displayedTasksList = useMemo(() => {
+        if (viewMode !== VIEW_MODES.MY_TASKS) return tasks || [];
+        let filtered = [...(tasks || [])];
+        if (activeFilter !== "all") {
+            filtered = filtered.filter((t) => t?.status === activeFilter);
+        }
+        if (selectedProjectId !== "all") {
+            filtered = filtered.filter((t) => (t?.project?.id == selectedProjectId || t?.project_id == selectedProjectId));
+        }
+        return filtered;
+    }, [tasks, viewMode, activeFilter, selectedProjectId]);
+
+    const paginatedDisplayedTasks = useMemo(() => {
+        if (viewMode !== VIEW_MODES.MY_TASKS) return displayedTasksList;
+        const startIndex = (page - 1) * limit;
+        return displayedTasksList.slice(startIndex, startIndex + limit);
+    }, [displayedTasksList, viewMode, page, limit]);
+
+    const activeTotal = viewMode === VIEW_MODES.MY_TASKS ? displayedTasksList.length : (pagination?.total || tasks.length);
+    const activeTotalPages = viewMode === VIEW_MODES.MY_TASKS ? Math.max(1, Math.ceil(displayedTasksList.length / limit)) : (pagination?.totalPages || 1);
+    const activeCurrentPage = viewMode === VIEW_MODES.MY_TASKS ? page : (pagination?.currentPage || page);
+
     // ─── Config maps ──────────────────────────────────────────────────────────
     const statusConfig = {
         todo: { bg: "bg-blue-500/10 text-blue-500 border-blue-500/20", label: "To Do" },
@@ -231,20 +257,20 @@ export default function AllTasksPage() {
                 <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto">
                     {/* Project filter dropdown — shown in ALL modes including My Tasks */}
                     {projects && projects.length > 0 && (
-                        <label className="flex items-center gap-2 px-3 py-2 rounded-2xl border bg-[var(--card)] border-[var(--border)] text-xs font-bold text-[var(--muted)]">
+                        <label className="flex items-center gap-2 px-3 py-2 rounded-2xl border bg-[var(--card)] dark:bg-zinc-900 border-[var(--border)] text-xs font-bold text-[var(--muted)]">
                             <FolderKanban size={14} />
                             <select
                                 value={selectedProjectId}
                                 onChange={(e) => { setSelectedProjectId(e.target.value); setPage(1); }}
-                                className="bg-transparent outline-none text-[var(--text)] font-bold cursor-pointer max-w-[220px]"
+                                className="bg-[var(--card)] dark:bg-zinc-900 outline-none text-[var(--text)] font-bold cursor-pointer max-w-[220px]"
                             >
-                                <option value="all">All Projects</option>
+                                <option value="all" className="bg-[var(--card)] dark:bg-zinc-900 text-[var(--text)] py-1">All Projects</option>
                                 {/* In My Tasks mode, only show projects the user is a member/manager of */}
                                 {(viewMode === VIEW_MODES.MY_TASKS
                                     ? projects  // already scoped to user's projects from your API
                                     : projects
                                 ).map((project) => (
-                                    <option key={project.id} value={project.id}>{project.name}</option>
+                                    <option key={project.id} value={project.id} className="bg-[var(--card)] dark:bg-zinc-900 text-[var(--text)] py-1">{project.name}</option>
                                 ))}
                             </select>
                         </label>
@@ -282,31 +308,60 @@ export default function AllTasksPage() {
 
             {/* STATUS FILTER TABS */}
             <div className="flex flex-col gap-4">
-                <div className="flex overflow-x-auto gap-1.5 p-1 rounded-2xl bg-[var(--card)] border border-[var(--border)] self-start max-w-full custom-scrollbar">
-                    {STATUS_FILTERS.map((filter) => {
-                        const Icon = filter.icon;
-                        const isSelected = activeFilter === filter.key;
-                        return (
-                            <button
-                                key={filter.key}
-                                onClick={() => { setActiveFilter(filter.key); setPage(1); setEditingTask(null); }}
-                                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isSelected
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex overflow-x-auto gap-1.5 p-1 rounded-2xl bg-[var(--card)] border border-[var(--border)] self-start max-w-full custom-scrollbar">
+                        {STATUS_FILTERS.map((filter) => {
+                            const Icon = filter.icon;
+                            const isSelected = activeFilter === filter.key;
+                            return (
+                                <button
+                                    key={filter.key}
+                                    onClick={() => { setActiveFilter(filter.key); setPage(1); setEditingTask(null); }}
+                                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${isSelected
+                                        ? "bg-[var(--primary)] text-white shadow-sm"
+                                        : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
+                                        }`}
+                                >
+                                    <Icon size={14} />
+                                    <span>{filter.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex items-center gap-1 p-1 rounded-2xl bg-[var(--card)] border border-[var(--border)]">
+                        <button
+                            type="button"
+                            onClick={() => setView("card")}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                view === "card"
                                     ? "bg-[var(--primary)] text-white shadow-sm"
-                                    : "text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
-                                    }`}
-                            >
-                                <Icon size={14} />
-                                <span>{filter.label}</span>
-                            </button>
-                        );
-                    })}
+                                    : "text-[var(--muted)] hover:text-[var(--text)]"
+                            }`}
+                        >
+                            <LayoutGrid size={14} />
+                            <span>Cards</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setView("table")}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                                view === "table"
+                                    ? "bg-[var(--primary)] text-white shadow-sm"
+                                    : "text-[var(--muted)] hover:text-[var(--text)]"
+                            }`}
+                        >
+                            <TableIcon size={14} />
+                            <span>Table</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* TASK GRID */}
+                {/* TASK GRID / TABLE */}
                 {taskLoading && tasks.length === 0 ? (
                     <AppLoader message="Loading tasks..." className="min-h-[300px]" />
                 ) : tasks.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-12 text-center rounded-3xl border border-dashed bg-[var(--card)] border-[var(--border)] min-h-[300px]">
+                    <div className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border border-dashed bg-[var(--card)] border-[var(--border)] min-h-[300px]">
                         <AlertCircle className="w-8 h-8 text-rose-500 mb-3" />
                         <h4 className="text-sm font-black uppercase tracking-wider text-[var(--text)]">No Tasks Found</h4>
                         <p className="text-xs font-medium text-[var(--muted)] mt-1.5 max-w-xs">
@@ -315,140 +370,122 @@ export default function AllTasksPage() {
                                 : "No tasks found matching this criteria."}
                         </p>
                     </div>
-                ) : (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {tasks.map((task) => {
-                                if (!task) return null;
-
-                                const currentStatus = statusConfig[task.status] || { bg: "bg-gray-500/10 text-gray-500 border-gray-500/20", label: "Task" };
-                                const currentPriority = priorityConfig[task.priority] || { bg: "bg-gray-500/10 text-gray-500", label: "Medium" };
-                                const targetCrew = (task.assigned_users || task.assignedUsers || task.assigned_members || []).filter(Boolean);
-
-                                // Computed per-task — safe here inside .map()
-                                const taskCanManage = canManageTask(task);
-
-                                return (
-                                    <article
-                                        key={task.id}
-                                        className="group p-5 rounded-3xl border transition-all duration-300 hover:translate-y-[-2px] bg-[var(--card)] border-[var(--border)] hover:border-[var(--primary)]/30 hover:shadow-lg cursor-pointer flex flex-col justify-between h-full min-h-[220px]"
-                                    >
-                                        <div className="space-y-4">
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="space-y-1">
-                                                    <h3 className="text-sm font-black leading-snug tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
-                                                        {task.title}
-                                                    </h3>
-                                                    <p className="text-[11px] font-medium text-[var(--muted)] line-clamp-2 leading-relaxed">
-                                                        {task.description || "No description provided."}
-                                                    </p>
-                                                </div>
-                                                <span className={`shrink-0 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase border tracking-wider ${currentStatus.bg}`}>
-                                                    {currentStatus.label}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex flex-wrap gap-2 text-[11px] font-bold">
-                                                {task.project?.name && (
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--input)] text-[var(--muted)]">
-                                                        <FolderKanban size={13} />
-                                                        <span className="max-w-[220px] truncate">{task.project.name}</span>
-                                                    </div>
-                                                )}
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[var(--border)] bg-[var(--input)] text-[var(--muted)]">
-                                                    <Calendar size={13} />
-                                                    <span>Due: {task.due_date ? new Date(task.due_date).toLocaleDateString() : "No Deadline"}</span>
-                                                </div>
-                                                <div className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-[var(--border)] ${currentPriority.bg}`}>
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                                                    <span>{currentPriority.label} Priority</span>
-                                                </div>
-                                            </div>
-
-                                            {/* ASSIGNED CREW */}
-                                            <div className="pt-3 border-t border-[var(--border)]/60">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <Users size={12} className="text-[var(--muted)]" />
-                                                    <span className="text-[10px] font-black uppercase tracking-wider text-[var(--muted)]">Assigned Crew</span>
-                                                </div>
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {targetCrew.length > 0 ? (
-                                                        targetCrew.map((assignedUser, idx) => {
-                                                            const initials = assignedUser.name
-                                                                ? assignedUser.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
-                                                                : "??";
-                                                            return (
-                                                                <div key={assignedUser.id || idx} className="flex items-center gap-2 px-2.5 py-1 rounded-xl text-xs font-semibold border border-[var(--border)] bg-[var(--hover)] max-w-[160px]">
-                                                                    <div className="w-4 h-4 rounded-md bg-[var(--primary)] text-white text-[9px] font-black flex items-center justify-center shrink-0">{initials}</div>
-                                                                    <span className="truncate text-[var(--text)] text-[11px] font-medium">{assignedUser.name || "Unknown"}</span>
-                                                                </div>
-                                                            );
-                                                        })
-                                                    ) : (
-                                                        <span className="text-xs font-medium italic text-[var(--muted)] pl-0.5">No crew members assigned.</span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* FOOTER ACTIONS */}
-                                        <div className="mt-5 pt-3 border-t flex items-center justify-between border-[var(--border)]/60">
-                                            <div className="flex items-center gap-2">
-                                                {/* Edit — only for managers/admin */}
-                                                {taskCanManage && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleEditTask(task)}
-                                                        className="p-2 rounded-xl bg-blue-500/10 text-blue-500 hover:bg-blue-500 hover:text-white transition-all cursor-pointer"
-                                                    >
-                                                        <Edit3 size={14} />
-                                                    </button>
-                                                )}
-
-                                                {/* Assign — only for managers/admin */}
-                                                {taskCanManage && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedTask(task);
-                                                            if (task.project?.id) {
-                                                                dispatch(getProjectMembersThunk(task.project.id));
-                                                            }
-                                                            setAssignDrawerOpen(true);
-                                                        }}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-500/10 text-violet-500 hover:bg-violet-500 hover:text-white transition-all text-xs font-bold cursor-pointer"
-                                                    >
-                                                        <Users size={14} />
-                                                        Assign
-                                                    </button>
-                                                )}
-                                            </div>
-
-                                            {/* Delete — only for managers/admin */}
-                                            {taskCanManage && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setConfirmDelete({ isOpen: true, taskId: task.id })}
-                                                    className="p-2 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all cursor-pointer"
-                                                >
-                                                    <Trash2 size={14} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </article>
-                                );
-                            })}
+                ) : view === "table" ? (
+                    <div className="overflow-hidden rounded-2xl border border-[var(--border)] shadow-sm bg-[var(--card)]">
+                        <div className="overflow-x-auto">
+                            <table className="w-full border-collapse text-left">
+                                <thead>
+                                    <tr className="border-b border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.03]">
+                                        <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Task</th>
+                                        <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Status</th>
+                                        <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Priority</th>
+                                        <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Due Date</th>
+                                        <th className="px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Assigned Crew</th>
+                                        <th className="px-5 py-3.5 text-right text-[10px] font-black uppercase tracking-widest text-[var(--muted)]">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedDisplayedTasks.map((task) => {
+                                        if (!task) return null;
+                                        const taskCanManage = canManageTask(task);
+                                        return (
+                                            <TaskCard
+                                                key={`task-table-${task.id}`}
+                                                task={task}
+                                                view="table"
+                                                isSelected={selectedTaskId === task.id}
+                                                onSelect={() => setSelectedTaskId(prev => prev === task.id ? null : task.id)}
+                                                canEdit={taskCanManage}
+                                                canDelete={taskCanManage}
+                                                onUpdate={async (taskId, updates) => {
+                                                    try {
+                                                        await dispatch(updateTaskStatusThunk({ taskId, ...updates })).unwrap();
+                                                        showToast.success("Status updated");
+                                                        refreshTasks();
+                                                    } catch (err) {
+                                                        showToast.error(err?.message || "Failed to update status");
+                                                    }
+                                                }}
+                                                onUpdateDetails={async (taskId, updates) => {
+                                                    try {
+                                                        await dispatch(updateTaskThunk({ taskId, payload: updates })).unwrap();
+                                                        showToast.success("Task updated");
+                                                        refreshTasks();
+                                                    } catch (err) {
+                                                        showToast.error(err?.message || "Failed to update task");
+                                                    }
+                                                }}
+                                                onDelete={async (taskId) => {
+                                                    try {
+                                                        await dispatch(deleteTaskThunk(taskId)).unwrap();
+                                                        showToast.success("Task deleted");
+                                                        refreshTasks();
+                                                    } catch (err) {
+                                                        showToast.error(err?.message || "Failed to delete task");
+                                                    }
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                         </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        {paginatedDisplayedTasks.map((task) => {
+                            if (!task) return null;
+                            const taskCanManage = canManageTask(task);
+                            return (
+                                <div key={`task-card-${task.id}`}>
+                                    <TaskCard
+                                        task={task}
+                                        view="card"
+                                        isSelected={selectedTaskId === task.id}
+                                        onSelect={() => setSelectedTaskId(prev => prev === task.id ? null : task.id)}
+                                        canEdit={taskCanManage}
+                                        canDelete={taskCanManage}
+                                        onUpdate={async (taskId, updates) => {
+                                            try {
+                                                await dispatch(updateTaskStatusThunk({ taskId, ...updates })).unwrap();
+                                                showToast.success("Status updated");
+                                                refreshTasks();
+                                            } catch (err) {
+                                                showToast.error(err?.message || "Failed to update status");
+                                            }
+                                        }}
+                                        onUpdateDetails={async (taskId, updates) => {
+                                            try {
+                                                await dispatch(updateTaskThunk({ taskId, payload: updates })).unwrap();
+                                                showToast.success("Task updated");
+                                                refreshTasks();
+                                            } catch (err) {
+                                                showToast.error(err?.message || "Failed to update task");
+                                            }
+                                        }}
+                                        onDelete={async (taskId, updates) => {
+                                            try {
+                                                await dispatch(deleteTaskThunk(taskId)).unwrap();
+                                                showToast.success("Task deleted");
+                                                refreshTasks();
+                                            } catch (err) {
+                                                showToast.error(err?.message || "Failed to delete task");
+                                            }
+                                        }}
+                                    />
+                                </div>
+                            );
+                        })}
                     </div>
                 )}
 
                 {/* PAGINATION */}
-                <div className="bg-[var(--card)] border border-[var(--border)] rounded-3xl overflow-hidden shadow-xs mt-4">
+                <div className="bg-[var(--card)] border border-[var(--border)] rounded-2xl overflow-hidden shadow-sm mt-4">
                     <Pagination
-                        page={pagination?.currentPage || page}
-                        limit={pagination?.perPage || limit}
-                        total={pagination?.total || tasks.length}
-                        totalPages={pagination?.totalPages || 1}
+                        page={activeCurrentPage}
+                        limit={limit}
+                        total={activeTotal}
+                        totalPages={activeTotalPages}
                         onPageChange={({ page: newPage, limit: newLimit }) => {
                             setPage(newPage);
                             if (newLimit !== limit) {

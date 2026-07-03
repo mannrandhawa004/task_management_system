@@ -2,8 +2,9 @@
 
 import { X, Users, Loader2, Check } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { assignTaskThunk } from "@/features/tasks/thunks/taskThunk";
+import { getProjectMembersThunk } from "@/features/projects/thunks/projectThunk";
 import { showToast } from "@/lib/toast";
 
 function getTwoInitials(name) {
@@ -57,6 +58,15 @@ export default function AssignTaskDrawer({ open, onClose, task }) {
 
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (open && task) {
+            const projectId = task.project?.id || task.project_id;
+            if (projectId) {
+                dispatch(getProjectMembersThunk(projectId));
+            }
+        }
+    }, [open, task, dispatch]);
 
     if (!open || !task) return null;
 

@@ -284,7 +284,8 @@ class TaskModel {
           WHEN u1.id IS NOT NULL THEN
             JSON_OBJECT(
               'id', u1.id,
-              'name', u1.name
+              'name', u1.name,
+              'avatar', u1.avatar
             )
         END
       ) AS assigned_users

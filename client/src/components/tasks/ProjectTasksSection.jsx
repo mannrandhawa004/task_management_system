@@ -194,7 +194,7 @@ export default function ProjectTasksSection({
         ) : filteredTasks.length > 0 ? (
           view === "table" ? (
             /* TABLE VIEW */
-            <div className="overflow-hidden rounded-3xl border border-[var(--border)] bg-[var(--card)] shadow-xs animate-in fade-in duration-200">
+            <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] shadow-sm animate-in fade-in duration-200">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
@@ -237,7 +237,7 @@ export default function ProjectTasksSection({
             /* CARD VIEW */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
               {filteredTasks.map((task) => (
-                <div key={`task-card-${task.id}`} className="h-full">
+                <div key={`task-card-${task.id}`}>
                   <TaskCard
                     task={task}
                     view="card"
