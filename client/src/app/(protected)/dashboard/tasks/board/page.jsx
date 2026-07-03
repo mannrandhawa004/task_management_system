@@ -15,6 +15,7 @@ const COLUMNS = [
 ];
 
 const priorityClass = {
+  urgent: "text-purple-500 bg-purple-500/15 font-extrabold",
   high: "text-rose-500 bg-rose-500/10",
   medium: "text-amber-500 bg-amber-500/10",
   low: "text-emerald-500 bg-emerald-500/10",

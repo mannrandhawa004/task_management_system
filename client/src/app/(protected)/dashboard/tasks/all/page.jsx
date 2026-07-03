@@ -233,6 +233,7 @@ export default function AllTasksPage() {
         low: { bg: "bg-emerald-500/10 text-emerald-500", label: "Low" },
         medium: { bg: "bg-amber-500/10 text-amber-500", label: "Medium" },
         high: { bg: "bg-rose-500/10 text-rose-500", label: "High" },
+        urgent: { bg: "bg-purple-500/15 text-purple-500 font-extrabold", label: "Urgent" },
     };
 
     // ─── Render ───────────────────────────────────────────────────────────────
@@ -537,6 +538,7 @@ export default function AllTasksPage() {
                                         <option value="low">Low</option>
                                         <option value="medium">Medium</option>
                                         <option value="high">High</option>
+                                        <option value="urgent">Urgent</option>
                                     </select>
                                 </div>
                                 <div>

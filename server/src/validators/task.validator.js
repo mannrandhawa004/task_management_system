@@ -5,7 +5,7 @@ export const createTaskValidator = [
   body("description").optional().trim(),
   body("priority")
     .optional()
-    .isIn(["low", "medium", "high"])
+    .isIn(["low", "medium", "high", "urgent"])
     .withMessage("Invalid priority"),
 
   body("due_date").optional().isISO8601().withMessage("Invalid due date"),
@@ -14,7 +14,7 @@ export const createTaskValidator = [
 export const updateTaskValidator = [
   body("title").optional().trim().notEmpty(),
   body("description").optional().trim(),
-  body("priority").optional().isIn(["low", "medium", "high"]),
+  body("priority").optional().isIn(["low", "medium", "high", "urgent"]),
   body("status").optional().isIn(["todo", "in_progress", "completed"]),
   body("due_date").optional().isISO8601(),
 ];

@@ -110,6 +110,7 @@ export default function CreateTaskForm({ onSuccess, projectId, onCancel }) {
                             <option value="low">Low Severity</option>
                             <option value="medium">Medium Urgency</option>
                             <option value="high">High Velocity Critical</option>
+                            <option value="urgent">Urgent — Immediate Action Required</option>
                         </select>
                     </div>
 

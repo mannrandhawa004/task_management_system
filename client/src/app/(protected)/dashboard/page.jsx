@@ -1004,6 +1004,7 @@ function StatusBadge({ status }) {
 
 function PriorityBadge({ priority }) {
   const cfg = {
+    urgent: "bg-purple-500/15 text-purple-500 border-purple-500/30 font-extrabold",
     high: "bg-rose-500/10 text-rose-500 border-rose-500/20",
     medium: "bg-amber-500/10 text-amber-500 border-amber-500/20",
     low: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",

@@ -102,7 +102,8 @@ export default function MyTasksPage() {
     const priorityConfig = {
         low: { bg: "bg-emerald-500/10 text-emerald-500", label: "Low" },
         medium: { bg: "bg-amber-500/10 text-amber-500", label: "Medium" },
-        high: { bg: "bg-rose-500/10 text-rose-500", label: "High" }
+        high: { bg: "bg-rose-500/10 text-rose-500", label: "High" },
+        urgent: { bg: "bg-purple-500/15 text-purple-500 font-extrabold", label: "Urgent" }
     };
 
     return (

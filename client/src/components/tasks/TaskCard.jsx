@@ -135,6 +135,13 @@ export default function TaskCard({
       border: "border-rose-500/20 dark:border-rose-400/20",
       label: "High",
       iconBg: "bg-rose-500/12 text-rose-600 dark:text-rose-400"
+    },
+    urgent: {
+      bg: "bg-purple-500/15 dark:bg-purple-400/20",
+      text: "text-purple-600 dark:text-purple-300 font-extrabold",
+      border: "border-purple-500/30 dark:border-purple-400/30",
+      label: "Urgent",
+      iconBg: "bg-purple-500/15 text-purple-600 dark:text-purple-400"
     }
   };
 
@@ -304,6 +311,7 @@ export default function TaskCard({
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
+                <option value="urgent">Urgent</option>
               </select>
             ) : (
               <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border ${currentPriority.bg} ${currentPriority.text} ${currentPriority.border}`}>
@@ -560,6 +568,7 @@ export default function TaskCard({
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
                 </select>
               </div>
             </div>
