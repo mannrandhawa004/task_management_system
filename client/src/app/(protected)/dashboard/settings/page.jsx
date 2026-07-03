@@ -138,15 +138,6 @@ export default function SettingsPage() {
             </div>
           </SettingsPanel>
 
-          <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
-            <h2 className="mb-4 text-sm font-black">Workspace Snapshot</h2>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
-              <Snapshot icon={FolderKanban} label={isAdmin ? "Projects loaded" : "My projects"} value={projects?.length || 0} />
-              <Snapshot icon={CheckSquare} label="To do" value={todoTasks} />
-              <Snapshot icon={CheckSquare} label="Active tasks" value={activeTasks} />
-              <Snapshot icon={CheckSquare} label="Completed" value={completedTasks} />
-            </div>
-          </section>
         </section>
 
         <section className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 h-fit">
