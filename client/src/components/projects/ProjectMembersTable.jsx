@@ -19,14 +19,27 @@ function getTwoInitials(name) {
 
 function MemberAvatar({ member, sizeClass = "w-9 h-9", textClass = "text-sm" }) {
   const [imgError, setImgError] = useState(false);
-  const initials = getTwoInitials(member?.member_name || member?.name);
+  const avatarUrl =
+    member?.avatar ||
+    member?.profile_picture ||
+    member?.user_avatar ||
+    member?.member_avatar ||
+    member?.image ||
+    member?.photo ||
+    member?.picture ||
+    member?.user?.avatar ||
+    member?.user?.profile_picture ||
+    member?.user?.image ||
+    member?.user?.photo;
+  const displayName = member?.member_name || member?.name || member?.user?.name || member?.username || member?.email || "Member";
+  const initials = getTwoInitials(displayName);
 
   return (
     <div className={`relative rounded-xl overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black border border-[var(--primary)]/20 shadow-2xs ${sizeClass} ${textClass}`}>
-      {member?.avatar && !imgError ? (
+      {avatarUrl && !imgError ? (
         <img
-          src={member.avatar}
-          alt={member?.member_name || "Member"}
+          src={avatarUrl}
+          alt={displayName}
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />
@@ -165,10 +178,10 @@ export default function ProjectMembersTable({
                           <MemberAvatar member={member} sizeClass="w-9 h-9" textClass="text-sm" />
                           <div className="min-w-0">
                             <p className="font-black text-sm text-[var(--text)] truncate">
-                              {member.member_name}
+                              {member.member_name || member.name || member.user?.name || member.username || "Member"}
                             </p>
                             <p className="text-xs text-[var(--muted)] truncate">
-                              {member.email}
+                              {member.email || member.user?.email || ""}
                             </p>
                           </div>
                         </div>
@@ -221,10 +234,10 @@ export default function ProjectMembersTable({
                       <MemberAvatar member={member} sizeClass="w-10 h-10" textClass="text-sm" />
                       <div className="min-w-0">
                         <h4 className="font-black text-sm text-[var(--text)] truncate">
-                          {member.member_name}
+                          {member.member_name || member.name || member.user?.name || member.username || "Member"}
                         </h4>
                         <p className="text-xs text-[var(--muted)] truncate mt-0.5">
-                          {member.email}
+                          {member.email || member.user?.email || ""}
                         </p>
                       </div>
                     </div>

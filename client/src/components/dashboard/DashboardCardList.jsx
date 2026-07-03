@@ -1,8 +1,38 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, CheckSquare, User } from "lucide-react";
+
+function getTwoInitials(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function DashboardCreatorAvatar({ item }) {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = item?.avatar || item?.creator_avatar;
+  const initials = getTwoInitials(item?.creator_name);
+
+  return (
+    <div className="w-4 h-4 rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black text-[8px] border border-[var(--primary)]/20 shadow-2xs">
+      {avatarUrl && !imgError ? (
+        <img
+          src={avatarUrl}
+          alt={item?.creator_name || "Owner"}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  );
+}
 
 export default function DashboardCardList({ title, count, items, type, onInspectTask }) {
     return (
@@ -48,8 +78,8 @@ export default function DashboardCardList({ title, count, items, type, onInspect
                                             <>
                                                 <p className="text-xs truncate text-[var(--muted)] font-medium">{item.description || "No project overview description logged."}</p>
                                                 <div className="mt-2 flex flex-wrap items-center gap-3 text-[10px] text-[var(--muted)] font-bold uppercase tracking-wider">
-                                                    <span className="flex items-center gap-1 bg-[var(--hover)] px-2 py-0.5 border border-[var(--border)] rounded-md">
-                                                        <User size={11} className="text-[var(--primary)]" /> Owner: {item.creator_name || "System"}
+                                                    <span className="flex items-center gap-1.5 bg-[var(--hover)] px-2 py-0.5 border border-[var(--border)] rounded-md">
+                                                        <DashboardCreatorAvatar item={item} /> Owner: {item.creator_name || "System"}
                                                     </span>
                                                     <span className="flex items-center gap-1 bg-[var(--hover)] px-2 py-0.5 border border-[var(--border)] rounded-md">
                                                         <CheckSquare size={11} /> Tasks Bound: {item.tasks_count || 0}

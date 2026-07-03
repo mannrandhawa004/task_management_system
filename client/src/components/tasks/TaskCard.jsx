@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Fragment } from "react";
-import { Trash2, Calendar, UserCheck, Plus, X, ChevronDown, Edit2, Check } from "lucide-react";
+import { Trash2, Calendar, UserCheck, Plus, X, ChevronDown, Edit2, Check, Activity, Clock, Shield } from "lucide-react";
 import AssignTaskDrawer from "./AssignTaskDrawer";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 
@@ -14,16 +14,26 @@ function getTwoInitials(name) {
   return name.slice(0, 2).toUpperCase();
 }
 
-function UserAvatar({ user, sizeClass = "w-5 h-5", textClass = "text-[9px]" }) {
+function UserAvatar({ user, sizeClass = "w-8 h-8", textClass = "text-xs", borderClass = "border-2 border-[var(--card)]" }) {
   const [imgError, setImgError] = useState(false);
-  const initials = getTwoInitials(user?.name);
+  const avatarUrl =
+    user?.avatar ||
+    user?.profile_picture ||
+    user?.user_avatar ||
+    user?.image ||
+    user?.photo ||
+    user?.user?.avatar ||
+    user?.user?.profile_picture ||
+    user?.user?.image;
+  const displayName = user?.name || user?.user?.name || user?.username || user?.email || "User";
+  const initials = getTwoInitials(displayName);
 
   return (
-    <div className={`relative rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black border border-[var(--primary)]/20 ${sizeClass} ${textClass}`}>
-      {user?.avatar && !imgError ? (
+    <div className={`relative rounded-full overflow-hidden shrink-0 flex items-center justify-center bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 font-black shadow-2xs ${borderClass} ${sizeClass} ${textClass}`} title={displayName}>
+      {avatarUrl && !imgError ? (
         <img
-          src={user.avatar}
-          alt={user?.name || "User"}
+          src={avatarUrl}
+          alt={displayName}
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />
@@ -108,9 +118,9 @@ export default function TaskCard({
       border: "border-emerald-500/20 dark:border-emerald-400/20"
     },
     medium: {
-      bg: "bg-amber-500/10 dark:bg-amber-400/[0.12]",
-      text: "text-amber-600 dark:text-amber-300",
-      border: "border-amber-500/20 dark:border-amber-400/20"
+      bg: "bg-blue-500/10 dark:bg-blue-400/[0.12]",
+      text: "text-blue-600 dark:text-blue-300",
+      border: "border-blue-500/20 dark:border-blue-400/20"
     },
     high: {
       bg: "bg-rose-500/10 dark:bg-rose-400/[0.12]",
@@ -120,6 +130,32 @@ export default function TaskCard({
   };
 
   const currentPriority = priorityConfig[task.priority] || priorityConfig.medium;
+
+  // Single unified background tone for all cards inspired by the clean layout
+  const pastelStyles = {
+    high: {
+      cardBg: "bg-[var(--card)]",
+      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
+      iconTone: "bg-rose-500/15 text-rose-600 dark:text-rose-400",
+    },
+    medium: {
+      cardBg: "bg-[var(--card)]",
+      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
+      iconTone: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    },
+    low: {
+      cardBg: "bg-[var(--card)]",
+      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
+      iconTone: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    },
+    default: {
+      cardBg: "bg-[var(--card)]",
+      cardBorder: "border-[var(--border)] shadow-xs hover:shadow-md",
+      iconTone: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+    }
+  };
+
+  const currentPastel = pastelStyles[task.priority] || pastelStyles.default;
 
   const handleStatusChange = (e, newStatus) => {
     e.stopPropagation();
@@ -171,11 +207,11 @@ export default function TaskCard({
 
   const formattedDueDate = task.due_date
     ? new Date(task.due_date).toLocaleDateString(undefined, { month: "short", day: "numeric" })
-    : "Unscheduled";
+    : "No deadline";
 
-  // Assigned members collapsible logic
+  // Assigned members logic
   const assignedUsers = task?.assigned_users?.filter(Boolean) || [];
-  const maxVisible = view === "table" ? 1 : 2;
+  const maxVisible = view === "table" ? 3 : 3;
   const hasMore = assignedUsers.length > maxVisible;
   const visibleUsers = rosterExpanded ? assignedUsers : assignedUsers.slice(0, maxVisible);
   const hiddenCount = assignedUsers.length - maxVisible;
@@ -191,7 +227,7 @@ export default function TaskCard({
           }`}
         >
           {/* TASK TITLE & DESC */}
-          <td className="px-5 py-4 min-w-[220px] max-w-[320px]">
+          <td className="px-5 py-4 min-w-[240px] max-w-[340px]">
             {isEditing ? (
               <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
                 <input
@@ -207,13 +243,18 @@ export default function TaskCard({
                 />
               </div>
             ) : (
-              <div>
-                <h4 className="font-bold text-sm text-[var(--text)] tracking-tight truncate">
-                  {task.title}
-                </h4>
-                <p className="text-xs text-[var(--muted)] truncate mt-0.5">
-                  {task.description || "No description provided."}
-                </p>
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${currentPastel.iconTone}`}>
+                  <Activity size={15} strokeWidth={2.5} />
+                </div>
+                <div className="min-w-0">
+                  <h4 className="font-black text-sm text-[var(--text)] tracking-tight truncate">
+                    {task.title}
+                  </h4>
+                  <p className="text-xs text-[var(--muted)] truncate mt-0.5 font-medium">
+                    {task.description || "No description provided."}
+                  </p>
+                </div>
               </div>
             )}
           </td>
@@ -288,32 +329,56 @@ export default function TaskCard({
               />
             ) : (
               <span className="flex items-center gap-1.5">
-                <Calendar size={13} />
+                <Clock size={13} className="text-[var(--muted)]" />
                 {formattedDueDate}
               </span>
             )}
           </td>
 
-          {/* ASSIGNED MEMBERS COLLAPSIBLE ROSTER */}
+          {/* CIRCULAR OVERLAPPING AVATARS (COLLAPSIBLE / EXPANDABLE) */}
           <td className="px-5 py-4">
-            <div
-              className={`flex flex-wrap items-center gap-1.5 max-w-[260px] ${hasMore ? "cursor-pointer" : ""}`}
-              onClick={(e) => {
-                if (hasMore) {
-                  e.stopPropagation();
-                  setRosterExpanded(!rosterExpanded);
-                }
-              }}
-            >
-              {assignedUsers.length > 0 ? (
-                <>
-                  {visibleUsers.map((user) => (
+            <div className="flex items-center">
+              {!rosterExpanded ? (
+                /* Collapsed Circular Overlapping View */
+                <div
+                  className="flex items-center -space-x-2 cursor-pointer group"
+                  onClick={(e) => {
+                    if (assignedUsers.length > 0) {
+                      e.stopPropagation();
+                      setRosterExpanded(true);
+                    }
+                  }}
+                  title="Click to view all team members"
+                >
+                  {assignedUsers.length > 0 ? (
+                    <>
+                      {visibleUsers.map((user) => (
+                        <UserAvatar key={user.id} user={user} sizeClass="w-8 h-8" textClass="text-[10px]" borderClass="border-2 border-[var(--card)]" />
+                      ))}
+                      {hasMore && (
+                        <div className="w-8 h-8 rounded-full border-2 border-[var(--card)] bg-neutral-200 dark:bg-neutral-800 text-[var(--text)] font-black text-[10px] flex items-center justify-center shrink-0 z-10">
+                          +{hiddenCount}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-xs italic text-[var(--muted)] mr-2">Unassigned</span>
+                  )}
+                </div>
+              ) : (
+                /* Expanded Roster View */
+                <div
+                  className="flex flex-wrap items-center gap-1.5 max-w-[260px] cursor-pointer"
+                  onClick={(e) => { e.stopPropagation(); setRosterExpanded(false); }}
+                  title="Click to fold member list"
+                >
+                  {assignedUsers.map((user) => (
                     <span
                       key={user.id}
-                      className="pl-1 pr-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1.5 bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs hover:border-[var(--primary)]/40 transition"
+                      className="pl-1 pr-2 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs"
                     >
-                      <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
-                      <span className="truncate max-w-[85px]">{user.name}</span>
+                      <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" borderClass="border border-[var(--border)]" />
+                      <span className="truncate max-w-[75px]">{user.name}</span>
                       {canEdit && (
                         <button
                           type="button"
@@ -326,29 +391,11 @@ export default function TaskCard({
                       )}
                     </span>
                   ))}
-
-                  {!rosterExpanded && hasMore && (
-                    <span
-                      className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20 hover:bg-[var(--primary)] hover:text-white transition shadow-2xs select-none"
-                      title="Click to view all assigned members"
-                    >
-                      +{hiddenCount} more
-                    </span>
-                  )}
-
-                  {rosterExpanded && hasMore && (
-                    <span
-                      className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/5 dark:bg-white/5 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--border)] transition select-none"
-                      title="Click to collapse member list"
-                    >
-                      Less
-                    </span>
-                  )}
-                </>
-              ) : (
-                <span className="text-xs italic text-[var(--muted)]">Unassigned</span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/10 dark:bg-white/10 text-[var(--text)]">Less</span>
+                </div>
               )}
 
+              {/* Purple circular + button */}
               {task.status !== "completed" && (
                 <button
                   type="button"
@@ -356,10 +403,10 @@ export default function TaskCard({
                     e.stopPropagation();
                     setAssignOpen(true);
                   }}
-                  className="p-1 rounded-md text-[var(--muted)] hover:text-[var(--primary)] hover:bg-black/5 dark:hover:bg-white/5 transition"
+                  className="w-8 h-8 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white flex items-center justify-center border-2 border-[var(--card)] shadow-xs transition hover:scale-105 shrink-0 ml-1 cursor-pointer"
                   title="Assign collaborator"
                 >
-                  <Plus size={14} strokeWidth={2.5} />
+                  <Plus size={15} strokeWidth={3} />
                 </button>
               )}
             </div>
@@ -417,7 +464,7 @@ export default function TaskCard({
                   <button
                     type="button"
                     onClick={() => setAssignOpen(true)}
-                    className="px-3 py-1.5 rounded-xl font-bold tracking-wide text-white bg-[var(--primary)] hover:opacity-95 transition cursor-pointer w-fit"
+                    className="px-3 py-1.5 rounded-xl font-bold tracking-wide text-white bg-indigo-500 hover:bg-indigo-600 transition cursor-pointer w-fit"
                   >
                     + Assign Team Member
                   </button>
@@ -442,58 +489,165 @@ export default function TaskCard({
     );
   }
 
-  // CARD VIEW
+  // ══════════════════════════════════════════════════════════════════════════
+  // CARD VIEW (INSPIRED BY PASTEL SCREENSHOT DESIGN)
+  // ══════════════════════════════════════════════════════════════════════════
   return (
     <>
       <article
         onClick={onSelect}
-        className="rounded-2xl p-5 border cursor-pointer transition-all duration-200 ease-in-out hover:shadow-md transform-gpu relative overflow-hidden group"
-        style={{
-          background: "var(--card)",
-          color: "var(--text)",
-          borderColor: isSelected ? "var(--primary)" : "var(--border)",
-          boxShadow: "var(--shadow)",
-        }}
+        className={`rounded-3xl p-5 border cursor-pointer transition-all duration-200 ease-in-out hover:shadow-md transform-gpu relative overflow-hidden group ${currentPastel.cardBg} ${isSelected ? "border-[var(--primary)] ring-1 ring-[var(--primary)]" : currentPastel.cardBorder}`}
       >
-        {/* Top accent line */}
-        <div className={`h-1 w-full absolute top-0 left-0 transition-opacity ${isSelected ? "opacity-100 bg-[var(--primary)]" : "opacity-0 group-hover:opacity-40 bg-[var(--primary)]"}`} />
+        {/* Top Header Row: Icon + Title + Due Date */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className={`w-9 h-9 rounded-2xl flex items-center justify-center shrink-0 shadow-2xs ${currentPastel.iconTone}`}>
+              <Activity size={18} strokeWidth={2.5} />
+            </div>
+            <div className="min-w-0 flex-1">
+              {isEditing ? (
+                <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    className="w-full text-base font-black bg-white/60 dark:bg-black/40 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+                  />
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    className="w-full text-xs bg-white/60 dark:bg-black/40 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
+                  />
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-base font-black tracking-tight text-[var(--text)] truncate">{task.title}</h3>
+                  <p className="text-xs sm:text-sm font-medium leading-relaxed line-clamp-2 mt-1.5 text-[var(--muted)]">
+                    {task.description || "No supplemental details provided for this work item."}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
 
-        {/* STRUCTURAL INTERACTION LAYER */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-1 min-w-0 w-full">
-            {isEditing ? (
-              <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
-                <input
-                  type="text"
-                  value={editForm.title}
-                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                  className="w-full text-base font-bold bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
-                />
-                <textarea
-                  value={editForm.description}
-                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full text-xs bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-lg px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
-                />
+          {/* Due date badge top right */}
+          <div className="shrink-0 flex flex-col items-end gap-1">
+            <span className="text-[11px] font-black uppercase tracking-wider text-[var(--muted)] bg-white/50 dark:bg-black/30 px-2.5 py-1 rounded-xl border border-[var(--border)]/40 flex items-center gap-1">
+              <Clock size={11} />
+              {formattedDueDate}
+            </span>
+          </div>
+        </div>
+
+        {/* Edit fields if editing */}
+        {isEditing && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 p-3 rounded-2xl bg-white/50 dark:bg-black/30 border border-[var(--border)]/60 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              <span>Due:</span>
+              <input
+                type="date"
+                value={editForm.due_date}
+                onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+                className="bg-white dark:bg-black border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)]"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span>Priority:</span>
+              <select
+                value={editForm.priority}
+                onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+                className="bg-white dark:bg-black border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] uppercase font-bold"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* Bottom Row: Circular Overlapping Avatars + Purple (+) Button + Status Badge */}
+        <div className="mt-5 pt-3.5 border-t border-black/5 dark:border-white/10 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center">
+            {!rosterExpanded ? (
+              /* Collapsed Circular Overlapping View */
+              <div
+                className="flex items-center -space-x-2.5 cursor-pointer group"
+                onClick={(e) => {
+                  if (assignedUsers.length > 0) {
+                    e.stopPropagation();
+                    setRosterExpanded(true);
+                  }
+                }}
+                title="Click to expand assigned members"
+              >
+                {assignedUsers.length > 0 ? (
+                  <>
+                    {visibleUsers.map((user) => (
+                      <UserAvatar key={user.id} user={user} sizeClass="w-9 h-9" textClass="text-xs" borderClass="border-2 border-[var(--card)]" />
+                    ))}
+                    {hasMore && (
+                      <div className="w-9 h-9 rounded-full border-2 border-[var(--card)] bg-neutral-200 dark:bg-neutral-800 text-[var(--text)] font-black text-[11px] flex items-center justify-center shrink-0 z-10 shadow-xs hover:scale-105 transition">
+                        +{hiddenCount}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-xs italic text-[var(--muted)] mr-2">Unassigned</span>
+                )}
               </div>
             ) : (
-              <>
-                <h3 className="text-base font-bold tracking-tight text-[var(--text)] truncate">{task.title}</h3>
-                <p className="text-xs leading-relaxed line-clamp-2 mt-1" style={{ color: "var(--muted)" }}>
-                  {task.description || "No supplemental details provided for this work item node."}
-                </p>
-              </>
+              /* Expanded View */
+              <div
+                className="flex flex-wrap items-center gap-1.5 cursor-pointer max-w-[280px]"
+                onClick={(e) => { e.stopPropagation(); setRosterExpanded(false); }}
+                title="Click to fold member list"
+              >
+                {assignedUsers.map((user) => (
+                  <span
+                    key={user.id}
+                    className="pl-1 pr-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 bg-white/80 dark:bg-black/50 border border-[var(--border)] text-[var(--text)] shadow-2xs"
+                  >
+                    <UserAvatar user={user} sizeClass="w-6 h-6" textClass="text-[9px]" borderClass="border border-[var(--border)]" />
+                    <span className="truncate max-w-[85px]">{user.name}</span>
+                    {canEdit && (
+                      <button
+                        type="button"
+                        onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
+                        className="text-neutral-400 hover:text-rose-500 transition cursor-pointer ml-0.5"
+                        title="Remove member"
+                      >
+                        <X size={11} strokeWidth={3} />
+                      </button>
+                    )}
+                  </span>
+                ))}
+                <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/10 dark:bg-white/10 text-[var(--text)]">Less</span>
+              </div>
+            )}
+
+            {/* Circular vibrant purple (+) button */}
+            {!isSelected && task.status !== "completed" && (
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setAssignOpen(true); }}
+                className="w-9 h-9 rounded-full bg-indigo-500 hover:bg-indigo-600 text-white flex items-center justify-center border-2 border-[var(--card)] shadow-sm transition hover:scale-105 shrink-0 ml-1.5 cursor-pointer"
+                title="Assign collaborator"
+              >
+                <Plus size={16} strokeWidth={3} />
+              </button>
             )}
           </div>
 
-          {/* INTERACTIVE STATUS BADGE DROPDOWN */}
-          <div className="relative shrink-0">
+          {/* Status Dropdown / Interactive Badge */}
+          <div className="relative shrink-0 flex items-center gap-2">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 setStatusDropdownOpen(!statusDropdownOpen);
               }}
-              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition ${currentStatus.bg} ${currentStatus.text} ${currentStatus.border}`}
+              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 transition shadow-2xs bg-white/80 dark:bg-black/40 ${currentStatus.text} ${currentStatus.border}`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${currentStatus.dot}`} />
               {currentStatus.label}
@@ -502,7 +656,7 @@ export default function TaskCard({
 
             {statusDropdownOpen && (
               <div
-                className="absolute right-0 mt-1 w-36 rounded-xl border p-1 shadow-xl z-20"
+                className="absolute right-0 bottom-full mb-1 w-36 rounded-xl border p-1 shadow-xl z-30"
                 style={{ background: "var(--card)", borderColor: "var(--border)" }}
               >
                 {statusOptions.map((key) => (
@@ -524,116 +678,9 @@ export default function TaskCard({
           </div>
         </div>
 
-        {/* METRICS ROW FOOTPRINT */}
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px] font-semibold" onClick={(e) => isEditing && e.stopPropagation()}>
-          {isEditing ? (
-            <div className="flex items-center gap-3 w-full">
-              <div className="flex items-center gap-1.5">
-                <Calendar size={13} style={{ color: "var(--muted)" }} />
-                <input
-                  type="date"
-                  value={editForm.due_date}
-                  onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
-                  className="bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] text-[11px]"
-                />
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span style={{ color: "var(--muted)" }}>Priority:</span>
-                <select
-                  value={editForm.priority}
-                  onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                  className="bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] text-[11px] uppercase font-bold"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
-            </div>
-          ) : (
-            <>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/5" style={{ color: "var(--muted)" }}>
-                <Calendar size={13} />
-                Due: {formattedDueDate}
-              </span>
-              <span className={`px-2.5 py-1 rounded-lg uppercase tracking-wider font-bold ${currentPriority.bg} ${currentPriority.text}`}>
-                • {task.priority} Priority
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* ASSIGNED TEAM COLLAPSIBLE ROSTER */}
-        <div className="mt-4 pt-4 border-t flex items-center justify-between gap-2" style={{ borderColor: "var(--border)" }}>
-          <div
-            className={`flex items-center gap-1.5 overflow-hidden flex-wrap ${hasMore ? "cursor-pointer" : ""}`}
-            onClick={(e) => {
-              if (hasMore) {
-                e.stopPropagation();
-                setRosterExpanded(!rosterExpanded);
-              }
-            }}
-          >
-            {assignedUsers.length > 0 ? (
-              <>
-                {visibleUsers.map((user) => (
-                  <span
-                    key={user.id}
-                    className="group relative pl-1 pr-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5 transition bg-black/5 dark:bg-white/5 border border-[var(--border)] text-[var(--text)] shadow-2xs hover:border-[var(--primary)]/40"
-                  >
-                    <UserAvatar user={user} sizeClass="w-5 h-5" textClass="text-[8px]" />
-                    <span className="truncate max-w-[90px] font-bold">{user.name}</span>
-                    {canEdit && (
-                      <button
-                        type="button"
-                        onClick={(e) => handleRemoveMemberClick(e, user.id, user.name)}
-                        className="text-neutral-400 hover:text-rose-500 transition cursor-pointer text-[10px] ml-0.5"
-                        title="Remove member"
-                      >
-                        <X size={11} strokeWidth={3} />
-                      </button>
-                    )}
-                  </span>
-                ))}
-
-                {!rosterExpanded && hasMore && (
-                  <span
-                    className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[var(--primary)]/10 text-[var(--primary)] border border-[var(--primary)]/20 hover:bg-[var(--primary)] hover:text-white transition shadow-2xs select-none"
-                    title="Click to view all assigned members"
-                  >
-                    +{hiddenCount} more
-                  </span>
-                )}
-
-                {rosterExpanded && hasMore && (
-                  <span
-                    className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-black/5 dark:bg-white/5 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--border)] transition select-none"
-                    title="Click to collapse member list"
-                  >
-                    Less
-                  </span>
-                )}
-              </>
-            ) : (
-              <span className="text-xs italic text-[var(--muted)]">Unassigned Roster</span>
-            )}
-
-            {!isSelected && task.status !== "completed" && (
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setAssignOpen(true); }}
-                className="p-1 rounded-md text-[var(--muted)] hover:text-[var(--primary)] hover:bg-black/5 dark:hover:bg-white/5 transition"
-                title="Assign member"
-              >
-                <Plus size={14} strokeWidth={2.5} />
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* EXPANDED ACCORDION LAYER */}
+        {/* EXPANDED ACCORDION LAYER (WHEN CARD IS CLICKED) */}
         {isSelected && (
-          <div className="mt-4 pt-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs" style={{ borderColor: "var(--border)" }}>
+          <div className="mt-4 pt-3.5 border-t border-black/5 dark:border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs">
             <div className="flex items-center gap-1.5 text-[var(--muted)]">
               <UserCheck size={14} className="text-[var(--primary)]" />
               Owner: <strong className="text-[var(--text)] font-semibold">{task.created_by?.name || "System"}</strong>
@@ -653,7 +700,7 @@ export default function TaskCard({
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-bold tracking-wide border border-[var(--border)] text-[var(--text)] bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 transition active:scale-98 cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl font-bold tracking-wide border border-[var(--border)] text-[var(--text)] bg-white/60 dark:bg-black/40 hover:bg-white dark:hover:bg-black/60 transition active:scale-98 cursor-pointer"
                   >
                     <Edit2 size={13} /> Edit
                   </button>
@@ -664,8 +711,7 @@ export default function TaskCard({
                 <button
                   type="button"
                   onClick={() => setAssignOpen(true)}
-                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl font-bold tracking-wide text-white transition active:scale-98 cursor-pointer shadow-xs"
-                  style={{ background: "var(--primary)" }}
+                  className="flex-1 sm:flex-none px-3.5 py-1.5 rounded-xl font-bold tracking-wide text-white transition active:scale-98 cursor-pointer shadow-xs bg-indigo-500 hover:bg-indigo-600"
                 >
                   Assign member
                 </button>

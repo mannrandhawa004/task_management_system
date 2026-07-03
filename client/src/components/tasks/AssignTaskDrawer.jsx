@@ -17,14 +17,27 @@ function getTwoInitials(name) {
 
 function DrawerMemberAvatar({ member }) {
   const [imgError, setImgError] = useState(false);
-  const initials = getTwoInitials(member?.name || member?.member_name);
+  const avatarUrl =
+    member?.avatar ||
+    member?.profile_picture ||
+    member?.user_avatar ||
+    member?.member_avatar ||
+    member?.image ||
+    member?.photo ||
+    member?.picture ||
+    member?.user?.avatar ||
+    member?.user?.profile_picture ||
+    member?.user?.image ||
+    member?.user?.photo;
+  const displayName = member?.name || member?.member_name || member?.user?.name || member?.username || member?.email || "Member";
+  const initials = getTwoInitials(displayName);
 
   return (
     <div className="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 overflow-hidden bg-[var(--primary)]/15 text-[var(--primary)] border border-[var(--primary)]/20 shadow-2xs">
-      {member?.avatar && !imgError ? (
+      {avatarUrl && !imgError ? (
         <img
-          src={member.avatar}
-          alt={member?.name || "Member"}
+          src={avatarUrl}
+          alt={displayName}
           className="w-full h-full object-cover"
           onError={() => setImgError(true)}
         />

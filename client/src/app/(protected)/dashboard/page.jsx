@@ -43,6 +43,38 @@ import RecentlyActiveTasks from "../../../components/dashboard/RecentlyActiveTas
 import DailyTaskProgressChart from "../../../components/dashboard/DailyTaskProgressChart";
 import AppLoader from "@/components/common/AppLoader";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+function getTwoInitials(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function DrawerCreatorAvatar({ project }) {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = project?.avatar || project?.creator_avatar;
+  const initials = getTwoInitials(project?.creator_name);
+
+  return (
+    <div className="w-5 h-5 rounded-md overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black text-[9px] border border-[var(--primary)]/20 shadow-2xs">
+      {avatarUrl && !imgError ? (
+        <img
+          src={avatarUrl}
+          alt={project?.creator_name || "Creator"}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  );
+}
 
 
 function getGreeting() {
@@ -752,9 +784,12 @@ export default function DashboardPage() {
                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)] flex items-center gap-1">
                         <User size={10} /> Creator
                       </p>
-                      <p className="text-xs font-black truncate">
-                        {currentProject.creator_name || "—"}
-                      </p>
+                      <div className="flex items-center gap-2 min-w-0 mt-0.5">
+                        <DrawerCreatorAvatar project={currentProject} />
+                        <p className="text-xs font-black truncate">
+                          {currentProject.creator_name || "—"}
+                        </p>
+                      </div>
                     </div>
                     <div className="p-3.5 rounded-2xl bg-[var(--hover)] border border-[var(--border)] space-y-1">
                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--muted)] flex items-center gap-1">

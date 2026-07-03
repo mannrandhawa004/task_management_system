@@ -58,6 +58,7 @@ class ProjectModel {
         p.created_at,
 
         u.id AS creator_id,
+        u.avatar AS avatar,
         u.name AS creator_name,
         u.email AS creator_email,
 
@@ -111,6 +112,7 @@ class ProjectModel {
           p.updated_at,
 
           u.id AS creator_id,
+          u.avatar AS avatar,
           u.name AS creator_name,
           u.email AS creator_email,
 
@@ -238,6 +240,7 @@ class ProjectModel {
               pm.joined_at,
             
               u.id as member_id,
+              u.avatar as avatar,
               u.name as member_name,
               u.email,
               u.status
@@ -306,6 +309,7 @@ class ProjectModel {
         p.updated_at,
 
         u.id AS creator_id,
+        u.avatar as avatar,
         u.name AS creator_name,
         u.email AS creator_email,
 

@@ -1,6 +1,37 @@
 "use client";
 
+import { useState } from "react";
 import { FolderKanban, User, CalendarDays } from "lucide-react";
+
+function getTwoInitials(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function HeaderCreatorAvatar({ project }) {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = project?.avatar || project?.creator_avatar;
+  const initials = getTwoInitials(project?.creator_name);
+
+  return (
+    <div className="w-6 h-6 rounded-lg overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black text-[10px] border border-[var(--primary)]/20 shadow-2xs">
+      {avatarUrl && !imgError ? (
+        <img
+          src={avatarUrl}
+          alt={project?.creator_name || "Creator"}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  );
+}
 
 export default function ProjectDetailsHeader({ project }) {
     return (
@@ -40,6 +71,7 @@ export default function ProjectDetailsHeader({ project }) {
                     <InfoCell
                         label="Creator"
                         value={project.creator_name || "Unknown"}
+                        avatar={<HeaderCreatorAvatar project={project} />}
                     />
                     <InfoCell
                         label="Date Launched"
@@ -51,15 +83,18 @@ export default function ProjectDetailsHeader({ project }) {
     );
 }
 
-function InfoCell({ label, value }) {
+function InfoCell({ label, value, avatar }) {
     return (
-        <div className="flex flex-col gap-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl px-4 py-3 border border-[var(--border)]/60">
+        <div className="flex flex-col gap-1.5 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl px-4 py-3 border border-[var(--border)]/60">
             <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">
                 {label}
             </span>
-            <span className="text-sm font-black text-[var(--text)]">
-                {value}
-            </span>
+            <div className="flex items-center gap-2 min-w-0">
+                {avatar}
+                <span className="text-sm font-black text-[var(--text)] truncate">
+                    {value}
+                </span>
+            </div>
         </div>
     );
 }

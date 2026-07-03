@@ -59,6 +59,36 @@ function ActionBtn({ href, onClick, icon: Icon, label, variant = "primary" }) {
   );
 }
 
+function getTwoInitials(name) {
+  if (!name) return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return name.slice(0, 2).toUpperCase();
+}
+
+function CreatorAvatar({ project, sizeClass = "w-7 h-7", textClass = "text-xs", roundedClass = "rounded-lg" }) {
+  const [imgError, setImgError] = useState(false);
+  const avatarUrl = project?.avatar || project?.creator_avatar;
+  const initials = getTwoInitials(project?.creator_name);
+
+  return (
+    <div className={`relative overflow-hidden shrink-0 flex items-center justify-center bg-[var(--primary)]/15 text-[var(--primary)] font-black border border-[var(--primary)]/20 shadow-2xs ${sizeClass} ${textClass} ${roundedClass}`}>
+      {avatarUrl && !imgError ? (
+        <img
+          src={avatarUrl}
+          alt={project?.creator_name || "Creator"}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : (
+        <span>{initials}</span>
+      )}
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ProjectTable({ projects = [], loading, user, view }) {
   const dispatch = useDispatch();
@@ -175,7 +205,10 @@ export default function ProjectTable({ projects = [], loading, user, view }) {
                 <div className="grid grid-cols-2 gap-2 mt-auto">
                   <div className="flex flex-col gap-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl p-2.5 border border-[var(--border)]/60">
                     <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)] flex items-center gap-1"><User size={9}/> Creator</span>
-                    <span className="text-[11px] font-black text-[var(--text)] truncate">{project.creator_name || "—"}</span>
+                    <div className="flex items-center gap-1.5 mt-0.5 min-w-0">
+                      <CreatorAvatar project={project} sizeClass="w-5 h-5" textClass="text-[8px]" roundedClass="rounded-md" />
+                      <span className="text-[11px] font-black text-[var(--text)] truncate">{project.creator_name || "—"}</span>
+                    </div>
                   </div>
                   <div className="flex flex-col gap-1 bg-black/[0.03] dark:bg-white/[0.04] rounded-xl p-2.5 border border-[var(--border)]/60">
                     <span className="text-[9px] font-black uppercase tracking-widest text-[var(--muted)] flex items-center gap-1"><Shield size={9}/> Role</span>
@@ -249,10 +282,8 @@ export default function ProjectTable({ projects = [], loading, user, view }) {
 
                   {/* Creator */}
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] flex items-center justify-center font-black text-xs shrink-0">
-                        {project.creator_name?.[0]?.toUpperCase() || "?"}
-                      </div>
+                    <div className="flex items-center gap-2.5">
+                      <CreatorAvatar project={project} sizeClass="w-8 h-8" textClass="text-xs" roundedClass="rounded-xl" />
                       <div className="min-w-0">
                         <p className="text-xs font-black text-[var(--text)] truncate max-w-[130px]">{project.creator_name || "—"}</p>
                         <p className="text-[10px] text-[var(--muted)] truncate max-w-[130px]">{project.creator_email || ""}</p>
