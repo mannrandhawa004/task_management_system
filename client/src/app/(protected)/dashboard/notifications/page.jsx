@@ -19,6 +19,7 @@ import {
 
 import AppLoader from "@/components/common/AppLoader";
 import Pagination from "@/components/common/Pagination";
+import ConfirmDialog from "@/components/common/ConfirmDialog";
 import {
   getNotifications,
   markAllNotificationsAsRead,
@@ -33,6 +34,16 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [deleteLoadingId, setDeleteLoadingId] = useState(null);
+
+  // Confirmation dialog state
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    confirmLabel: "Confirm",
+    onConfirm: null,
+  });
+  const closeConfirm = () => setConfirmDialog((prev) => ({ ...prev, open: false, onConfirm: null }));
 
   // Filter & Search states
   const [activeTab, setActiveTab] = useState("all"); // "all" | "unread" | "read"
@@ -117,6 +128,7 @@ export default function NotificationsPage() {
       await deleteNotification(id);
       setNotifications((prev) => prev.filter((item) => item.id !== id));
       showToast.success("Notification removed");
+      closeConfirm();
     } catch (error) {
       showToast.error(error?.response?.data?.message || "Failed to delete notification");
     } finally {
@@ -125,14 +137,12 @@ export default function NotificationsPage() {
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm("Are you sure you want to permanently delete all notifications from the database?")) {
-      return;
-    }
     try {
       setActionLoading(true);
       await clearAllNotifications();
       setNotifications([]);
       showToast.success("All stored notifications cleared");
+      closeConfirm();
     } catch (error) {
       showToast.error(error?.response?.data?.message || "Failed to clear notifications");
     } finally {
@@ -185,7 +195,15 @@ export default function NotificationsPage() {
           <button
             type="button"
             disabled={actionLoading || notifications.length === 0}
-            onClick={handleClearAll}
+            onClick={() => {
+              setConfirmDialog({
+                open: true,
+                title: "Clear All Stored Notifications",
+                message: "Are you sure you want to permanently remove all notifications from the database? All alert tracking data will be deleted.",
+                confirmLabel: "Clear All Notifications",
+                onConfirm: handleClearAll,
+              });
+            }}
             className="flex items-center gap-2 rounded-2xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500 hover:text-white text-rose-500 px-4 py-2.5 text-xs font-black disabled:opacity-40 cursor-pointer shadow-2xs transition"
           >
             <Trash2 size={14} />
@@ -332,7 +350,15 @@ export default function NotificationsPage() {
                         <button
                           type="button"
                           disabled={isDeleting}
-                          onClick={() => handleDeleteOne(notification.id)}
+                          onClick={() => {
+                            setConfirmDialog({
+                              open: true,
+                              title: "Delete Notification",
+                              message: `Are you sure you want to permanently remove "${notification.title}" from your stored notifications?`,
+                              confirmLabel: "Delete Notification",
+                              onConfirm: () => handleDeleteOne(notification.id),
+                            });
+                          }}
                           title="Delete notification"
                           className="p-2 rounded-xl border border-[var(--border)] bg-[var(--input)] text-[var(--muted)] hover:text-rose-500 hover:border-rose-500/30 hover:bg-rose-500/10 transition cursor-pointer disabled:opacity-50"
                         >
@@ -364,6 +390,18 @@ export default function NotificationsPage() {
           </>
         )}
       </section>
+
+      {/* CONFIRMATION DIALOG */}
+      <ConfirmDialog
+        open={confirmDialog.open}
+        onClose={closeConfirm}
+        onConfirm={confirmDialog.onConfirm}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        confirmLabel={confirmDialog.confirmLabel}
+        loading={actionLoading || deleteLoadingId !== null}
+        variant="danger"
+      />
     </main>
   );
 }
