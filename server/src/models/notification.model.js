@@ -103,6 +103,22 @@ class NotificationModel {
     return await executeQuery(query, [userId]);
   }
 
+  async deleteNotification(notificationId, userId) {
+    const query = `
+      DELETE FROM notifications
+      WHERE id = ? AND user_id = ?
+    `;
+    return await executeQuery(query, [notificationId, userId]);
+  }
+
+  async clearAllNotifications(userId) {
+    const query = `
+      DELETE FROM notifications
+      WHERE user_id = ?
+    `;
+    return await executeQuery(query, [userId]);
+  }
+
   async getAllAdminIds() {
     const query = `
       SELECT id FROM users WHERE role_id = '1'

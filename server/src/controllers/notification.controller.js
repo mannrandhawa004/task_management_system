@@ -59,6 +59,52 @@ class NotificationController {
 
     return successResponse(res, "All notifications marked as read", null, 200);
   });
+
+  deleteNotification = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    await NotificationService.deleteNotification(id, req.user.id);
+
+    try {
+      await AuditService.log({
+        user_id: req.user.id,
+        action: AUDIT_ACTIONS.DELETE_NOTIFICATION,
+        entity_type: "notification",
+        entity_id: id,
+        ip_address: req.clientIp,
+        details: {
+          notification_id: id,
+          user_id: req.user.id,
+          summary: "Notification deleted",
+        },
+      });
+    } catch (error) {
+      console.error("Audit log failed for delete notification:", error.message);
+    }
+
+    return successResponse(res, "Notification deleted", null, 200);
+  });
+
+  clearAllNotifications = asyncHandler(async (req, res) => {
+    await NotificationService.clearAllNotifications(req.user.id);
+
+    try {
+      await AuditService.log({
+        user_id: req.user.id,
+        action: AUDIT_ACTIONS.CLEAR_ALL_NOTIFICATIONS,
+        entity_type: "user",
+        entity_id: req.user.id,
+        ip_address: req.clientIp,
+        details: {
+          user_id: req.user.id,
+          summary: "All notifications cleared",
+        },
+      });
+    } catch (error) {
+      console.error("Audit log failed for clear all notifications:", error.message);
+    }
+
+    return successResponse(res, "All notifications cleared", null, 200);
+  });
 }
 
 export default new NotificationController();

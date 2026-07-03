@@ -63,6 +63,14 @@ class NotificationService {
   async markAllAsRead(userId) {
     return await NotificationModel.markAllAsRead(userId);
   }
+
+  async deleteNotification(notificationId, userId) {
+    return await NotificationModel.deleteNotification(notificationId, userId);
+  }
+
+  async clearAllNotifications(userId) {
+    return await NotificationModel.clearAllNotifications(userId);
+  }
 }
 
 export default new NotificationService();
