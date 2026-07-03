@@ -172,7 +172,13 @@ class TaskService {
       return task;
     }
 
-    if (user?.role !== "admin") {
+    const isPrivileged =
+      user?.role === "admin" ||
+      user?.role === "super_admin" ||
+      user?.role === "manager" ||
+      Number(task?.created_by?.id) === Number(user?.id);
+
+    if (!isPrivileged) {
       const allowedTransitions = {
         todo: ["in_progress"],
         in_progress: ["completed"],
@@ -181,7 +187,7 @@ class TaskService {
 
       if (!allowedTransitions[task.status]?.includes(status)) {
         throw new BadRequestError(
-          "Invalid task status transition"
+          "Standard workflow policy restricts moving completed tasks backward or returning active tasks to backlog. Contact a project manager or admin to reopen or reassign this task."
         );
       }
     }

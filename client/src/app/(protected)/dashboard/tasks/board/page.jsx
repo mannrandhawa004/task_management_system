@@ -72,6 +72,7 @@ export default function TaskBoardPage() {
   const { tasks, taskLoading } = useSelector((state) => state.task);
   const user = useSelector((state) => state.auth.user);
   const isAdmin = user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
+  const canManage = isAdmin || user?.role?.toLowerCase() === "manager";
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
 
@@ -97,25 +98,33 @@ export default function TaskBoardPage() {
   }).length;
 
   const handleStatusMove = async (task, status) => {
-    const assignedUsers = (task.assigned_users || []).filter(Boolean);
+    if (task.status === status) return;
 
-    if (status === "todo" && !isAdmin) {
-      showToast.error("Only admins can move a task back to To Do.");
-      return;
+    const assignedUsers = (task.assigned_users || []).filter(Boolean);
+    const isPrivileged = canManage || Number(task?.created_by?.id) === Number(user?.id);
+
+    // Enforce standard linear workflow (To Do -> In Progress -> Completed) for regular assignees
+    if (!isPrivileged) {
+      if (task.status === "completed") {
+        showToast.error("Completed tasks are finalized. Contact a manager or admin to reopen this item.");
+        return;
+      }
+      if (task.status === "in_progress" && status === "todo") {
+        showToast.error("Active tasks cannot be returned to To Do. Contact a manager to reassign or reset this item.");
+        return;
+      }
     }
 
     if (status !== "todo" && !assignedUsers.length) {
-      showToast.error("Assign a member before moving this task into active work.");
+      showToast.error("Assign a crew member before moving this task into active workflow.");
       return;
     }
 
-    if (task.status === status) return;
-
     try {
       await dispatch(updateTaskStatusThunk({ taskId: task.id, status })).unwrap();
-      showToast.success("Task moved successfully");
+      showToast.success(`Task moved to ${status.replace("_", " ")}`);
     } catch (error) {
-      showToast.error(error?.message || "Failed to move task");
+      showToast.error(error?.message || "Failed to transition task workflow");
     }
   };
 
