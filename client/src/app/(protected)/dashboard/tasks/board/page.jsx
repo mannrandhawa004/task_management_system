@@ -75,6 +75,7 @@ export default function TaskBoardPage() {
   const canManage = isAdmin || user?.role?.toLowerCase() === "manager";
   const [draggedTaskId, setDraggedTaskId] = useState(null);
   const [dragOverColumn, setDragOverColumn] = useState(null);
+  const [visibleLimits, setVisibleLimits] = useState({ todo: 8, in_progress: 8, completed: 8 });
 
   useEffect(() => {
     if (isAdmin) {
@@ -169,6 +170,8 @@ export default function TaskBoardPage() {
           const Icon = column.icon;
           const columnTasks = groupedTasks[column.key] || [];
           const isDragTarget = dragOverColumn === column.key;
+          const currentLimit = visibleLimits[column.key] || 8;
+          const displayedTasks = columnTasks.slice(0, currentLimit);
 
           return (
             <section
@@ -179,14 +182,14 @@ export default function TaskBoardPage() {
               }}
               onDragLeave={() => setDragOverColumn(null)}
               onDrop={() => handleDrop(column.key)}
-              className={`min-h-[620px] rounded-3xl border transition-all duration-200 flex flex-col overflow-hidden ${
+              className={`h-[calc(100vh-210px)] min-h-[1200px]  rounded-3xl border transition-all duration-200 flex flex-col overflow-hidden ${
                 isDragTarget
                   ? "border-[var(--primary)] ring-2 ring-[var(--primary)]/20 bg-[var(--primary)]/5"
                   : "border-[var(--border)] bg-black/[0.02] dark:bg-white/[0.02]"
               }`}
             >
               {/* Column Header */}
-              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] p-4 shadow-2xs">
+              <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)] p-4 shadow-2xs shrink-0">
                 <div className="flex items-center gap-2.5">
                   <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${column.bgTone}`}>
                     <Icon className={column.tone} size={16} strokeWidth={2.5} />
@@ -203,8 +206,8 @@ export default function TaskBoardPage() {
                 </span>
               </div>
 
-              {/* Column Cards Container */}
-              <div className="space-y-3.5 p-3.5 flex-1 flex flex-col">
+              {/* Column Cards Container (Independently Scrollable) */}
+              <div className="space-y-3.5 p-3.5 flex-1 overflow-y-auto custom-scrollbar flex flex-col">
                 {columnTasks.length === 0 ? (
                   <div className="flex flex-1 min-h-[240px] flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[var(--border)]/70 bg-[var(--card)]/50 p-6 text-center">
                     <Icon className="w-8 h-8 text-[var(--muted)] opacity-40 mb-2" />
@@ -212,17 +215,40 @@ export default function TaskBoardPage() {
                     <p className="text-[11px] text-[var(--muted)] mt-0.5">Drag tasks here to change status</p>
                   </div>
                 ) : (
-                  columnTasks.map((task) => (
-                    <TaskBoardCard
-                      key={task.id}
-                      task={task}
-                      columnAccent={column.accent}
-                      onMove={handleStatusMove}
-                      canReopen={isAdmin}
-                      onDragStart={() => setDraggedTaskId(task.id)}
-                      onDragEnd={() => setDraggedTaskId(null)}
-                    />
-                  ))
+                  <>
+                    {displayedTasks.map((task) => (
+                      <TaskBoardCard
+                        key={task.id}
+                        task={task}
+                        columnAccent={column.accent}
+                        onMove={handleStatusMove}
+                        canReopen={canManage}
+                        onDragStart={() => setDraggedTaskId(task.id)}
+                        onDragEnd={() => setDraggedTaskId(null)}
+                      />
+                    ))}
+
+                    {/* Pagination / Show More Pill */}
+                    {columnTasks.length > currentLimit && (
+                      <button
+                        type="button"
+                        onClick={() => setVisibleLimits(prev => ({ ...prev, [column.key]: prev[column.key] + 10 }))}
+                        className="w-full py-2.5 px-4 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--card)] text-xs font-black text-[var(--primary)] hover:bg-[var(--hover)] hover:border-[var(--primary)]/40 transition-all cursor-pointer text-center shadow-2xs mt-2 shrink-0"
+                      >
+                        + Show {columnTasks.length - currentLimit} More ({currentLimit} of {columnTasks.length})
+                      </button>
+                    )}
+
+                    {currentLimit > 8 && columnTasks.length > 8 && (
+                      <button
+                        type="button"
+                        onClick={() => setVisibleLimits(prev => ({ ...prev, [column.key]: 8 }))}
+                        className="w-full py-1.5 px-3 rounded-xl text-[11px] font-bold text-[var(--muted)] hover:text-[var(--text)] transition-colors cursor-pointer text-center shrink-0"
+                      >
+                        ↑ Collapse list to 8 items
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             </section>
@@ -249,108 +275,99 @@ function TaskBoardCard({ task, columnAccent, onMove, canReopen, onDragStart, onD
   const overdue = task.due_date && task.status !== "completed" && new Date(task.due_date) < new Date();
   const canStart = assignedUsers.length > 0;
   const priorityCfg = priorityConfig[task.priority] || priorityConfig.medium;
-  const projectName = task.project?.name || task.projectName;
+  const projectName = task.project?.name || task.projectName || "General Operations";
 
   return (
     <article
       draggable
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
-      className="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-xs transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 group cursor-grab active:cursor-grabbing"
+      style={{ borderLeftColor: columnAccent, borderLeftWidth: "4px" }}
+      className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 group cursor-grab active:cursor-grabbing flex flex-col justify-between space-y-3"
     >
-      {/* Left accent stripe */}
-      <div
-        className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl"
-        style={{ background: columnAccent }}
-      />
-
-      <div className="pl-2 space-y-3">
-        {/* Row 1: Title & Priority Badge */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 text-[14px] font-bold leading-snug tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
-              {task.title}
-            </h3>
-            {projectName && (
-              <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-semibold text-[var(--muted)]">
-                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: columnAccent }} />
-                <span className="truncate max-w-[170px]">{projectName}</span>
-              </div>
-            )}
+      {/* Top Header Row */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <h3 className="line-clamp-2 text-[14px] font-black leading-snug tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
+            {task.title}
+          </h3>
+          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-bold text-[var(--muted)] border border-[var(--border)]/40">
+            <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: columnAccent }} />
+            <span className="truncate max-w-[170px]">{projectName}</span>
           </div>
-
-          <span className={`shrink-0 px-2 py-0.5 rounded-md text-[9px] uppercase tracking-widest border ${priorityCfg.bg} ${priorityCfg.text} ${priorityCfg.border}`}>
-            {priorityCfg.label}
-          </span>
         </div>
 
-        {/* Description */}
-        {task.description && (
-          <p className="line-clamp-2 text-xs font-medium leading-relaxed text-[var(--muted)]">
-            {task.description}
-          </p>
-        )}
+        <span className={`shrink-0 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest border ${priorityCfg.bg} ${priorityCfg.text} ${priorityCfg.border}`}>
+          {priorityCfg.label}
+        </span>
+      </div>
 
-        {/* Row 2: Metadata Footer — Avatars + Due Date */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]/50 text-xs">
-          {/* Avatars */}
-          <div className="flex items-center -space-x-1.5 overflow-hidden">
-            {assignedUsers.length > 0 ? (
-              assignedUsers.slice(0, 3).map((u) => (
+      {/* Description */}
+      {task.description && (
+        <p className="line-clamp-2 text-xs font-medium leading-relaxed text-[var(--muted)] pt-0.5">
+          {task.description}
+        </p>
+      )}
+
+      {/* Footer Metadata & Actions Row */}
+      <div className="pt-3 border-t border-[var(--border)]/60 flex items-center justify-between gap-2 text-xs">
+        {/* Left Side: Avatars */}
+        <div className="flex items-center gap-1.5 overflow-hidden">
+          {assignedUsers.length > 0 ? (
+            <div className="flex items-center -space-x-1.5">
+              {assignedUsers.slice(0, 3).map((u) => (
                 <UserAvatar key={u.id} user={u} sizeClass="w-6 h-6" textClass="text-[9px]" />
-              ))
-            ) : (
-              <span className="text-[11px] font-medium text-[var(--muted)] italic">Unassigned</span>
-            )}
-            {assignedUsers.length > 3 && (
-              <div className="w-6 h-6 rounded-full bg-neutral-200 dark:bg-neutral-800 border border-[var(--card)] text-[9px] font-black flex items-center justify-center shrink-0 z-10">
-                +{assignedUsers.length - 3}
-              </div>
-            )}
-          </div>
-
-          {/* Due date */}
-          <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${
-            overdue
-              ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
-              : "bg-black/[0.03] dark:bg-white/[0.04] text-[var(--muted)]"
-          }`}>
-            <Clock size={11} />
-            <span>{task.due_date ? new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : "No date"}</span>
-          </div>
-        </div>
-
-        {/* Row 3: Quick Status Action Pills */}
-        <div className="flex items-center justify-end pt-1">
-          {task.status === "todo" && !canStart && (
-            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
-              Assign member to start
+              ))}
+              {assignedUsers.length > 3 && (
+                <div className="w-6 h-6 rounded-full bg-[var(--hover)] border border-[var(--card)] text-[9px] font-black flex items-center justify-center shrink-0 z-10 text-[var(--muted)]">
+                  +{assignedUsers.length - 3}
+                </div>
+              )}
+            </div>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--hover)] text-[10px] font-semibold text-[var(--muted)]">
+              Unassigned
             </span>
           )}
+        </div>
+
+        {/* Right Side: Due Date & Quick Action Buttons */}
+        <div className="flex items-center gap-1.5">
+          {task.due_date && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+              overdue
+                ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
+                : "bg-[var(--hover)] text-[var(--muted)]"
+            }`}>
+              <Clock size={11} />
+              {new Date(task.due_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            </span>
+          )}
+
           {task.status === "todo" && canStart && (
             <button
-              onClick={() => onMove(task, "in_progress")}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition shadow-2xs active:scale-95 cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); onMove(task, "in_progress"); }}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition shadow-2xs active:scale-95 cursor-pointer"
             >
-              <span>Start Task</span>
-              <ArrowRight size={12} />
+              <span>Start</span>
+              <ArrowRight size={11} />
             </button>
           )}
           {task.status === "in_progress" && (
             <button
-              onClick={() => onMove(task, "completed")}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-[11px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-2xs active:scale-95 cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); onMove(task, "completed"); }}
+              className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-[10px] font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-2xs active:scale-95 cursor-pointer"
             >
-              <Check size={12} />
-              <span>Complete</span>
+              <Check size={11} />
+              <span>Done</span>
             </button>
           )}
           {task.status === "completed" && canReopen && (
             <button
-              onClick={() => onMove(task, "in_progress")}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold text-[var(--muted)] hover:text-amber-500 hover:bg-amber-500/10 border border-[var(--border)] transition active:scale-95 cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); onMove(task, "in_progress"); }}
+              className="flex items-center gap-1 px-2 py-1 rounded-xl text-[10px] font-bold text-[var(--muted)] hover:text-amber-500 hover:bg-amber-500/10 border border-[var(--border)] transition active:scale-95 cursor-pointer"
             >
-              <RotateCcw size={11} />
+              <RotateCcw size={10} />
               <span>Reopen</span>
             </button>
           )}

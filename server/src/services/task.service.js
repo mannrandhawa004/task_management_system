@@ -174,8 +174,7 @@ class TaskService {
 
     const isPrivileged =
       user?.role === "admin" ||
-      user?.role === "super_admin" ||
-      user?.role === "manager" ||
+      user?.role === "super_admin" 
       Number(task?.created_by?.id) === Number(user?.id);
 
     if (!isPrivileged) {
