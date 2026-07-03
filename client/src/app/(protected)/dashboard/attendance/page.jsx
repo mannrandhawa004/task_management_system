@@ -48,8 +48,10 @@ export default function AttendancePage() {
   const [dateLabel, setDateLabel] = useState("");
   const [cursorDate, setCursorDate] = useState(() => new Date());
 
-  // Super Admin view filters
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split("T")[0]);
+  const [filterDate, setFilterDate] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
   const [filterDept, setFilterDept] = useState("");
 
   const isManagement = ["admin", "super_admin", "dept_head", "hr"].includes(
