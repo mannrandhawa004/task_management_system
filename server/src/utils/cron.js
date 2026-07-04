@@ -1,8 +1,22 @@
 import cron from 'node-cron';
 import { executeQuery } from './dbQuery.js';
 import AttendanceService from '../services/attendance.service.js';
+import BirthdayService from '../services/birthday.service.js';
 
 export function setupCronJobs() {
+  // Run every day at midnight (00:00) for birthday checks
+  cron.schedule('0 0 * * *', async () => {
+    console.log('Running daily midnight birthday reminder cron job...');
+    await BirthdayService.checkAndNotifyBirthdays();
+  });
+
+  // Also run birthday check 5 seconds after server startup to catch missed notifications
+  setTimeout(() => {
+    BirthdayService.checkAndNotifyBirthdays().catch((err) =>
+      console.error('Startup birthday check error:', err.message)
+    );
+  }, 5000);
+
   // Run every day at 22:00 (10 PM)
   cron.schedule('0 22 * * *', async () => {
     console.log('Running daily 10 PM auto-checkout cron job...');

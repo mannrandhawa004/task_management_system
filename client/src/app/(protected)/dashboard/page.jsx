@@ -45,6 +45,9 @@ import AppLoader from "@/components/common/AppLoader";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import BirthdayGreetingModal from "@/components/dashboard/BirthdayGreetingModal";
+import BirthdayBanner from "@/components/dashboard/BirthdayBanner";
+import TodayBirthdaysWidget from "@/components/dashboard/TodayBirthdaysWidget";
 
 function getTwoInitials(name) {
   if (!name) return "??";
@@ -178,6 +181,18 @@ export default function DashboardPage() {
 
   const isAdmin =
     user?.role?.toLowerCase() === "admin" || user?.role?.toLowerCase() === "super_admin";
+
+  const normalizedRole = (user?.role_name || user?.role || "").toLowerCase().replace(/ /g, "_");
+  const canViewBirthdayWidget = [
+    "super_admin",
+    "admin",
+    "hr",
+    "human_resources",
+    "project_manager",
+    "manager",
+    "team_lead",
+    "dept_head",
+  ].includes(normalizedRole);
 
   // Fetch dashboard stats from API - single source of truth
   useEffect(() => {
@@ -456,6 +471,9 @@ export default function DashboardPage() {
 
   return (
     <main className="min-h-screen p-3 md:p-2 space-y-6 bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
+      {/* Birthday Celebration Components */}
+      <BirthdayGreetingModal user={user} />
+      <BirthdayBanner user={user} />
 
       {/* ── HEADER ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-[var(--border)]/60">
@@ -542,20 +560,26 @@ export default function DashboardPage() {
           <LiveClockTile clockTime={clockTime} clockDate={clockDate} />
         </div>
 
-        {/* Row 4: Activity feeds side-by-side */}
-        <div className="lg:col-span-6 flex flex-col">
+        {/* Row 4: Activity feeds & Celebration Corner */}
+        <div className={canViewBirthdayWidget ? "lg:col-span-4 flex flex-col" : "lg:col-span-6 flex flex-col"}>
           <RecentlyActiveProjects
             projects={recentlyActiveProjectsData}
             loading={recentlyActiveProjectsLoading}
           />
         </div>
 
-        <div className="lg:col-span-6 flex flex-col">
+        <div className={canViewBirthdayWidget ? "lg:col-span-4 flex flex-col" : "lg:col-span-6 flex flex-col"}>
           <RecentlyActiveTasks
             tasks={recentlyActiveTasksData}
             loading={recentlyActiveTasksLoading}
           />
         </div>
+
+        {canViewBirthdayWidget && (
+          <div className="lg:col-span-4 flex flex-col">
+            <TodayBirthdaysWidget user={user} />
+          </div>
+        )}
       </div>
 
      

@@ -99,6 +99,7 @@ class UserModel {
         u.email,
         u.phone,
         u.employee_id,
+        u.dob,
         u.reporting_manager_id,
         m.name AS manager_name,
         u.team_id,
@@ -154,6 +155,7 @@ class UserModel {
         u.email,
         u.phone,
         u.employee_id,
+        u.dob,
         u.reporting_manager_id,
         m.name AS manager_name,
         u.team_id,
@@ -225,12 +227,13 @@ class UserModel {
     reporting_manager_id,
     team_id,
     avatar,
+    dob,
   }) {
     const query = `
       INSERT INTO users (
         name, first_name, last_name, email, password, role_id, department_id,
-        phone, employee_id, reporting_manager_id, team_id, avatar, status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
+        phone, employee_id, reporting_manager_id, team_id, avatar, dob, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active')
     `;
     const params = [
       name,
@@ -245,6 +248,7 @@ class UserModel {
       reporting_manager_id || null,
       team_id || null,
       avatar || null,
+      dob || null,
     ];
     const result = await executeQuery(query, params);
     return result;
@@ -263,6 +267,7 @@ class UserModel {
     team_id,
     status,
     avatar,
+    dob,
   }) {
     let query = `
       UPDATE users SET
@@ -292,6 +297,11 @@ class UserModel {
       status,
     ];
 
+    if (dob !== undefined) {
+      query += ", dob = ? ";
+      params.push(dob || null);
+    }
+
     if (avatar) {
       query += ", avatar = ? ";
       params.push(avatar);
@@ -306,6 +316,79 @@ class UserModel {
   async deleteUser(id) {
     const query = `DELETE FROM users WHERE id = ?`;
     return await executeQuery(query, [id]);
+  }
+
+  async getTodayBirthdays({ requestingUser }) {
+    const params = [];
+    let visibilityQuery = " WHERE u.status = 'active' AND u.dob IS NOT NULL ";
+    const userRole = requestingUser?.role ? requestingUser.role.toLowerCase() : "";
+
+    let dateCondition = `
+      AND (
+        (MONTH(u.dob) = MONTH(CURRENT_DATE()) AND DAY(u.dob) = DAY(CURRENT_DATE()))
+        OR (MONTH(CURRENT_DATE()) = 2 AND DAY(CURRENT_DATE()) = 28 AND DAY(LAST_DAY(CURRENT_DATE())) = 28 AND MONTH(u.dob) = 2 AND DAY(u.dob) = 29)
+      )
+    `;
+
+    if (userRole === "super_admin" || userRole === "admin" || userRole === "hr") {
+      // No visibility restrictions
+    } else if (userRole === "dept_head") {
+      visibilityQuery += " AND u.department_id = ? ";
+      params.push(requestingUser.department_id);
+    } else if (userRole === "team_lead") {
+      visibilityQuery += ` AND (u.id = ? 
+        OR u.team_id IN (SELECT id FROM teams WHERE lead_id = ?) 
+        OR u.id IN (SELECT user_id FROM team_members WHERE team_id IN (SELECT id FROM teams WHERE lead_id = ?))) `;
+      params.push(requestingUser.id, requestingUser.id, requestingUser.id);
+    } else if (userRole === "project_manager" || userRole === "manager") {
+      visibilityQuery += ` AND (u.id = ? 
+        OR u.reporting_manager_id = ?
+        OR u.id IN (
+          SELECT DISTINCT pm.user_id 
+          FROM project_members pm 
+          WHERE pm.project_id IN (
+            SELECT p.id 
+            FROM projects p 
+            LEFT JOIN project_members pm2 ON pm2.project_id = p.id AND pm2.user_id = ?
+            WHERE p.created_by = ? OR pm2.role_id IN (1)
+          )
+        )) `;
+      params.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
+    } else {
+      // Standard employee can only see themselves
+      visibilityQuery += " AND u.id = ? ";
+      params.push(requestingUser.id);
+    }
+
+    const query = `
+      SELECT
+        u.id,
+        u.name,
+        u.first_name,
+        u.last_name,
+        u.email,
+        u.phone,
+        u.employee_id,
+        u.dob,
+        u.avatar,
+        u.department_id,
+        d.name AS department_name,
+        u.team_id,
+        t.name AS team_name,
+        r.name AS role,
+        u.reporting_manager_id,
+        m.name AS manager_name
+      FROM users u
+      JOIN roles r ON r.id = u.role_id
+      LEFT JOIN departments d ON u.department_id = d.id
+      LEFT JOIN teams t ON u.team_id = t.id
+      LEFT JOIN users m ON u.reporting_manager_id = m.id
+      ${visibilityQuery}
+      ${dateCondition}
+      ORDER BY u.name ASC
+    `;
+
+    return await executeQuery(query, params);
   }
 }
 

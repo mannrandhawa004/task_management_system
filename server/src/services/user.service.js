@@ -46,6 +46,10 @@ class UserService {
     return await UserModel.getAllRoles();
   }
 
+  async getTodayBirthdays({ requestingUser }) {
+    return await UserModel.getTodayBirthdays({ requestingUser });
+  }
+
   async validateUserRelations({ department_id, role_id, team_id, reporting_manager_id }) {
     // 1. Department must exist
     const dept = await UserModel.getDepartmentById(department_id);

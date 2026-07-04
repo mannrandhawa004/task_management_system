@@ -314,6 +314,18 @@ export default function UserDetailPage() {
                 <p className="text-sm font-black text-[var(--text)]">{user.employee_id || "N/A"}</p>
               </div>
               <div className="space-y-1">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">Date of Birth</span>
+                <p className="text-sm font-black text-[var(--text)]">
+                  {user.dob
+                    ? new Date(user.dob).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Not provided"}
+                </p>
+              </div>
+              <div className="space-y-1">
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">Account Status</span>
                 <p className="text-sm font-black capitalize text-[var(--text)]">{user.status || "Active"}</p>
               </div>

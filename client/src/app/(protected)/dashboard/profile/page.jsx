@@ -142,6 +142,19 @@ export default function ProfilePage() {
               <ProfileField icon={Mail} label="Email Address" value={user?.email || "Not provided"} />
               <ProfileField icon={Phone} label="Phone Number" value={user?.phone || "Not provided"} />
               <ProfileField icon={Hash} label="Employee Badge ID" value={user?.employee_id || "Not assigned"} />
+              <ProfileField
+                icon={Calendar}
+                label="Date of Birth"
+                value={
+                  user?.dob
+                    ? new Date(user.dob).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : "Not provided"
+                }
+              />
             </div>
           </div>
         </div>

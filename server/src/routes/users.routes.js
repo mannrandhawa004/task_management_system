@@ -13,6 +13,7 @@ router.use(authMiddleware); // All user management endpoints require active sess
 // 1. Employee listing & roles (accessible to logged-in employees, but results are visibility restricted at model level)
 router.get("/", UserController.getAllUsers);
 router.get("/roles", UserController.getAllRoles);
+router.get("/birthdays/today", UserController.getTodayBirthdays);
 router.get("/:id", UserController.getUserById);
 
 // 2. User CRUD administration

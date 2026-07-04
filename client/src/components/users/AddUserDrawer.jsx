@@ -20,7 +20,8 @@ import {
   Building2,
   Shield,
   Users2,
-  Activity
+  Activity,
+  Calendar
 } from "lucide-react";
 
 import { createUserThunk, updateUserThunk, getRolesThunk } from "@/features/auth/thunks/authThunk";
@@ -58,6 +59,7 @@ export default function AddUserDrawer({ open, onClose, page, limit, editingUser 
     roleId: "",
     teamId: "",
     managerId: "",
+    dob: "",
     status: "active",
     password: "",
   });
@@ -81,6 +83,7 @@ export default function AddUserDrawer({ open, onClose, page, limit, editingUser 
           roleId: editingUser.role_id || "",
           teamId: editingUser.team_id || "",
           managerId: editingUser.reporting_manager_id || "",
+          dob: editingUser.dob ? editingUser.dob.split("T")[0] : "",
           status: editingUser.status || "active",
           password: "", // password remains empty unless they change it
         });
@@ -97,6 +100,7 @@ export default function AddUserDrawer({ open, onClose, page, limit, editingUser 
           roleId: "",
           teamId: "",
           managerId: "",
+          dob: "",
           status: "active",
           password: "",
         });
@@ -161,6 +165,7 @@ export default function AddUserDrawer({ open, onClose, page, limit, editingUser 
       formData.append("roleId", form.roleId);
       if (form.teamId) formData.append("teamId", form.teamId);
       if (form.managerId) formData.append("managerId", form.managerId);
+      if (form.dob) formData.append("dob", form.dob);
       formData.append("status", form.status);
 
       if (avatarFile) {
@@ -342,6 +347,15 @@ export default function AddUserDrawer({ open, onClose, page, limit, editingUser 
               value={form.employeeId}
               onChange={handleChange}
               required
+            />
+
+            <InputField
+              icon={Calendar}
+              label="Date of Birth (DOB)"
+              type="date"
+              name="dob"
+              value={form.dob}
+              onChange={handleChange}
             />
 
             {/* Department Select */}

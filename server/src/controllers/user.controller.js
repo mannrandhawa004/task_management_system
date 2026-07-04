@@ -49,6 +49,13 @@ class UserController {
     return successResponse(res, "System roles fetched successfully", roles, 200);
   });
 
+  getTodayBirthdays = asyncHandler(async (req, res) => {
+    const birthdays = await UserService.getTodayBirthdays({
+      requestingUser: req.user,
+    });
+    return successResponse(res, "Today's birthdays fetched successfully", birthdays, 200);
+  });
+
   createUser = asyncHandler(async (req, res) => {
     const {
       firstName,
@@ -62,6 +69,7 @@ class UserController {
       managerId,
       status,
       password,
+      dob,
     } = req.body;
 
     let profilePicUrl = null;
@@ -81,6 +89,7 @@ class UserController {
       reporting_manager_id: managerId,
       status: status || "active",
       password,
+      dob: dob || null,
       avatar: profilePicUrl,
     });
 
@@ -119,6 +128,7 @@ class UserController {
       teamId,
       managerId,
       status,
+      dob,
     } = req.body;
 
     let profilePicUrl = null;
@@ -137,6 +147,7 @@ class UserController {
       team_id: teamId,
       reporting_manager_id: managerId,
       status,
+      dob: dob !== undefined ? (dob || null) : undefined,
       avatar: profilePicUrl,
     });
 

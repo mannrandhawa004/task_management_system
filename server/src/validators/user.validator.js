@@ -59,6 +59,12 @@ export const createUserValidator = [
     .isNumeric()
     .withMessage("Manager ID must be an integer"),
 
+  body("dob")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isISO8601()
+    .withMessage("Date of birth must be a valid date"),
+
   body("password")
     .trim()
     .notEmpty()
@@ -125,6 +131,12 @@ export const updateUserValidator = [
     .trim()
     .isNumeric()
     .withMessage("Manager ID must be an integer"),
+
+  body("dob")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isISO8601()
+    .withMessage("Date of birth must be a valid date"),
 
   body("status")
     .trim()
