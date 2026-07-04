@@ -32,11 +32,23 @@ export default function RootLayout({
           </ThemeProvider>
 
           <Toaster
-            position="top-right"
+            position="bottom-center"
             gutter={12}
             containerStyle={{
-              top: 20,
-              right: 20,
+              bottom: 32,
+            }}
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: "var(--primary)",
+                color: "#ffffff",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                borderRadius: "9999px",
+                padding: "12px 24px",
+                fontSize: "13px",
+                fontWeight: "700",
+                boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2)",
+              },
             }}
           />
         </ReduxProvider>
