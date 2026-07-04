@@ -254,7 +254,7 @@ export default function MyTasksPage() {
                     {paginatedTasks.map((task) => {
                         if (!task) return null;
                         return (
-                            <div key={`task-card-${task.id}`}>
+                            <div key={`task-card-${task.id}`} className="h-full flex flex-col">
                                 <TaskCard
                                     task={task}
                                     view="card"

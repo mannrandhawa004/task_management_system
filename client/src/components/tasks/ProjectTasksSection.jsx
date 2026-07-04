@@ -237,7 +237,7 @@ export default function ProjectTasksSection({
             /* CARD VIEW */
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-200">
               {filteredTasks.map((task) => (
-                <div key={`task-card-${task.id}`}>
+                <div key={`task-card-${task.id}`} className="h-full flex flex-col">
                   <TaskCard
                     task={task}
                     view="card"

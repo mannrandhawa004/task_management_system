@@ -487,7 +487,7 @@ export default function TaskCard({
     <>
       <article
         onClick={onSelect}
-        className={`relative overflow-hidden rounded-2xl border bg-[var(--card)] cursor-pointer transition-all duration-200 hover:shadow-md group ${
+        className={`h-full flex flex-col justify-between relative overflow-hidden rounded-2xl border bg-[var(--card)] cursor-pointer transition-all duration-200 hover:shadow-md group ${
           isSelected
             ? "border-[var(--primary)] ring-1 ring-[var(--primary)]/30 shadow-md"
             : "border-[var(--border)] shadow-sm hover:border-[var(--border)]"
@@ -499,80 +499,82 @@ export default function TaskCard({
           style={{ background: currentStatus.accent }}
         />
 
-        <div className="p-5 pl-6">
-          {/* Row 1: Title + Due date */}
-          <div className="flex items-start justify-between gap-1">
-            <div className="min-w-0 flex-1">
-              {isEditing ? (
-                <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+        <div className="p-5 pl-6 flex-1 flex flex-col justify-between">
+          <div>
+            {/* Row 1: Title + Due date */}
+            <div className="flex items-start justify-between gap-1">
+              <div className="min-w-0 flex-1">
+                {isEditing ? (
+                  <div className="space-y-2" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      className="w-full text-sm font-bold bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
+                    />
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="w-full text-xs bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <h3 className="text-[15px] font-bold tracking-tight text-[var(--text)] leading-snug">
+                      {task.title}
+                    </h3>
+                    {projectName && (
+                      <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-semibold text-[var(--muted)]">
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: currentStatus.accent }} />
+                        {projectName}
+                      </div>
+                    )}
+                    {task.description && (
+                      <p className="text-[13px] font-medium leading-relaxed mt-2 text-[var(--muted)] line-clamp-3">
+                        {task.description}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+
+              {/* Due date badge top right */}
+              <div className="shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] bg-black/[0.04] dark:bg-white/[0.06] px-2 py-1 rounded-lg flex items-center gap-1">
+                  <Clock size={10} />
+                  {formattedDueDate}
+                </span>
+              </div>
+            </div>
+
+            {/* Edit fields for priority & due date when editing */}
+            {isEditing && (
+              <div className="mt-3 flex flex-wrap items-center gap-3 p-3 rounded-xl bg-black/[0.03] dark:bg-white/[0.03] border border-[var(--border)]/60 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--muted)]">Due:</span>
                   <input
-                    type="text"
-                    value={editForm.title}
-                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                    className="w-full text-sm font-bold bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)]"
-                  />
-                  <textarea
-                    value={editForm.description}
-                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                    className="w-full text-xs bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl px-3 py-1.5 text-[var(--text)] focus:outline-none focus:border-[var(--primary)] min-h-[60px]"
+                    type="date"
+                    value={editForm.due_date}
+                    onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
+                    className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)]"
                   />
                 </div>
-              ) : (
-                <>
-                  <h3 className="text-[15px] font-bold tracking-tight text-[var(--text)] leading-snug">
-                    {task.title}
-                  </h3>
-                  {projectName && (
-                    <div className="mt-1.5 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-black/[0.04] dark:bg-white/[0.06] text-[10px] font-semibold text-[var(--muted)]">
-                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: currentStatus.accent }} />
-                      {projectName}
-                    </div>
-                  )}
-                  {task.description && (
-                    <p className="text-[13px] font-medium leading-relaxed mt-2 text-[var(--muted)]">
-                      {task.description}
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-
-            {/* Due date badge top right */}
-            <div className="shrink-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] bg-black/[0.04] dark:bg-white/[0.06] px-2 py-1 rounded-lg flex items-center gap-1">
-                <Clock size={10} />
-                {formattedDueDate}
-              </span>
-            </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[var(--muted)]">Priority:</span>
+                  <select
+                    value={editForm.priority}
+                    onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
+                    className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] uppercase font-bold"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
-
-          {/* Edit fields for priority & due date when editing */}
-          {isEditing && (
-            <div className="mt-3 flex flex-wrap items-center gap-3 p-3 rounded-xl bg-black/[0.03] dark:bg-white/[0.03] border border-[var(--border)]/60 text-xs font-semibold" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-2">
-                <span className="text-[var(--muted)]">Due:</span>
-                <input
-                  type="date"
-                  value={editForm.due_date}
-                  onChange={(e) => setEditForm({ ...editForm, due_date: e.target.value })}
-                  className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)]"
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-[var(--muted)]">Priority:</span>
-                <select
-                  value={editForm.priority}
-                  onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
-                  className="bg-[var(--card)] border border-[var(--border)] rounded-lg px-2 py-1 text-[var(--text)] uppercase font-bold"
-                >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="urgent">Urgent</option>
-                </select>
-              </div>
-            </div>
-          )}
 
           {/* Row 2: Bottom bar — Avatars + Priority + Status */}
           <div className="mt-4 pt-3 border-t border-[var(--border)]/50 flex items-center justify-between gap-2 flex-wrap">
