@@ -172,8 +172,7 @@ export default function ProfilePage() {
             <div className="space-y-3">
               <ProfileField icon={BadgeCheck} label="Account Status" value={user?.status || "Active"} capitalize />
               <ProfileField icon={Calendar} label="Member Since" value={formattedDate} />
-              <ProfileField icon={Hash} label="Database Record ID" value={user?.id ? `#${user.id}` : "Not available"} />
-              <ProfileField icon={Clock} label="Session Security" value="Encrypted JWT Access" />
+              
             </div>
           </div>
         </div>
