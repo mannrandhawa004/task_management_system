@@ -4,93 +4,70 @@ import ThemeToggle from "@/components/ThemeToggle/ThemeToggle";
 export default function Home() {
   return (
     <main
-      className="relative z-10 isolate flex min-h-screen items-center justify-center overflow-hidden px-6"
+      className="relative z-10 isolate flex min-h-screen items-center justify-center overflow-hidden p-4 sm:p-6"
       style={{ background: "var(--bg)" }}
     >
-      {/* background blobs */}
+      {/* Subtle background glow */}
       <div
-        className="absolute left-[-120px] top-[-120px] h-[320px] w-[320px] rounded-full blur-3xl"
+        className="absolute left-[10%] top-[15%] h-[300px] w-[300px] rounded-full blur-3xl opacity-50 pointer-events-none"
         style={{ background: "var(--blob-1)" }}
       />
-
       <div
-        className="absolute bottom-[-150px] right-[-120px] h-[320px] w-[320px] rounded-full blur-3xl"
+        className="absolute bottom-[15%] right-[10%] h-[300px] w-[300px] rounded-full blur-3xl opacity-50 pointer-events-none"
         style={{ background: "var(--blob-2)" }}
       />
 
-      {/* theme switch */}
+      {/* Theme Switcher Top Right */}
       <div className="absolute right-6 top-6 z-50">
         <ThemeToggle />
       </div>
 
-      {/* container */}
+      {/* Compact Container tailored for laptop screens */}
       <div
-        className="
-    relative z-10
-    w-full max-w-7xl
-    overflow-hidden
-    rounded-[36px]
-    border
-    lg:grid lg:grid-cols-[1.05fr_0.95fr]
-    shadow-[0_30px_80px_rgba(0,0,0,0.12)]
-  "
+        className="relative z-10 w-full max-w-5xl overflow-hidden rounded-[28px] border lg:grid lg:grid-cols-[1.05fr_0.95fr] shadow-[0_20px_70px_rgba(0,0,0,0.12)] dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)] transition-all"
         style={{
           background: "var(--card)",
           borderColor: "var(--border)",
         }}
       >
-        {/* LEFT */}
-        <div className="relative hidden min-h-[700px] lg:block">
-          {/* background image */}
+        {/* LEFT SIDE: Simple & Clean Hero */}
+        <div className="relative hidden lg:flex flex-col justify-between p-10 text-white overflow-hidden">
+          {/* Background image */}
           <img
             src="https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop"
-            alt="team collaboration"
+            alt="Team collaboration"
             className="absolute inset-0 h-full w-full object-cover"
           />
 
-          {/* overlay */}
-          <div className="absolute inset-0 bg-black/50" />
+          {/* Simple overlay */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
 
-          {/* content */}
-          <div className="relative z-10 flex h-full flex-col justify-between p-14 text-white">
+          {/* Content */}
+          <div className="relative z-10 flex h-full flex-col justify-between py-2">
             <div>
-              <h1 className="text-2xl font-semibold">TaskFlow</h1>
-
-              <p className="mt-4 max-w-sm text-sm leading-7 text-zinc-200">
+              <h1 className="text-xl font-bold tracking-wide">TaskFlow</h1>
+              <p className="mt-2 text-xs leading-relaxed text-zinc-300 max-w-xs">
                 Manage projects, tasks and teams with a modern workflow.
               </p>
             </div>
 
-            <div>
-              <h2 className="max-w-md text-5xl font-semibold leading-tight">
+            <div className="my-8">
+              <h2 className="text-3xl xl:text-4xl font-bold leading-tight tracking-tight">
                 Organize your work beautifully.
               </h2>
-
-              <p className="mt-6 max-w-md text-base leading-7 text-zinc-200">
-                Collaborate with your team, assign tasks and track progress in
-                real time.
+              <p className="mt-3 text-sm leading-relaxed text-zinc-300 max-w-sm">
+                Collaborate with your team, assign tasks and track progress in real time.
               </p>
             </div>
-            {/* <div className="mt-10 flex gap-6">
-              <div>
-                <h4 className="text-3xl font-semibold">12k+</h4>
-                <p className="text-zinc-300 text-sm">Active users</p>
-              </div>
 
-              <div>
-                <h4 className="text-3xl font-semibold">98%</h4>
-                <p className="text-zinc-300 text-sm">Delivery success</p>
-              </div>
-            </div> */}
-
-            <p className="text-sm text-zinc-300">
+            <p className="text-xs font-medium text-zinc-400">
               Built for productivity teams.
             </p>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="flex items-center justify-center p-6 md:p-12">
+        {/* RIGHT SIDE: Compact Form */}
+        <div className="flex items-center justify-center p-6 sm:p-8 lg:p-10">
           <LoginForm />
         </div>
       </div>
