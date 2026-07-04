@@ -202,7 +202,8 @@ export default function Sidebar() {
                   >
                     {section.items.map((item) => {
                       const Icon = item.icon;
-                      const isActive = pathname === item.href;
+                      const isNestedRoute = (item.href === "/dashboard/users" || item.href === "/dashboard/projects" || item.href === "/dashboard/departments" || item.href === "/dashboard/teams") && pathname.startsWith(item.href + "/");
+                      const isActive = pathname === item.href || isNestedRoute;
 
                       return (
                         <Link
