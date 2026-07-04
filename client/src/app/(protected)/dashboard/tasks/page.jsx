@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
     myTaskThunk,
@@ -34,6 +35,8 @@ const STATUS_FILTERS = [
 
 export default function MyTasksPage() {
     const dispatch = useDispatch();
+    const searchParams = useSearchParams();
+    const urlTaskId = searchParams?.get("taskId");
 
     const [activeFilter, setActiveFilter] = useState("all");
     const [selectedProjectId, setSelectedProjectId] = useState("all");
@@ -41,6 +44,13 @@ export default function MyTasksPage() {
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [page, setPage] = useState(1);
     const [limit] = useState(9);
+
+    useEffect(() => {
+        if (urlTaskId) {
+            const numId = Number(urlTaskId);
+            setSelectedTaskId(numId || urlTaskId);
+        }
+    }, [urlTaskId]);
 
     const { tasks, taskLoading } = useSelector((state) => state.task);
     const { projects } = useSelector((state) => state.project);

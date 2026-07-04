@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import {
     getAllTasksThunk,
@@ -51,6 +52,8 @@ const VIEW_MODES = {
 
 export default function AllTasksPage() {
     const dispatch = useDispatch();
+    const searchParams = useSearchParams();
+    const urlTaskId = searchParams?.get("taskId");
 
     // ─── Auth ────────────────────────────────────────────────────────────────
     const { user } = useSelector((state) => state.auth);
@@ -82,6 +85,16 @@ export default function AllTasksPage() {
     const [selectedProjectId, setSelectedProjectId] = useState("all");
     const [view, setView] = useState("card");
     const [selectedTaskId, setSelectedTaskId] = useState(null);
+
+    useEffect(() => {
+        if (urlTaskId) {
+            const numId = Number(urlTaskId);
+            setSelectedTaskId(numId || urlTaskId);
+            if (showViewToggle && viewMode !== VIEW_MODES.ALL_TASKS) {
+                setViewMode(VIEW_MODES.ALL_TASKS);
+            }
+        }
+    }, [urlTaskId, showViewToggle, viewMode]);
 
     // ─── UI state ────────────────────────────────────────────────────────────
     const [confirmDelete, setConfirmDelete] = useState({ isOpen: false, taskId: null });

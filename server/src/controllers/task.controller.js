@@ -178,7 +178,6 @@ class TaskController {
     const deleted_by = req.user.id;
     const existingTask = await TaskService.getTaskDeatils(taskId);
     const projectId = existingTask?.project?.id || null
-    console.log("existing task", existingTask)
 
     await TaskService.deleteTask(taskId);
 

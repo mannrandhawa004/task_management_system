@@ -1,4 +1,6 @@
 import UserModel from "../models/user.model.js";
+import ProjectModel from "../models/project.model.js";
+import TaskModel from "../models/task.model.js";
 import {
   BadRequestError,
   ConflictError,
@@ -29,7 +31,15 @@ class UserService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
-    return user;
+    const [projects, tasks] = await Promise.all([
+      ProjectModel.getUserProjects(id, { limit: 50, offset: 0 }).catch(() => []),
+      TaskModel.getMyTasks(id).catch(() => []),
+    ]);
+    return {
+      ...user,
+      projects: projects || [],
+      tasks: tasks || [],
+    };
   }
 
   async getAllRoles() {

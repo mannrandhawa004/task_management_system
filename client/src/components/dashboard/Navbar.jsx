@@ -12,6 +12,7 @@ import { getNotifications, markAllNotificationsAsRead, markNotificationAsRead } 
 import { getSocket } from "@/lib/socket";
 import Link from "next/link";
 import Image from "next/image";
+import GlobalSearchModal from "@/components/dashboard/GlobalSearchModal";
 
 export default function Navbar() {
     console.log("Navbar Render");
@@ -19,6 +20,7 @@ export default function Navbar() {
     const [open, setOpen] = useState(false);
     const [notificationOpen, setNotificationOpen] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [searchOpen, setSearchOpen] = useState(false);
     const dropdownRef = useRef(null);
 
     const dispatch = useDispatch();
@@ -32,6 +34,22 @@ export default function Navbar() {
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            const isControlOrMeta = e.metaKey || e.ctrlKey;
+            const isK = e.key === "k" || e.key === "K" || e.code === "KeyK";
+            const isF = e.key === "f" || e.key === "F" || e.code === "KeyF";
+            
+            if (isControlOrMeta && (isK || isF)) {
+                e.preventDefault();
+                e.stopPropagation();
+                setSearchOpen((prev) => !prev);
+            }
+        };
+        document.addEventListener("keydown", handleKeyDown, true);
+        return () => document.removeEventListener("keydown", handleKeyDown, true);
     }, []);
 
     useEffect(() => {
@@ -91,17 +109,20 @@ export default function Navbar() {
             className="h-16 border-b px-6 flex items-center justify-between relative z-40 bg-[var(--card)] border-[var(--border)]"
         >
             {/* SEARCH LAYOUT BAR LINK */}
-            <div className="relative w-full max-w-sm focus-within:scale-[1.01] transition-transform">
-                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
-                <input
-                    type="text"
-                    placeholder="Search task"
-                    className="w-full text-xs font-semibold rounded-2xl border py-2.5 pl-10 pr-12 outline-none transition-all focus:border-[var(--primary)]/50 focus:ring-4 focus:ring-[var(--primary)]/5"
+            <div
+                onClick={() => setSearchOpen(true)}
+                className="relative w-full max-w-sm hover:scale-[1.01] transition-all cursor-pointer group"
+            >
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-hover:text-[var(--primary)] transition-colors" />
+                <div
+                    className="w-full text-xs font-semibold rounded-2xl border py-2.5 pl-10 pr-12 transition-all flex items-center justify-between group-hover:border-[var(--primary)]/50 group-hover:shadow-xs"
                     style={{ background: "var(--input)", borderColor: "var(--border)", color: "var(--text)" }}
-                />
-                {/* ⌘ F keyboard shortcut helper */}
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9.5px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-lg select-none">
-                    ⌘ F
+                >
+                    <span className="text-[var(--muted)]">Search task, project, employee...</span>
+                </div>
+                {/* ⌘ K / Ctrl K keyboard shortcut helper */}
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9.5px] font-black text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded-lg select-none group-hover:border-[var(--primary)]/40 group-hover:text-[var(--primary)] transition-colors">
+                    ⌘ K
                 </span>
             </div>
 
@@ -323,6 +344,7 @@ export default function Navbar() {
                     )}
                 </AnimatePresence>
             </div>
+            <GlobalSearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
         </header>
     );
 }
