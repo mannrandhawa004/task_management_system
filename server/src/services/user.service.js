@@ -11,6 +11,15 @@ import { formatPagination } from "../utils/pagination.js";
 
 class UserService {
   async getAllUsers({ page, limit, offset, filters, requestingUser }) {
+    // if (requestingUser && requestingUser.id && (requestingUser.department_id === undefined || requestingUser.team_id === undefined)) {
+    //   const dbUser = await UserModel.getUserById(requestingUser.id);
+    //   if (dbUser) {
+    //     requestingUser.department_id = dbUser.department_id;
+    //     requestingUser.team_id = dbUser.team_id;
+    //     requestingUser.reporting_manager_id = dbUser.reporting_manager_id;
+    //   }
+    // }
+
     const { rows, total } = await UserModel.getAllUsers({
       limit,
       offset,

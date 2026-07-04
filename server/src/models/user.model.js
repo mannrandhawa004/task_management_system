@@ -13,8 +13,8 @@ class UserModel {
       // No visibility restrictions — HR needs full employee list access for onboarding/offboarding
     } else if (userRole === "dept_head") {
       visibilityQuery += " AND u.department_id = ? ";
-      params.push(requestingUser.department_id);
-      countParams.push(requestingUser.department_id);
+      params.push(requestingUser.department_id || null);
+      countParams.push(requestingUser.department_id || null);
     } else if (userRole === "team_lead") {
       visibilityQuery += ` AND (u.id = ? 
         OR u.team_id IN (SELECT id FROM teams WHERE lead_id = ?) 
@@ -320,45 +320,14 @@ class UserModel {
 
   async getTodayBirthdays({ requestingUser }) {
     const params = [];
-    let visibilityQuery = " WHERE u.status = 'active' AND u.dob IS NOT NULL ";
-    const userRole = requestingUser?.role ? requestingUser.role.toLowerCase() : "";
+    const visibilityQuery = " WHERE u.status = 'active' AND u.dob IS NOT NULL ";
 
-    let dateCondition = `
+    const dateCondition = `
       AND (
         (MONTH(u.dob) = MONTH(CURRENT_DATE()) AND DAY(u.dob) = DAY(CURRENT_DATE()))
         OR (MONTH(CURRENT_DATE()) = 2 AND DAY(CURRENT_DATE()) = 28 AND DAY(LAST_DAY(CURRENT_DATE())) = 28 AND MONTH(u.dob) = 2 AND DAY(u.dob) = 29)
       )
     `;
-
-    if (userRole === "super_admin" || userRole === "admin" || userRole === "hr") {
-      // No visibility restrictions
-    } else if (userRole === "dept_head") {
-      visibilityQuery += " AND u.department_id = ? ";
-      params.push(requestingUser.department_id);
-    } else if (userRole === "team_lead") {
-      visibilityQuery += ` AND (u.id = ? 
-        OR u.team_id IN (SELECT id FROM teams WHERE lead_id = ?) 
-        OR u.id IN (SELECT user_id FROM team_members WHERE team_id IN (SELECT id FROM teams WHERE lead_id = ?))) `;
-      params.push(requestingUser.id, requestingUser.id, requestingUser.id);
-    } else if (userRole === "project_manager" || userRole === "manager") {
-      visibilityQuery += ` AND (u.id = ? 
-        OR u.reporting_manager_id = ?
-        OR u.id IN (
-          SELECT DISTINCT pm.user_id 
-          FROM project_members pm 
-          WHERE pm.project_id IN (
-            SELECT p.id 
-            FROM projects p 
-            LEFT JOIN project_members pm2 ON pm2.project_id = p.id AND pm2.user_id = ?
-            WHERE p.created_by = ? OR pm2.role_id IN (1)
-          )
-        )) `;
-      params.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
-    } else {
-      // Standard employee can only see themselves
-      visibilityQuery += " AND u.id = ? ";
-      params.push(requestingUser.id);
-    }
 
     const query = `
       SELECT

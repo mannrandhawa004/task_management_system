@@ -11,7 +11,7 @@ export default function TodayBirthdaysWidget({ user }) {
   const [birthdays, setBirthdays] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Only show widget for HR, Admin, Super Admin, or Managers/Leads
+  // Only show widget for HR, Admin, Super Admin
   const userRole = user?.role_name || user?.role || "";
   const normalizedRole = userRole.toLowerCase().replace(/ /g, "_");
   const canViewWidget = [
@@ -19,10 +19,6 @@ export default function TodayBirthdaysWidget({ user }) {
     "admin",
     "hr",
     "human_resources",
-    "project_manager",
-    "manager",
-    "team_lead",
-    "dept_head",
   ].includes(normalizedRole);
 
   useEffect(() => {
@@ -60,7 +56,7 @@ export default function TodayBirthdaysWidget({ user }) {
   };
 
   return (
-    <div className="p-5 rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-sm flex flex-col justify-between h-full">
+    <div className="p-5 rounded-2xl border bg-[var(--card)] border-[var(--border)] shadow-sm flex flex-col  ">
       {/* Clean Header */}
       <div className="flex items-center justify-between pb-3.5 border-b border-[var(--border)]/60 mb-2">
         <div className="flex items-center gap-2">
@@ -82,22 +78,22 @@ export default function TodayBirthdaysWidget({ user }) {
           Checking birthday calendar...
         </div>
       ) : birthdays.length === 0 ? (
-        <div className="my-auto py-8 text-center space-y-2">
-          <div className="mx-auto w-10 h-10 rounded-xl bg-[var(--input)] flex items-center justify-center text-[var(--muted)]">
+        <div className=" py-8 text-center ">
+          <div className="w-10 h-10 rounded-xl bg-[var(--input)] flex items-center justify-center text-[var(--muted)]">
             <PartyPopper size={18} className="opacity-40" />
           </div>
           <p className="text-xs font-bold text-[var(--muted)]">No birthdays celebrating today!</p>
           <p className="text-[11px] text-[var(--muted)]/70">Check back tomorrow for upcoming celebrations.</p>
         </div>
       ) : (
-        <div className="space-y-1.5 max-h-[240px] overflow-y-auto pr-1 no-scrollbar my-auto">
+        <div className="min-h-auto max-h-[240px] overflow-y-auto pr-1 no-scrollbar">
           {birthdays.map((emp) => {
             const age = calculateAge(emp.dob);
             return (
               <div
                 key={emp.id}
                 onClick={() => router.push(`/dashboard/users/${emp.id}`)}
-                className="group relative flex items-center justify-between gap-2.5 rounded-xl border border-[var(--border)]/60 bg-[var(--input)]/30 py-2 px-2.5 hover:bg-[var(--hover)] hover:border-rose-500/30 transition-all cursor-pointer"
+                className="group relative flex justify-between  gap-2.5 rounded-xl border border-[var(--border)]/60 bg-[var(--input)]/30 py-2 px-2.5 hover:bg-[var(--hover)] hover:border-rose-500/30 transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="relative h-9 w-9 shrink-0 rounded-xl bg-gradient-to-tr from-rose-500 to-purple-600 text-white font-black overflow-hidden flex items-center justify-center shadow-2xs text-xs">

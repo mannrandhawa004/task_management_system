@@ -29,6 +29,9 @@ class AuthServices {
       id: user.id,
       role: user.role,
       status: user.status,
+      department_id: user.department_id || null,
+      team_id: user.team_id || null,
+      reporting_manager_id: user.reporting_manager_id || null,
     };
 
     const accessToken = await GenerateToken.AccesToken(payload);
@@ -66,6 +69,9 @@ class AuthServices {
       id: existingUser?.id,
       role: existingUser?.role,
       status: existingUser?.status,
+      department_id: existingUser?.department_id || null,
+      team_id: existingUser?.team_id || null,
+      reporting_manager_id: existingUser?.reporting_manager_id || null,
     };
 
     // Here i created a token for multi-session authentication

@@ -188,10 +188,6 @@ export default function DashboardPage() {
     "admin",
     "hr",
     "human_resources",
-    "project_manager",
-    "manager",
-    "team_lead",
-    "dept_head",
   ].includes(normalizedRole);
 
   // Fetch dashboard stats from API - single source of truth
