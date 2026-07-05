@@ -52,40 +52,30 @@ export default function Sidebar() {
     (p) => p.role?.toLowerCase() === "manager" || p.role?.toLowerCase() === "project_manager"
   );
 
-  const allSystemRoles = [
-    "super_admin",
-    "admin",
-    "dept_head",
-    "project_manager",
-    "team_lead",
-    "senior_employee",
-    "employee",
-    "intern",
-  ];
-
   const sections = [
     {
       key: "users",
       title: "User Management",
-      // HR can access User Management to add/edit/delete employees
+      // HR and Admins can access User Management to add/edit/delete employees
       roles: ["super_admin", "admin", "hr"],
       items: [{ title: "All Users", href: "/dashboard/users", icon: Users }],
     },
     {
       key: "company",
       title: "Organization",
-      // HR can view departments/teams (read-only — create/edit/delete is super_admin only)
-      roles: ["super_admin", "admin", "hr", "dept_head"],
+      // Everyone in the company can view the departments/teams directory
+      roles: "*",
       items: [
         { title: "Departments", href: "/dashboard/departments", icon: Building2 },
         { title: "Teams", href: "/dashboard/teams", icon: Users2 },
+        { title: "My Team", href: "/dashboard/my-team", icon: Users },
       ],
     },
     {
       key: "projects",
       title: "Projects",
-      roles: allSystemRoles,
-      items: isAdmin(user) || userRole === "super_admin" || userRole === "admin"
+      roles: "*",
+      items: isAdmin(user) || userRole === "super_admin" || userRole === "admin" || userRole === "manager" || userRole === "project_manager"
         ? [
           { title: "All Projects", href: "/dashboard/projects", icon: FolderKanban },
         ]
@@ -94,7 +84,7 @@ export default function Sidebar() {
     {
       key: "tasks",
       title: "Tasks",
-      roles: allSystemRoles,
+      roles: "*",
       items: [
         ...(userRole === "admin" || userRole === "super_admin" || userRole === "project_manager" || userRole === "manager" || isProjectManager
           ? [{ title: "All Tasks", href: "/dashboard/tasks/all", icon: CheckSquare }]
@@ -106,7 +96,7 @@ export default function Sidebar() {
     {
       key: "workplace",
       title: "Workplace",
-      roles: allSystemRoles,
+      roles: "*",
       items: [
         { title: "Attendance", href: "/dashboard/attendance", icon: Clock },
         { title: "Leaves", href: "/dashboard/leaves", icon: CalendarDays },
@@ -115,7 +105,7 @@ export default function Sidebar() {
     {
       key: "system",
       title: "System",
-      roles: allSystemRoles,
+      roles: "*",
       items: [
         ...(userRole === "admin" || userRole === "super_admin" ? [{ title: "Activity Logs", href: "/dashboard/logs", icon: Activity }] : []),
         { title: "Notifications", href: "/dashboard/notifications", icon: Bell },
@@ -175,7 +165,7 @@ export default function Sidebar() {
         </div>
 
         {sections
-          .filter((section) => section.roles.includes(userRole) && section.items.length > 0)
+          .filter((section) => (section.roles === "*" || section.roles.includes(userRole)) && section.items.length > 0)
           .map((section) => (
             <div key={section.key} className="space-y-1">
               {!collapsed && (
