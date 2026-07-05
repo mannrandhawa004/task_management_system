@@ -4,6 +4,7 @@ import {
   updateTeam,
   deleteTeam,
   getTeams,
+  getMyTeams,
   getTeamDetails,
   addTeamMember,
   removeTeamMember,
@@ -20,6 +21,17 @@ export const getTeamsThunk = createAsyncThunk(
       return await getTeams(params);
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch teams");
+    }
+  }
+);
+
+export const getMyTeamsThunk = createAsyncThunk(
+  "teams/getMyTeams",
+  async (_, thunkAPI) => {
+    try {
+      return await getMyTeams();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch my teams");
     }
   }
 );

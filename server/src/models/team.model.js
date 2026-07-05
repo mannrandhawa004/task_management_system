@@ -49,6 +49,8 @@ class TeamModel {
   }
 
   async delete(id) {
+    await executeQuery(`DELETE FROM team_members WHERE team_id = ?`, [id]);
+    await executeQuery(`UPDATE users SET team_id = NULL WHERE team_id = ?`, [id]);
     const query = `DELETE FROM teams WHERE id = ?`;
     return await executeQuery(query, [id]);
   }
@@ -88,17 +90,21 @@ class TeamModel {
   }
 
   async addMember(teamId, userId) {
+    // Remove employee from any old team first to enforce 1 team per employee
+    await executeQuery(`DELETE FROM team_members WHERE user_id = ?`, [userId]);
     const query = `
       INSERT INTO team_members (team_id, user_id)
       VALUES (?, ?)
-      ON DUPLICATE KEY UPDATE team_id = team_id
+      ON DUPLICATE KEY UPDATE team_id = VALUES(team_id)
     `;
-    return await executeQuery(query, [teamId, userId]);
+    await executeQuery(query, [teamId, userId]);
+    return await executeQuery(`UPDATE users SET team_id = ? WHERE id = ?`, [teamId, userId]);
   }
 
   async removeMember(teamId, userId) {
     const query = `DELETE FROM team_members WHERE team_id = ? AND user_id = ?`;
-    return await executeQuery(query, [teamId, userId]);
+    await executeQuery(query, [teamId, userId]);
+    return await executeQuery(`UPDATE users SET team_id = NULL WHERE id = ?`, [userId]);
   }
 
   async getMembers(teamId) {
@@ -149,6 +155,21 @@ class TeamModel {
   async getTeamsByDepartment(departmentId) {
     const query = `SELECT id, name FROM teams WHERE department_id = ? ORDER BY name ASC`;
     return await executeQuery(query, [departmentId]);
+  }
+
+  async getMyTeam(userId){
+     const query = `
+      SELECT DISTINCT t.*, d.name as department_name, u.name as lead_name,
+        (SELECT COUNT(tm.id) FROM team_members tm WHERE tm.team_id = t.id) as member_count
+      FROM teams t
+      JOIN departments d ON t.department_id = d.id
+      LEFT JOIN users u ON t.lead_id = u.id
+      LEFT JOIN team_members tm_me ON tm_me.team_id = t.id
+      WHERE t.lead_id = ? OR tm_me.user_id = ?
+      ORDER BY t.name ASC
+    `;
+    return await executeQuery(query, [userId, userId]);
+
   }
 }
 

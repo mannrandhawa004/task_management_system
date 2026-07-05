@@ -120,6 +120,11 @@ class TeamController {
     return successResponse(res, "Team deleted successfully", null, 200);
   });
 
+  getMyTeams = asyncHandler(async (req, res) => {
+    const teams = await TeamService.getMyTeams(req.user.id);
+    return successResponse(res, "My teams fetched successfully", teams, 200);
+  });
+
   listTeams = asyncHandler(async (req, res) => {
     const { page, offset, limit } = getPagination(req.query);
     const departmentId = req.query.departmentId;

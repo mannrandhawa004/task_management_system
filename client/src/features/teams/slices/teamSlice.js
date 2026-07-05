@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   getTeamsThunk,
+  getMyTeamsThunk,
   getTeamDetailsThunk,
   createTeamThunk,
   updateTeamThunk,
@@ -15,6 +16,7 @@ import {
 
 const initialState = {
   teamsList: [],
+  myTeamsList: [],
   total: 0,
   currentTeam: null,
   teamMembers: [],
@@ -45,6 +47,20 @@ const teamSlice = createSlice({
         state.total = action.payload?.pagination?.total || action.payload?.total || (Array.isArray(action.payload) ? action.payload.length : 0);
       })
       .addCase(getTeamsThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+
+      // getMyTeams
+      .addCase(getMyTeamsThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(getMyTeamsThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.myTeamsList = Array.isArray(action.payload) ? action.payload : (action.payload?.data || action.payload?.rows || []);
+      })
+      .addCase(getMyTeamsThunk.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

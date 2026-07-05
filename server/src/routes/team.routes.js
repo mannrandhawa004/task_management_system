@@ -51,6 +51,12 @@ router.get(
   TeamController.listTeams
 );
 
+// Get my teams (must be before /:id)
+router.get(
+  "/my-teams",
+  TeamController.getMyTeams
+);
+
 // Get team details
 router.get(
   "/:id",

@@ -13,6 +13,11 @@ export const teamAccessMiddleware = async (req, res, next) => {
     throw new ForbiddenError("Unauthorized");
   }
 
+  // All authenticated employees can view teams and team member rosters
+  if (req.method === "GET") {
+    return next();
+  }
+
   const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
   // Super Admin and Admin bypass team boundary checks
@@ -40,26 +45,15 @@ export const teamAccessMiddleware = async (req, res, next) => {
   }
 
   // 2. Check if user is the Team Lead
-  if (userRole === "team_lead" && Number(team.lead_id) === Number(req.user.id)) {
+  if (Number(team.lead_id) === Number(req.user.id)) {
     return next();
   }
 
-  // For read operations, check if the user is a team member
-  if (req.method === "GET") {
-    const [membership] = await executeQuery(
-      "SELECT id FROM team_members WHERE team_id = ? AND user_id = ?",
-      [teamId, req.user.id]
-    );
-    if (membership) {
-      return next();
-    }
-  }
-
-  throw new ForbiddenError("Access denied: You do not have permission to access this team");
+  throw new ForbiddenError("Access denied: You do not have permission to modify this team");
 };
 
 /**
- * Restricts team modifications (edit/delete/member-assign) to team leads or department heads/admins.
+ * Restricts team modifications (edit/delete/member-assign) to team leads or department heads/admins/managers.
  */
 export const teamManageMiddleware = async (req, res, next) => {
   if (!req.user) {
@@ -68,7 +62,7 @@ export const teamManageMiddleware = async (req, res, next) => {
 
   const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
-  if (userRole === "super_admin" || userRole === "admin") {
+  if (userRole === "super_admin" || userRole === "admin" || userRole === "manager" || userRole === "project_manager") {
     return next();
   }
 
@@ -93,10 +87,10 @@ export const teamManageMiddleware = async (req, res, next) => {
     return next();
   }
 
-  // 2. Team Lead can manage members
-  if (userRole === "team_lead" && Number(team.lead_id) === Number(req.user.id)) {
+  // 2. Team Lead can manage members (regardless of global role string)
+  if (Number(team.lead_id) === Number(req.user.id)) {
     return next();
   }
 
-  throw new ForbiddenError("Access denied: Only Department Heads or Team Leads can manage this team");
+  throw new ForbiddenError("Access denied: Only Department Heads, Managers, or Team Leads can manage this team");
 };

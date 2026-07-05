@@ -14,6 +14,11 @@ export const departmentAccessMiddleware = async (req, res, next) => {
     throw new ForbiddenError("Unauthorized");
   }
 
+  // All authenticated employees can view department details, members, and stats
+  if (req.method === "GET") {
+    return next();
+  }
+
   const userRole = req.user.role ? req.user.role.toLowerCase() : "";
 
   // Super Admin and Admin bypass department boundary checks

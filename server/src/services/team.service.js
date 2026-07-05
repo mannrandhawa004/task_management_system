@@ -98,6 +98,14 @@ class TeamService {
     return await TeamModel.delete(id);
   }
 
+  async getMyTeams(userId) {
+   const myteam = await TeamModel.getMyTeam(userId);
+   if(!myteam){
+    throw new NotFoundError("Team not found");
+   }
+   return myteam;
+  }
+
   async getTeamList({ limit, offset, departmentId }) {
     const rows = await TeamModel.getAll({ limit, offset, departmentId });
     const total = await TeamModel.count(departmentId);

@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   Users2,
-  Building,
-  User,
   Plus,
   Edit2,
   Trash2,
@@ -13,10 +11,9 @@ import {
   Save,
   Users,
   Briefcase,
-  ChevronRight,
-  TrendingUp,
   UserPlus,
   UserMinus,
+  Filter,
 } from "lucide-react";
 import {
   getTeamsThunk,
@@ -48,6 +45,7 @@ export default function TeamsPage() {
   const [departmentId, setDepartmentId] = useState("");
   const [leadId, setLeadId] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+  const [selectedTeam, setSelectedTeam] = useState(null);
 
   // Filters
   const [filterDept, setFilterDept] = useState("");
@@ -71,7 +69,29 @@ export default function TeamsPage() {
   const isManagement =
     user?.role?.toLowerCase() === "admin" ||
     user?.role?.toLowerCase() === "super_admin" ||
-    user?.role?.toLowerCase() === "dept_head";
+    user?.role?.toLowerCase() === "hr" 
+
+  const canManageTeam = (team) => {
+    if (!team || !user) return false;
+    const role = user?.role?.toLowerCase();
+    if (role === "admin" || role === "super_admin" || role === "hr") return true;
+    return false;
+  };
+
+  const canManageMembers = canManageTeam(selectedTeam);
+
+  const availableDepartments =
+    user?.role?.toLowerCase() === "dept_head"
+      ? departmentsList.filter((d) => Number(d.id) === Number(user?.department_id))
+      : departmentsList;
+
+  const handleOpenCreate = () => {
+    resetForm();
+    if (user?.role?.toLowerCase() === "dept_head" && user?.department_id) {
+      setDepartmentId(user.department_id);
+    }
+    setIsCreateOpen(true);
+  };
 
 
   // Initial data loading
@@ -127,6 +147,7 @@ export default function TeamsPage() {
 
   const handleOpenDetails = (team) => {
     setSelectedId(team.id);
+    setSelectedTeam(team);
     setName(team.name);
     setDepartmentId(team.department_id);
     dispatch(getTeamMembersThunk(team.id));
@@ -156,6 +177,7 @@ export default function TeamsPage() {
   const handleOpenEdit = (team, e) => {
     e.stopPropagation();
     setSelectedId(team.id);
+    setSelectedTeam(team);
     setName(team.name);
     setDescription(team.description || "");
     setDepartmentId(team.department_id);
@@ -169,6 +191,7 @@ export default function TeamsPage() {
     setDepartmentId("");
     setLeadId("");
     setSelectedId(null);
+    setSelectedTeam(null);
   };
 
   // Filter eligible users for lead select (belong to selected department)
@@ -176,12 +199,15 @@ export default function TeamsPage() {
     (u) => !departmentId || Number(u.department_id) === Number(departmentId)
   );
 
-  // Filter eligible users for members (in department and NOT already in the team)
-  const existingMemberIds = teamMembers.map((m) => m.id);
+  // Filter eligible users for members (in same department and NOT in ANY team)
+  const targetDeptId = selectedTeam ? selectedTeam.department_id : departmentId;
+  const existingMemberIds = teamMembers ? teamMembers.map((m) => m.id) : [];
   const eligibleMembers = allUsers.filter(
     (u) =>
-      Number(u.department_id) === Number(departmentId) &&
-      !existingMemberIds.includes(u.id)
+      targetDeptId &&
+      Number(u.department_id) === Number(targetDeptId) &&
+      !existingMemberIds.includes(u.id) &&
+      (!u.team_id || u.team_id === null || u.team_id === 0 || u.team_id === "" || u.team_id === "null")
   );
 
   return (
@@ -200,11 +226,8 @@ export default function TeamsPage() {
         {isManagement && (
           <button
             type="button"
-            onClick={() => {
-              resetForm();
-              setIsCreateOpen(true);
-            }}
-            className="px-4 py-2.5 bg-[var(--primary)] hover:brightness-110 text-white rounded-xl text-xs font-bold shadow-md shadow-[var(--primary)]/10 transition-all flex items-center gap-2 cursor-pointer active:scale-98"
+            onClick={handleOpenCreate}
+            className="px-4 py-2.5 bg-[var(--primary)] hover:brightness-110 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-lg shadow-[var(--primary)]/20 transition-all flex items-center gap-2 cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             Create Team
@@ -212,50 +235,82 @@ export default function TeamsPage() {
         )}
       </div>
 
-      {/* FILTERS TOOLBAR */}
-      <div className="flex items-center gap-3 bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl shadow-xs">
-        <Building className="w-4 h-4 text-[var(--muted)]" />
-        <select
-          value={filterDept}
-          onChange={(e) => setFilterDept(e.target.value)}
-          className="p-2 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold"
-        >
-          <option value="">All Departments</option>
-          {departmentsList.map((d) => (
-            <option key={d.id} value={d.id}>
-              {d.name}
-            </option>
-          ))}
-        </select>
+      {/* FILTER BAR */}
+      <div className="bg-[var(--card)] border border-[var(--border)] p-4 rounded-3xl flex flex-col sm:flex-row items-center gap-4 justify-between">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Filter className="w-4 h-4 text-[var(--primary)] shrink-0" />
+          <span className="text-xs font-black uppercase tracking-wider text-[var(--muted)]">
+            Department Filter:
+          </span>
+          <select
+            value={filterDept}
+            onChange={(e) => setFilterDept(e.target.value)}
+            className="p-2 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none focus:ring-2 focus:ring-[var(--primary)] w-full sm:w-auto"
+          >
+            <option value="">All Departments</option>
+            {departmentsList.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="text-xs font-bold text-[var(--muted)]">
+          Showing <span className="text-[var(--text)] font-black">{teamsList.length}</span> teams
+        </div>
       </div>
 
       {/* TEAMS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {teamsList && teamsList.length > 0 ? (
+        {loading ? (
+          <div className="col-span-full flex justify-center py-16">
+            <AppLoader />
+          </div>
+        ) : teamsList && teamsList.length > 0 ? (
           teamsList.map((team) => (
             <div
               key={team.id}
               onClick={() => handleOpenDetails(team)}
-              className="bg-[var(--card)] border border-[var(--border)] rounded-3xl p-6 shadow-xs backdrop-blur-md hover:shadow-md transition-all cursor-pointer flex flex-col justify-between group min-h-[220px]"
+              className="bg-[var(--card)] border border-[var(--border)] hover:border-[var(--primary)]/50 rounded-3xl p-6 transition-all hover:shadow-xl hover:shadow-[var(--primary)]/5 flex flex-col justify-between group cursor-pointer relative overflow-hidden"
             >
               <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="p-3 bg-[var(--primary)]/10 text-[var(--primary)] rounded-2xl group-hover:scale-105 transition-transform">
-                    <Users2 className="w-5 h-5" />
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-extrabold text-indigo-500 uppercase tracking-wider">
+                      {team.department_name}
+                    </span>
+                    <h3 className="font-extrabold text-md tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors mt-0.5">
+                      {team.name}
+                    </h3>
                   </div>
-                  <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
-                    {team.department_name}
-                  </span>
+
+                  {canManageTeam(team) && (
+                    <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenEdit(team, e)}
+                        className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] transition-colors"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(team.id);
+                        }}
+                        className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
 
-                <div>
-                  <h3 className="font-extrabold text-sm tracking-tight text-[var(--text)] group-hover:text-[var(--primary)] transition-colors">
-                    {team.name}
-                  </h3>
-                  <p className="text-[11px] text-[var(--muted)] line-clamp-2 mt-1">
-                    {team.description || "No description provided."}
-                  </p>
-                </div>
+                <p className="text-[11px] text-[var(--muted)] line-clamp-2 mt-1">
+                  {team.description || "No description provided."}
+                </p>
               </div>
 
               <div className="border-t border-[var(--border)]/40 pt-4 mt-4 flex items-center justify-between">
@@ -333,7 +388,7 @@ export default function TeamsPage() {
                   className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
                 >
                   <option value="">Select Department</option>
-                  {departmentsList.map((d) => (
+                  {availableDepartments.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name}
                     </option>
@@ -438,7 +493,7 @@ export default function TeamsPage() {
                   onChange={(e) => setDepartmentId(e.target.value)}
                   className="w-full p-3 border border-[var(--border)] rounded-xl bg-[var(--input)] text-xs font-bold focus:outline-none"
                 >
-                  {departmentsList.map((d) => (
+                  {availableDepartments.map((d) => (
                     <option key={d.id} value={d.id}>
                       {d.name}
                     </option>
@@ -536,7 +591,7 @@ export default function TeamsPage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               
               {/* ADD MEMBER ZONE */}
-              {isManagement && (
+              {canManageMembers && (
                 <div className="bg-[var(--card)] border border-[var(--border)] p-4 rounded-2xl space-y-3">
                   <h4 className="text-[10px] uppercase font-bold tracking-wider text-[var(--muted)] flex items-center gap-2">
                     <UserPlus className="w-4 h-4 text-[var(--primary)]" />
@@ -604,7 +659,7 @@ export default function TeamsPage() {
                             {member.role || "Employee"}
                           </span>
 
-                          {isManagement && (
+                          {canManageMembers && (
                             <button
                               type="button"
                               onClick={() => handleRemoveMember(member.id)}

@@ -20,6 +20,11 @@ export const getTeams = async ({ page = 1, limit = 10, departmentId = "" } = {})
   return response.data.data;
 };
 
+export const getMyTeams = async () => {
+  const response = await api.get("/teams/my-teams");
+  return response.data.data;
+};
+
 export const getTeamDetails = async (id) => {
   const response = await api.get(`/teams/${id}`);
   return response.data.data;

@@ -8,6 +8,7 @@ import {
 } from "../utils/errorHandler.js";
 import bcrypt from "bcrypt";
 import { formatPagination } from "../utils/pagination.js";
+import { executeQuery } from "../utils/dbQuery.js";
 
 class UserService {
   async getAllUsers({ page, limit, offset, filters, requestingUser }) {
@@ -126,6 +127,11 @@ class UserService {
       password: hashedPassword,
     });
 
+    if (data.team_id) {
+      await executeQuery(`DELETE FROM team_members WHERE user_id = ?`, [result.insertId]);
+      await executeQuery(`INSERT IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)`, [data.team_id, result.insertId]);
+    }
+
     return await UserModel.getUserById(result.insertId);
   }
 
@@ -163,6 +169,13 @@ class UserService {
       name: fullName,
     });
 
+    if (data.team_id !== undefined) {
+      await executeQuery(`DELETE FROM team_members WHERE user_id = ?`, [id]);
+      if (data.team_id) {
+        await executeQuery(`INSERT IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)`, [data.team_id, id]);
+      }
+    }
+
     return await UserModel.getUserById(id);
   }
 
@@ -171,6 +184,7 @@ class UserService {
     if (!user) {
       throw new NotFoundError("User not found");
     }
+    await executeQuery(`DELETE FROM team_members WHERE user_id = ?`, [id]);
     await UserModel.deleteUser(id);
     return { id };
   }
