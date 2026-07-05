@@ -1,17 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { X, FolderPlus, Loader2, Info } from "lucide-react";
 import { createProjectThunk, getProjectsThunk } from "@/features/projects/thunks/projectThunk";
+import { getDepartmentsThunk } from "@/features/departments/thunks/departmentThunks";
 import { createProjectSchema } from "@/features/projects/validations/project.schema";
 import { showToast } from "@/lib/toast";
 
 export default function CreateProjectDrawer({ open, onClose }) {
     const dispatch = useDispatch();
+    const { departmentsList } = useSelector((state) => state.departments);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
-    const [form, setForm] = useState({ name: "", description: "" });
+    const [form, setForm] = useState({ name: "", description: "", department_id: "" });
+
+    useEffect(() => {
+        if (open && (!departmentsList || departmentsList.length === 0)) {
+            dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
+        }
+    }, [open, dispatch, departmentsList]);
 
     const handleChange = (e) => {
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -38,7 +46,7 @@ export default function CreateProjectDrawer({ open, onClose }) {
             if (createProjectThunk.fulfilled.match(result)) {
                 showToast.success("Project created successfully");
                 dispatch(getProjectsThunk({ page: 1, limit: 10 }));
-                setForm({ name: "", description: "" });
+                setForm({ name: "", description: "", department_id: "" });
                 onClose();
             }
         } catch (err) {
@@ -133,6 +141,36 @@ export default function CreateProjectDrawer({ open, onClose }) {
                             {errors.description && (
                                 <p className="flex items-center gap-1.5 text-xs font-medium text-red-500 mt-1">
                                     <Info size={12} /> {errors.description}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* COMPONENT ELEMENT: DEPARTMENT SELECT */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold tracking-wide" style={{ color: "var(--text)" }}>
+                                Department
+                            </label>
+                            <select
+                                name="department_id"
+                                value={form.department_id}
+                                onChange={handleChange}
+                                className="w-full rounded-xl border px-4 py-3.5 text-sm outline-none transition-all focus:ring-2"
+                                style={{
+                                    background: "var(--input)",
+                                    color: "var(--text)",
+                                    borderColor: errors.department_id ? "#ef4444" : "var(--border)",
+                                }}
+                            >
+                                <option value="">Select Department (Optional)</option>
+                                {(departmentsList || []).map((dept) => (
+                                    <option key={dept.id} value={dept.id}>
+                                        {dept.name}
+                                    </option>
+                                ))}
+                            </select>
+                            {errors.department_id && (
+                                <p className="flex items-center gap-1.5 text-xs font-medium text-red-500 mt-1">
+                                    <Info size={12} /> {errors.department_id}
                                 </p>
                             )}
                         </div>

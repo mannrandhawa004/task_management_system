@@ -3,7 +3,8 @@
 import { useEffect } from "react";
 import { X, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { getDepartmentsThunk } from "@/features/departments/thunks/departmentThunks";
 
 import {
     updateProjectThunk
@@ -21,6 +22,14 @@ export default function UpdateProjectDrawer({
     const dispatch =
         useDispatch();
 
+    const { departmentsList } = useSelector((state) => state.departments);
+
+    useEffect(() => {
+        if (open && (!departmentsList || departmentsList.length === 0)) {
+            dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
+        }
+    }, [open, dispatch, departmentsList]);
+
     const {
         register,
         handleSubmit,
@@ -34,6 +43,7 @@ export default function UpdateProjectDrawer({
             name: "",
             description: "",
             status: "active",
+            department_id: "",
         },
 
     });
@@ -51,6 +61,9 @@ export default function UpdateProjectDrawer({
                 status:
                     project.status || "active",
 
+                department_id:
+                    project.department_id || project.department?.id || "",
+
             });
 
         }
@@ -64,6 +77,10 @@ export default function UpdateProjectDrawer({
         async (data) => {
 
             try {
+                const payload = {
+                    ...data,
+                    department_id: data.department_id !== "" && data.department_id !== undefined ? Number(data.department_id) : (data.department_id === "" ? "" : undefined),
+                };
 
                 await dispatch(
                     updateProjectThunk({
@@ -71,7 +88,7 @@ export default function UpdateProjectDrawer({
                         id:
                             project.id,
 
-                        data,
+                        data: payload,
 
                     })
                 ).unwrap();
@@ -311,6 +328,57 @@ export default function UpdateProjectDrawer({
                             <option value="completed">
                                 Completed
                             </option>
+
+                        </select>
+
+                    </div>
+
+                    {/* DEPARTMENT */}
+
+                    <div>
+
+                        <label
+                            className="
+                block
+                mb-2
+                font-medium
+              "
+                        >
+                            Department
+                        </label>
+
+                        <select
+
+                            {...register(
+                                "department_id"
+                            )}
+
+                            className="
+                w-full
+                rounded-xl
+                border
+                px-4
+                py-3
+              "
+
+                            style={{
+                                background:
+                                    "var(--input)",
+
+                                borderColor:
+                                    "var(--border)",
+                            }}
+                        >
+
+                            <option value="">
+                                Select Department (Optional)
+                            </option>
+
+                            {(departmentsList || []).map((dept) => (
+                                <option key={dept.id} value={dept.id}>
+                                    {dept.name}
+                                </option>
+                            ))}
 
                         </select>
 

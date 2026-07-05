@@ -28,13 +28,14 @@ const buildChanges = (before, after, fields) => {
 
 class ProjectController {
   createProject = asyncHandler(async (req, res) => {
-    const { name, description } = req.body;
+    const { name, description, department_id = null } = req.body;
     const createdBy = req.user.id;
 
     const newProject = await ProjectServices.createProject({
       name,
       description,
       createdBy,
+      departmentId: department_id
     });
 
     try {
@@ -94,6 +95,7 @@ class ProjectController {
   updateProject = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { name, description, status } = req.body;
+    const departmentId = req.body.department_id !== undefined ? req.body.department_id : req.body.departmentId;
     const existingProject = await ProjectModel.getProjectById(id);
 
     const updatedProject = await ProjectServices.updateProject({
@@ -101,12 +103,14 @@ class ProjectController {
       name,
       description,
       status,
+      departmentId: departmentId !== undefined && departmentId !== "" ? Number(departmentId) : (departmentId === "" ? null : undefined),
     });
 
     const requestedFields = Object.entries({
       name,
       description,
       status,
+      department_id: departmentId !== undefined && departmentId !== "" ? Number(departmentId) : (departmentId === "" ? null : undefined),
     })
       .filter(([, value]) => value !== undefined)
       .map(([field]) => field);

@@ -8,11 +8,12 @@ import {
 } from "../utils/errorHandler.js";
 
 class ProjectServices {
-  async createProject({ name, description, createdBy }) {
+  async createProject({ name, description, createdBy, departmentId }) {
     const result = await ProjectModel.createProject({
       name,
       description,
       createdBy,
+      departmentId,
     });
 
     const project = await ProjectModel.getProjectById(result.insertId);
@@ -61,7 +62,7 @@ class ProjectServices {
     return result;
   }
 
-  async updateProject({ projectId, name, description, status }) {
+  async updateProject({ projectId, name, description, status, departmentId }) {
     const existingProject = await ProjectModel.getProjectById(projectId);
 
     if (!existingProject) {
@@ -73,6 +74,7 @@ class ProjectServices {
       name,
       description,
       status,
+      departmentId,
     });
 
     const updatedProject = await ProjectModel.getProjectById(projectId);

@@ -8,17 +8,18 @@ class ProjectModel {
   }
 
   // query for creating project
-  async createProject({ name, description, createdBy }) {
+  async createProject({ name, description, createdBy, departmentId }) {
     const query = `
             INSERT INTO projects (
                 name,
                 description,
-                created_by
+                created_by,
+                department_id
             )
-            VALUES (?, ?, ?)
+            VALUES (?, ?, ?, ?)
         `;
 
-    return await executeQuery(query, [name, description, createdBy]);
+    return await executeQuery(query, [name, description, createdBy, departmentId || null]);
   }
   // get project by id
   async getProjectById(projectId) {
@@ -29,6 +30,8 @@ class ProjectModel {
                 p.description,
                 p.status,
                 p.created_at,
+                p.department_id,
+                d.name AS department_name,
                 u.id AS creator_id,
                 r.name as role,
                 u.name AS creator_name,
@@ -39,13 +42,20 @@ class ProjectModel {
 
             LEFT JOIN roles r
             ON u.role_id = r.id
+
+            LEFT JOIN departments d
+            ON p.department_id = d.id
             WHERE p.id = ?
             LIMIT 1
         `;
 
     const result = await executeQuery(query, [projectId]);
+    if (!result[0]) return null;
 
-    return result[0];
+    return {
+      ...result[0],
+      department: result[0].department_id ? { id: result[0].department_id, name: result[0].department_name } : null,
+    };
   }
 
   async getIndividualProjectById({ userId, projectId }) {
@@ -56,6 +66,8 @@ class ProjectModel {
         p.description,
         p.status,
         p.created_at,
+        p.department_id,
+        d.name AS department_name,
 
         u.id AS creator_id,
         u.avatar AS avatar,
@@ -85,12 +97,19 @@ class ProjectModel {
     LEFT JOIN project_roles project_role
       ON pm.role_id = project_role.id
 
+    LEFT JOIN departments d
+      ON p.department_id = d.id
+
     WHERE p.id = ?
     LIMIT 1
   `;
 
     const res = await executeQuery(query, [userId, projectId]);
-    return res[0];
+    if (!res[0]) return null;
+    return {
+      ...res[0],
+      department: res[0].department_id ? { id: res[0].department_id, name: res[0].department_name } : null,
+    };
   }
 
   // get total count of all projects
@@ -110,6 +129,8 @@ class ProjectModel {
           p.status,
           p.created_at,
           p.updated_at,
+          p.department_id,
+          d.name AS department_name,
 
           u.id AS creator_id,
           u.avatar AS avatar,
@@ -126,11 +147,18 @@ class ProjectModel {
       JOIN users u
           ON p.created_by = u.id
 
+      LEFT JOIN departments d
+          ON p.department_id = d.id
+
       ORDER BY p.created_at DESC
       LIMIT ? OFFSET ?
     `;
 
-    return executeQuery(query, [limit, offset]);
+    const rows = await executeQuery(query, [limit, offset]);
+    return rows.map((p) => ({
+      ...p,
+      department: p.department_id ? { id: p.department_id, name: p.department_name } : null,
+    }));
   }
 
   // get total count of user projects
@@ -145,7 +173,7 @@ class ProjectModel {
     return result[0].total;
   }
   // updating the project
-  async updateProject({ projectId, name, description, status }) {
+  async updateProject({ projectId, name, description, status, departmentId }) {
     let fields = [];
     let values = [];
 
@@ -162,6 +190,11 @@ class ProjectModel {
     if (status !== undefined) {
       fields.push("status = ?");
       values.push(status);
+    }
+
+    if (departmentId !== undefined) {
+      fields.push("department_id = ?");
+      values.push(departmentId || null);
     }
 
     if (fields.length === 0) {
@@ -307,6 +340,8 @@ class ProjectModel {
         p.status,
         p.created_at,
         p.updated_at,
+        p.department_id,
+        d.name AS department_name,
 
         u.id AS creator_id,
         u.avatar as avatar,
@@ -327,13 +362,20 @@ class ProjectModel {
     JOIN project_roles r
         ON pm.role_id = r.id
 
+    LEFT JOIN departments d
+        ON p.department_id = d.id
+
     WHERE pm.user_id = ?
 
     ORDER BY p.created_at DESC
     LIMIT ? OFFSET ?
 `;
 
-    return await executeQuery(query, [userId, limit, offset]);
+    const rows = await executeQuery(query, [userId, limit, offset]);
+    return rows.map((p) => ({
+      ...p,
+      department: p.department_id ? { id: p.department_id, name: p.department_name } : null,
+    }));
   }
 
   // Check if user has access to a project (as a member)

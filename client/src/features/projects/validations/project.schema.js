@@ -12,6 +12,9 @@ export const createProjectSchema = z.object({
     .trim()
     .max(1000, "Description cannot exceed 1000 characters")
     .optional(),
+
+  department_id: z.union([z.string(), z.number(), z.null()]).optional(),
+  departmentId: z.union([z.string(), z.number(), z.null()]).optional(),
 });
 
 export const updateProjectSchema = z.object({
@@ -29,6 +32,9 @@ export const updateProjectSchema = z.object({
     .optional(),
 
   status: z.enum(["active", "completed", "archived"]).optional(),
+
+  department_id: z.union([z.string(), z.number(), z.null()]).optional(),
+  departmentId: z.union([z.string(), z.number(), z.null()]).optional(),
 });
 
 export const addProjectMemberSchema = z.object({

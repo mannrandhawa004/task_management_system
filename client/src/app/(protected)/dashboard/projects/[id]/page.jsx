@@ -139,6 +139,7 @@ export default function Page({ params }) {
                 open={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 projectId={projectId}
+                project={project}
                 users={users}
                 existingMembers={members}
               />

@@ -44,6 +44,6 @@ export const addProjectMemberValidator = [
   body("roleId")
     .notEmpty()
     .withMessage("role_id is required")
-    .isIn(["2", "3"])
+    .isIn(["1", "2"])
     .withMessage("Invalid role"),
 ];
