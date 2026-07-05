@@ -41,6 +41,10 @@ router.post(
   AuthController.register
 );
 router.post("/login", loginValidator, validate, AuthController.login);
+router.post("/login/2fa-verify", AuthController.verify2FALogin);
+router.post("/2fa/generate", authMiddleware, AuthController.generate2FA);
+router.post("/2fa/verify-setup", authMiddleware, AuthController.verify2FASetup);
+router.post("/2fa/disable", authMiddleware, AuthController.disable2FA);
 router.post("/refresh", AuthController.refresh);
 router.post("/logout", AuthController.logout);
 

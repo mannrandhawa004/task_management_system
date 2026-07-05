@@ -166,6 +166,8 @@ class UserModel {
         u.avatar,
         u.created_at,
         u.department_id,
+        u.two_factor_enabled,
+        u.two_factor_secret,
         d.name AS department_name,
         r.id AS role_id,
         r.name AS role
@@ -360,6 +362,11 @@ class UserModel {
     `;
 
     return await executeQuery(query, params);
+  }
+
+  async updateUserTwoFactor(userId, secret, enabled) {
+    const query = `UPDATE users SET two_factor_secret = ?, two_factor_enabled = ? WHERE id = ?`;
+    return await executeQuery(query, [secret, enabled, userId]);
   }
 }
 

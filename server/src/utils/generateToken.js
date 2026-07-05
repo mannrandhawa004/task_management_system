@@ -34,6 +34,12 @@ class GenerateToken {
     });
   }
 
+  async Temp2FAToken(payload) {
+    return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
+      expiresIn: "10m",
+    });
+  }
+
   /**
    * Verify and decode an access token.
    * @param {string} token - JWT string

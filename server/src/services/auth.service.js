@@ -9,6 +9,8 @@ import {
 import bcrypt from "bcrypt";
 import GenerateToken from "../utils/generateToken.js";
 import { formatPagination } from "../utils/pagination.js";
+import * as OTPAuth from "otpauth";
+import qrcode from "qrcode";
 
 class AuthServices {
   async register({ name, email, password, role_id, department_id, device, ip, avatar }) {
@@ -63,7 +65,19 @@ class AuthServices {
     if (!isMatch) {
       throw new BadRequestError("Invalid email or password");
     }
-    // console.log(existingUser);
+
+    if (existingUser.two_factor_enabled === 1 || existingUser.two_factor_enabled === true) {
+      const tempToken = await GenerateToken.Temp2FAToken({
+        id: existingUser.id,
+        email: existingUser.email,
+        type: "2fa_temp",
+      });
+      return {
+        requires2FA: true,
+        tempToken,
+        message: "Two-factor authentication required. Please enter code from Microsoft Authenticator.",
+      };
+    }
 
     const payload = {
       id: existingUser?.id,
@@ -218,6 +232,130 @@ class AuthServices {
     return {
       id: user.id,
       email: user.email,
+    };
+  }
+
+  async generate2FA(userId) {
+    const user = await AuthModel.getUserById(userId);
+    if (!user) throw new NotFoundError("User not found");
+
+    const secret = new OTPAuth.Secret({ size: 20 });
+    const totp = new OTPAuth.TOTP({
+      issuer: "TaskManagementSystem",
+      label: user.email,
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: secret,
+    });
+
+    const uri = totp.toString();
+    const qrCodeUrl = await qrcode.toDataURL(uri);
+
+    return {
+      secret: secret.base32,
+      qrCodeUrl,
+    };
+  }
+
+  async verify2FASetup(userId, secret, token) {
+    if (!secret || !token) {
+      throw new BadRequestError("Secret and verification token are required");
+    }
+
+    const totp = new OTPAuth.TOTP({
+      issuer: "TaskManagementSystem",
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: OTPAuth.Secret.fromBase32(secret),
+    });
+
+    const delta = totp.validate({ token: String(token).trim(), window: 5 });
+    if (delta === null) {
+      throw new BadRequestError("Invalid verification code. Please check your Microsoft Authenticator app and try again.");
+    }
+
+    await AuthModel.updateUserTwoFactor(userId, secret, 1);
+    return { success: true, message: "Two-Factor Authentication enabled successfully!" };
+  }
+
+  async disable2FA(userId, password) {
+    const user = await AuthModel.getUserById(userId);
+    if (!user) throw new NotFoundError("User not found");
+
+    const userWithPassword = await AuthModel.getUserByEmail(user.email);
+    const isMatch = await bcrypt.compare(password, userWithPassword.password);
+    if (!isMatch) {
+      throw new BadRequestError("Incorrect password. Cannot disable Two-Factor Authentication.");
+    }
+
+    await AuthModel.updateUserTwoFactor(userId, null, 0);
+    return { success: true, message: "Two-Factor Authentication has been disabled." };
+  }
+
+  async verify2FALogin({ tempToken, otp, device, ip }) {
+    if (!tempToken || !otp) {
+      throw new BadRequestError("Token and OTP verification code are required");
+    }
+
+    let decoded;
+    try {
+      decoded = GenerateToken.verifyAccessToken(tempToken);
+    } catch {
+      throw new UnauthorizedError("Session expired. Please log in again.");
+    }
+
+    if (!decoded || decoded.type !== "2fa_temp" || !decoded.id) {
+      throw new UnauthorizedError("Invalid authentication token.");
+    }
+
+    const user = await AuthModel.getUserById(decoded.id);
+    if (!user || !user.two_factor_enabled || !user.two_factor_secret) {
+      throw new UnauthorizedError("Two-Factor Authentication is not enabled for this account.");
+    }
+
+    const totp = new OTPAuth.TOTP({
+      issuer: "TaskManagementSystem",
+      algorithm: "SHA1",
+      digits: 6,
+      period: 30,
+      secret: OTPAuth.Secret.fromBase32(user.two_factor_secret),
+    });
+
+    const delta = totp.validate({ token: String(otp).trim(), window: 5 });
+    if (delta === null) {
+      throw new BadRequestError("Invalid authentication code. Please try again.");
+    }
+
+    const payload = {
+      id: user.id,
+      role: user.role,
+      status: user.status,
+      department_id: user.department_id || null,
+      team_id: user.team_id || null,
+      reporting_manager_id: user.reporting_manager_id || null,
+    };
+
+    const accessToken = await GenerateToken.AccesToken(payload);
+    const refreshToken = await GenerateToken.RefreshToken(payload);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await AuthModel.deleteTokenByDevice(user.id, device, ip);
+    await AuthModel.clearExpiredSessions(user.id);
+    const activeSessions = await AuthModel.countUserSession(user.id);
+    if (activeSessions >= 3) {
+      await AuthModel.deleteOldestSession(user.id);
+    }
+
+    await AuthModel.saveRefreshToken(user.id, refreshToken, device, ip, expiresAt);
+
+    const { password: _, two_factor_secret: __, ...userWithoutSecret } = user;
+
+    return {
+      user: userWithoutSecret,
+      accessToken,
+      refreshToken,
     };
   }
 }

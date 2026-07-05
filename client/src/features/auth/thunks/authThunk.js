@@ -9,6 +9,10 @@ import {
   updateUser,
   deleteUser,
   getRoles,
+  generate2FA,
+  verify2FASetup,
+  disable2FA,
+  verify2FALogin,
 } from "@/features/auth/services/auth.service";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -132,6 +136,50 @@ export const getRolesThunk = createAsyncThunk(
       return await getRoles();
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to fetch roles");
+    }
+  }
+);
+
+export const generate2FAThunk = createAsyncThunk(
+  "auth/generate2FA",
+  async (_, thunkAPI) => {
+    try {
+      return await generate2FA();
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to generate 2FA QR code");
+    }
+  }
+);
+
+export const verify2FASetupThunk = createAsyncThunk(
+  "auth/verify2FASetup",
+  async ({ secret, token }, thunkAPI) => {
+    try {
+      return await verify2FASetup(secret, token);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to verify 2FA setup");
+    }
+  }
+);
+
+export const disable2FAThunk = createAsyncThunk(
+  "auth/disable2FA",
+  async (password, thunkAPI) => {
+    try {
+      return await disable2FA(password);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Failed to disable 2FA");
+    }
+  }
+);
+
+export const verify2FALoginThunk = createAsyncThunk(
+  "auth/verify2FALogin",
+  async ({ tempToken, otp }, thunkAPI) => {
+    try {
+      return await verify2FALogin(tempToken, otp);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.response?.data?.message || "Invalid verification code");
     }
   }
 );

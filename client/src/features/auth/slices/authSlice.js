@@ -7,6 +7,9 @@ import {
   changeStatusThunk,
   getAllUsersThunk,
   getRolesThunk,
+  verify2FALoginThunk,
+  verify2FASetupThunk,
+  disable2FAThunk,
 } from "../thunks/authThunk";
 
 const initialState = {
@@ -33,9 +36,11 @@ const authSlice = createSlice({
 
       .addCase(loginThunk.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
-        state.isAuthenticated = true;
-        state.initialized = true;
+        if (!action.payload?.requires2FA) {
+          state.user = action.payload;
+          state.isAuthenticated = true;
+          state.initialized = true;
+        }
       })
 
       .addCase(loginThunk.rejected, (state, action) => {
@@ -96,6 +101,30 @@ const authSlice = createSlice({
       })
       .addCase(getRolesThunk.fulfilled, (state, action) => {
         state.roles = action.payload || [];
+      })
+      .addCase(verify2FALoginThunk.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verify2FALoginThunk.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+        state.isAuthenticated = true;
+        state.initialized = true;
+      })
+      .addCase(verify2FALoginThunk.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(verify2FASetupThunk.fulfilled, (state) => {
+        if (state.user) {
+          state.user.two_factor_enabled = 1;
+        }
+      })
+      .addCase(disable2FAThunk.fulfilled, (state) => {
+        if (state.user) {
+          state.user.two_factor_enabled = 0;
+        }
       });
   },
 });

@@ -18,6 +18,8 @@ class AuthModel {
       u.status,
       u.avatar,
       u.department_id,
+      u.two_factor_enabled,
+      u.two_factor_secret,
       d.name AS department_name,
       r.name AS role
       FROM users u
@@ -84,6 +86,8 @@ class AuthModel {
       u.team_id,
       u.created_at,
       u.department_id,
+      u.two_factor_enabled,
+      u.two_factor_secret,
       d.name AS department_name,
       r.id AS role_id,
       r.name AS role
@@ -174,6 +178,8 @@ class AuthModel {
       u.email,
       u.status,
       u.department_id,
+      u.two_factor_enabled,
+      u.two_factor_secret,
       d.name AS department_name,
       r.id AS role_id,
       r.name AS role
@@ -246,6 +252,11 @@ WHERE pm.user_id = ?
     const selectQuery = `SELECT id, name, email, status FROM users WHERE id = ?`;
     const rows = await executeQuery(selectQuery, [id]);
     return rows[0] || null;
+  }
+
+  async updateUserTwoFactor(userId, secret, enabled) {
+    const query = `UPDATE users SET two_factor_secret = ?, two_factor_enabled = ? WHERE id = ?`;
+    return await executeQuery(query, [secret, enabled, userId]);
   }
 }
 

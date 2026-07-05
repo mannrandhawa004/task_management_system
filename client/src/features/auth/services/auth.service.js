@@ -78,3 +78,23 @@ export const getRoles = async () => {
   return response.data.data;
 };
 
+export const generate2FA = async () => {
+  const response = await api.post("/auth/2fa/generate");
+  return response.data.data;
+};
+
+export const verify2FASetup = async (secret, token) => {
+  const response = await api.post("/auth/2fa/verify-setup", { secret, token });
+  return response.data.data;
+};
+
+export const disable2FA = async (password) => {
+  const response = await api.post("/auth/2fa/disable", { password });
+  return response.data.data;
+};
+
+export const verify2FALogin = async (tempToken, otp) => {
+  const response = await api.post("/auth/login/2fa-verify", { tempToken, otp });
+  return response.data.data;
+};
+

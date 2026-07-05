@@ -74,6 +74,13 @@ class AuthController {
       ip,
     });
 
+    if (result.requires2FA) {
+      return successResponse(res, result.message, {
+        requires2FA: true,
+        tempToken: result.tempToken,
+      });
+    }
+
     try {
       await AuditService.log({
         user_id: result.user.id,
@@ -225,21 +232,38 @@ class AuthController {
     return successResponse(res, "Password changed successfully. Please login again.", null, 200);
   });
 
-  // uploadAvatar = asyncHandler(async (req, res) => {
-  //   try {
-  //     if (!req.file) {
-  //       return BadRequestError("No image provided");
-  //     }
-  //     const imagURL = req.file.path;
-  //     const userId = req.user.id;
+  generate2FA = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const result = await AuthService.generate2FA(userId);
+    return successResponse(res, "2FA setup initiated", result, 200);
+  });
 
-  //     const result = await authModel.uploadAvatar(userId, imagURL);
+  verify2FASetup = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { secret, token } = req.body;
+    const result = await AuthService.verify2FASetup(userId, secret, token);
+    return successResponse(res, result.message, result, 200);
+  });
 
-  //     return successResponse(res, "Profile picture updated successfully", result, 200)
-  //   } catch (error) {
-  //     console.error("error in uploading of avatar", error)
-  //   }
-  // })
+  disable2FA = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { password } = req.body;
+    const result = await AuthService.disable2FA(userId, password);
+    return successResponse(res, result.message, result, 200);
+  });
+
+  verify2FALogin = asyncHandler(async (req, res) => {
+    const { tempToken, otp } = req.body;
+    const ip = req.headers["x-forwarded-for"]?.split(",")[0] || req.socket?.remoteAddress;
+    const device = req.headers["user-agent"];
+
+    const result = await AuthService.verify2FALogin({ tempToken, otp, device, ip });
+
+    res.cookie("accessToken", result?.accessToken, cookieOptionsForAccessToken);
+    res.cookie("refreshToken", result?.refreshToken, cookieOptionsForRefreshToken);
+
+    return successResponse(res, "2FA verification successful", result?.user, 200);
+  });
 }
 
 export default new AuthController();
