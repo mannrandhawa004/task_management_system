@@ -34,8 +34,8 @@ export const getTaskById = async (taskId) => {
   return response.data
 
 }
-export const mytask = async () => {
-  const response = await api.get(`/task/mytask`);
+export const mytask = async (params) => {
+  const response = await api.get(`/task/mytask`, { params });
   return response.data.data;
 }
 

@@ -451,72 +451,136 @@ class TaskModel {
       return result.affectedRows > 0;
     }
 
-  async getMyTasks(userId) {
-      const query = `
-    SELECT
-      t.id,
-      t.title,
-      t.description,
-      t.status,
-      t.priority,
-      t.due_date,
-      t.created_at,
+  async getMyTasks(params) {
+    const userId = typeof params === 'object' && params !== null ? params.userId : params;
+    const filters = typeof params === 'object' && params !== null ? (params.filters || {}) : {};
+    const limit = typeof params === 'object' && params !== null ? params.limit : undefined;
+    const offset = typeof params === 'object' && params !== null ? params.offset : undefined;
 
-      JSON_OBJECT(
-        'id', p.id,
-        'name', p.name
-      ) AS project,
+    const conditions = ["t.id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)"];
+    const values = [userId];
 
-      JSON_OBJECT(
-        'id', u2.id,
-        'name', u2.name
-      ) AS created_by,
-
-      JSON_ARRAYAGG(
-        CASE
-          WHEN u1.id IS NOT NULL THEN
-            JSON_OBJECT(
-              'id', u1.id,
-              'name', u1.name
-            )
-        END
-      ) AS assigned_users
-
-    FROM tasks t
-
-    -- 1. All JOIN operations must execute first
-    JOIN projects p
-    ON p.id = t.project_id
-
-    LEFT JOIN users u2
-    ON u2.id = t.created_by
-
-    LEFT JOIN task_assignees ta
-    ON ta.task_id = t.id
-
-    LEFT JOIN users u1
-    ON u1.id = ta.user_id
-
-    -- 2. The WHERE clause filters down the joined dataset
-    WHERE t.id IN (
-      SELECT task_id 
-      FROM task_assignees 
-      WHERE user_id = ?
-    )
-
-    -- 3. Group and sort the final result set
-    GROUP BY t.id
-    ORDER BY t.created_at DESC
-  `;
-
-      const tasks = await executeQuery(query, [userId]);
-      return tasks.map((task) => ({
-        ...task,
-        project: typeof task.project === 'string' ? JSON.parse(task.project) : task.project,
-        created_by: typeof task.created_by === 'string' ? JSON.parse(task.created_by) : task.created_by,
-        assigned_users: typeof task.assigned_users === 'string' ? JSON.parse(task.assigned_users) : task.assigned_users,
-      }));
+    if (filters.status && filters.status !== "all") {
+      conditions.push("t.status = ?");
+      values.push(filters.status);
     }
+    if (filters.priority && filters.priority !== "all") {
+      conditions.push("t.priority = ?");
+      values.push(filters.priority);
+    }
+    if (filters.projectId && filters.projectId !== "all") {
+      conditions.push("t.project_id = ?");
+      values.push(filters.projectId);
+    }
+    if (filters.search) {
+      conditions.push(`(
+        t.title LIKE ?
+        OR t.description LIKE ?
+        OR p.name LIKE ?
+      )`);
+      values.push(`%${filters.search}%`);
+      values.push(`%${filters.search}%`);
+      values.push(`%${filters.search}%`);
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    let query = `
+      SELECT
+        t.id,
+        t.title,
+        t.description,
+        t.status,
+        t.priority,
+        t.due_date,
+        t.created_at,
+
+        JSON_OBJECT(
+          'id', p.id,
+          'name', p.name
+        ) AS project,
+
+        JSON_OBJECT(
+          'id', u2.id,
+          'name', u2.name
+        ) AS created_by,
+
+        JSON_ARRAYAGG(
+          CASE
+            WHEN u1.id IS NOT NULL THEN
+              JSON_OBJECT(
+                'id', u1.id,
+                'name', u1.name,
+                'avatar', u1.avatar
+              )
+          END
+        ) AS assigned_users
+
+      FROM tasks t
+      JOIN projects p ON p.id = t.project_id
+      LEFT JOIN users u2 ON u2.id = t.created_by
+      LEFT JOIN task_assignees ta ON ta.task_id = t.id
+      LEFT JOIN users u1 ON u1.id = ta.user_id
+
+      ${whereClause}
+
+      GROUP BY t.id
+      ORDER BY t.created_at DESC
+    `;
+
+    if (limit !== undefined && offset !== undefined) {
+      query += " LIMIT ? OFFSET ?";
+      values.push(Number(limit), Number(offset));
+    }
+
+    const tasks = await executeQuery(query, values);
+    return tasks.map((task) => ({
+      ...task,
+      project: typeof task.project === 'string' ? JSON.parse(task.project) : task.project,
+      created_by: typeof task.created_by === 'string' ? JSON.parse(task.created_by) : task.created_by,
+      assigned_users: typeof task.assigned_users === 'string' ? JSON.parse(task.assigned_users) : task.assigned_users,
+    }));
+  }
+
+  async countMyTasks({ userId, filters = {} }) {
+    const conditions = ["t.id IN (SELECT task_id FROM task_assignees WHERE user_id = ?)"];
+    const values = [userId];
+
+    if (filters.status && filters.status !== "all") {
+      conditions.push("t.status = ?");
+      values.push(filters.status);
+    }
+    if (filters.priority && filters.priority !== "all") {
+      conditions.push("t.priority = ?");
+      values.push(filters.priority);
+    }
+    if (filters.projectId && filters.projectId !== "all") {
+      conditions.push("t.project_id = ?");
+      values.push(filters.projectId);
+    }
+    if (filters.search) {
+      conditions.push(`(
+        t.title LIKE ?
+        OR t.description LIKE ?
+        OR p.name LIKE ?
+      )`);
+      values.push(`%${filters.search}%`);
+      values.push(`%${filters.search}%`);
+      values.push(`%${filters.search}%`);
+    }
+
+    const whereClause = `WHERE ${conditions.join(" AND ")}`;
+
+    const query = `
+      SELECT COUNT(DISTINCT t.id) AS total
+      FROM tasks t
+      JOIN projects p ON p.id = t.project_id
+      ${whereClause}
+    `;
+
+    const result = await executeQuery(query, values);
+    return result[0]?.total || 0;
+  }
 
   async getTaskProject(taskId) {
       const query = `

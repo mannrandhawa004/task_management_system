@@ -174,8 +174,8 @@ class TaskService {
 
     const isPrivileged =
       user?.role === "admin" ||
-      user?.role === "super_admin" 
-      Number(task?.created_by?.id) === Number(user?.id);
+      user?.role === "super_admin"
+    Number(task?.created_by?.id) === Number(user?.id);
 
     if (!isPrivileged) {
       const allowedTransitions = {
@@ -195,8 +195,41 @@ class TaskService {
     return await TaskModel.getTaskById(taskId);
   }
 
-  async getMyTasks(userId) {
-    return await TaskModel.getMyTasks(userId);
+  async getMyTasks(queryParams = {}, userId) {
+    const { page, limit, offset } = getPagination(queryParams);
+
+    const filters = {
+      status: queryParams.status,
+      priority: queryParams.priority,
+      search: queryParams.search,
+      projectId: queryParams.projectId,
+    };
+
+    const tasks = await TaskModel.getMyTasks({
+      filters,
+      limit,
+      offset,
+      userId,
+    });
+
+    const totalTask = await TaskModel.countMyTasks({ filters, userId });
+
+    const formattedTasks = tasks.map((task) => ({
+      ...task,
+      project: typeof task.project === "string" ? JSON.parse(task.project) : task.project,
+      created_by: typeof task.created_by === "string" ? JSON.parse(task.created_by) : task.created_by,
+      assigned_users:
+        typeof task.assigned_users === "string"
+          ? JSON.parse(task.assigned_users)
+          : task.assigned_users,
+    }));
+
+    return formatPagination({
+      data: formattedTasks,
+      total: totalTask,
+      page,
+      limit,
+    });
   }
 
   async assignTask({ taskId, userIds }) {

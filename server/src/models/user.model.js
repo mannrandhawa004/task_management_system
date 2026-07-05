@@ -12,17 +12,19 @@ class UserModel {
     if (userRole === "super_admin" || userRole === "admin" || userRole === "hr") {
       // No visibility restrictions — HR needs full employee list access for onboarding/offboarding
     } else if (userRole === "dept_head") {
-      visibilityQuery += " AND u.department_id = ? ";
-      params.push(requestingUser.department_id || null);
-      countParams.push(requestingUser.department_id || null);
-    } else if (userRole === "team_lead") {
+      visibilityQuery += " AND (u.department_id = ? OR u.department_id IN (SELECT department_id FROM teams WHERE lead_id = ?)) ";
+      params.push(requestingUser.department_id || null, requestingUser.id);
+      countParams.push(requestingUser.department_id || null, requestingUser.id);
+    } else if (userRole === "team_lead" || userRole === "manager") {
       visibilityQuery += ` AND (u.id = ? 
+        OR u.department_id IN (SELECT department_id FROM teams WHERE lead_id = ?)
         OR u.team_id IN (SELECT id FROM teams WHERE lead_id = ?) 
         OR u.id IN (SELECT user_id FROM team_members WHERE team_id IN (SELECT id FROM teams WHERE lead_id = ?))) `;
-      params.push(requestingUser.id, requestingUser.id, requestingUser.id);
-      countParams.push(requestingUser.id, requestingUser.id, requestingUser.id);
+      params.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
+      countParams.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
     } else if (userRole === "project_manager") {
       visibilityQuery += ` AND (u.id = ? 
+        OR u.department_id IN (SELECT department_id FROM teams WHERE lead_id = ?)
         OR u.id IN (
           SELECT DISTINCT pm.user_id 
           FROM project_members pm 
@@ -33,13 +35,13 @@ class UserModel {
             WHERE p.created_by = ? OR pm2.role_id IN (1)
           )
         )) `;
-      params.push(requestingUser.id, requestingUser.id, requestingUser.id);
-      countParams.push(requestingUser.id, requestingUser.id, requestingUser.id);
+      params.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
+      countParams.push(requestingUser.id, requestingUser.id, requestingUser.id, requestingUser.id);
     } else {
-      // Standard employee/intern/senior_employee can only see themselves
-      visibilityQuery += " AND u.id = ? ";
-      params.push(requestingUser.id);
-      countParams.push(requestingUser.id);
+      // Standard employee/intern/senior_employee can see themselves or department of team they lead
+      visibilityQuery += " AND (u.id = ? OR u.department_id IN (SELECT department_id FROM teams WHERE lead_id = ?)) ";
+      params.push(requestingUser.id, requestingUser.id);
+      countParams.push(requestingUser.id, requestingUser.id);
     }
 
     // 2. Append optional advanced filters

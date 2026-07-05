@@ -289,7 +289,7 @@ class TaskController {
 
   getMyTasks = asyncHandler(async (req, res) => {
     const userId = req.user.id;
-    const tasks = await TaskService.getMyTasks(userId);
+    const tasks = await TaskService.getMyTasks(req.query, userId);
     return successResponse(res, "Tasks fetched successfully", tasks, 200);
   });
 

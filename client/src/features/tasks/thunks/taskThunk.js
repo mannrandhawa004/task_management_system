@@ -134,9 +134,9 @@ export const getTaskByIdThunk = createAsyncThunk("task/get", async (taskId, { re
   }
 })
 
-export const myTaskThunk = createAsyncThunk('task/mytask', async (_, { rejectWithValue }) => {
+export const myTaskThunk = createAsyncThunk('task/mytask', async (params, { rejectWithValue }) => {
   try {
-    return await taskService.mytask();
+    return await taskService.mytask(params);
   } catch (error) {
     return rejectWithValue(
       error.response?.data?.message

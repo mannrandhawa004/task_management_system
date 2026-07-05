@@ -212,28 +212,13 @@ export default function AllTasksPage() {
         setEditingTask(null);
     };
 
-    // ─── Computed tasks list (handles unpaginated My Tasks array from backend) ───
-    const displayedTasksList = useMemo(() => {
-        if (viewMode !== VIEW_MODES.MY_TASKS) return tasks || [];
-        let filtered = [...(tasks || [])];
-        if (activeFilter !== "all") {
-            filtered = filtered.filter((t) => t?.status === activeFilter);
-        }
-        if (selectedProjectId !== "all") {
-            filtered = filtered.filter((t) => (t?.project?.id == selectedProjectId || t?.project_id == selectedProjectId));
-        }
-        return filtered;
-    }, [tasks, viewMode, activeFilter, selectedProjectId]);
+    // ─── Computed tasks list ───
+    const displayedTasksList = tasks || [];
+    const paginatedDisplayedTasks = displayedTasksList;
 
-    const paginatedDisplayedTasks = useMemo(() => {
-        if (viewMode !== VIEW_MODES.MY_TASKS) return displayedTasksList;
-        const startIndex = (page - 1) * limit;
-        return displayedTasksList.slice(startIndex, startIndex + limit);
-    }, [displayedTasksList, viewMode, page, limit]);
-
-    const activeTotal = viewMode === VIEW_MODES.MY_TASKS ? displayedTasksList.length : (pagination?.total || tasks.length);
-    const activeTotalPages = viewMode === VIEW_MODES.MY_TASKS ? Math.max(1, Math.ceil(displayedTasksList.length / limit)) : (pagination?.totalPages || 1);
-    const activeCurrentPage = viewMode === VIEW_MODES.MY_TASKS ? page : (pagination?.currentPage || page);
+    const activeTotal = pagination?.total || (tasks ? tasks.length : 0);
+    const activeTotalPages = pagination?.totalPages || Math.max(1, Math.ceil(activeTotal / limit));
+    const activeCurrentPage = pagination?.currentPage || page;
 
     // ─── Config maps ──────────────────────────────────────────────────────────
     const statusConfig = {

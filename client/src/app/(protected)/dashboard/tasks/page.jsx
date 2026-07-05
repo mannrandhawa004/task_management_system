@@ -52,52 +52,34 @@ export default function MyTasksPage() {
         }
     }, [urlTaskId]);
 
-    const { tasks, taskLoading } = useSelector((state) => state.task);
+    const { tasks, taskLoading, pagination } = useSelector((state) => state.task);
     const { projects } = useSelector((state) => state.project);
     const user = useSelector((state) => state.auth.user);
 
     useEffect(() => {
         dispatch(getProjectsThunk({ page: 1, limit: 100 }));
-        refreshTasks();
     }, [dispatch]);
 
+    useEffect(() => {
+        refreshTasks();
+    }, [dispatch, page, limit, activeFilter, selectedProjectId]);
+
     const refreshTasks = () => {
-        dispatch(myTaskThunk());
+        const params = {
+            page,
+            limit,
+            status: activeFilter === "all" ? undefined : activeFilter,
+            projectId: selectedProjectId === "all" ? undefined : selectedProjectId,
+        };
+        dispatch(myTaskThunk(params));
     };
 
-    // Filter loaded tasks locally
-    const filteredTasks = useMemo(() => {
-        return (tasks || []).filter((task) => {
-            if (!task) return false;
+    // Filter loaded tasks locally if needed
+    const filteredTasks = tasks || [];
+    const paginatedTasks = filteredTasks;
 
-            // Ensure we only see tasks assigned to the current user (My Tasks)
-            const targetCrew = task.assigned_users || task.assignedUsers || task.assigned_members || [];
-            const isAssignedToMe = targetCrew.some((u) => Number(u?.id) === Number(user?.id));
-            if (!isAssignedToMe) return false;
-
-            // Filter by active status
-            if (activeFilter !== "all") {
-                const matchesStatus = activeFilter === "todo" ? (task.status === "todo" || !task.status) : task.status === activeFilter;
-                if (!matchesStatus) return false;
-            }
-
-            // Filter by selected project dropdown
-            if (selectedProjectId !== "all") {
-                const projId = task.project?.id || task.project_id;
-                if (String(projId) !== String(selectedProjectId)) return false;
-            }
-
-            return true;
-        });
-    }, [tasks, user, activeFilter, selectedProjectId]);
-
-    // Client-side pagination over filtered tasks
-    const paginatedTasks = useMemo(() => {
-        const startIndex = (page - 1) * limit;
-        return filteredTasks.slice(startIndex, startIndex + limit);
-    }, [filteredTasks, page, limit]);
-
-    const totalPages = Math.ceil(filteredTasks.length / limit) || 1;
+    const total = pagination?.total || (tasks ? tasks.length : 0);
+    const totalPages = pagination?.totalPages || Math.ceil(total / limit) || 1;
 
     // Reset page on filter change
     useEffect(() => {
@@ -288,15 +270,21 @@ export default function MyTasksPage() {
             )}
 
             {/* PAGINATION */}
-            {filteredTasks.length > limit && (
-                <div className="pt-2">
-                    <Pagination
-                        currentPage={page}
-                        totalPages={totalPages}
-                        onPageChange={(p) => setPage(p)}
-                    />
-                </div>
-            )}
+            <div className="pt-2">
+                <Pagination
+                    page={page}
+                    limit={limit}
+                    total={total}
+                    totalPages={totalPages}
+                    onPageChange={({ page: newPage, limit: newLimit }) => {
+                        setPage(newPage);
+                        if (newLimit !== limit) {
+                            setLimit(newLimit);
+                            setPage(1);
+                        }
+                    }}
+                />
+            </div>
         </main>
     );
 }

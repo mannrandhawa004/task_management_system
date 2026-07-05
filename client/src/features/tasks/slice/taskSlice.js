@@ -146,6 +146,7 @@ const taskSlice = createSlice({
       .addCase(myTaskThunk.fulfilled, (state, action) => {
         state.taskLoading = false;
         state.tasks = Array.isArray(action.payload) ? action.payload : (action.payload?.data || []);
+        state.pagination = action.payload?.pagination || null;
       })
       .addCase(myTaskThunk.rejected, (state) => {
         state.taskLoading = false;

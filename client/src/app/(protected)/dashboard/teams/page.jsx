@@ -69,7 +69,7 @@ export default function TeamsPage() {
   const isManagement =
     user?.role?.toLowerCase() === "admin" ||
     user?.role?.toLowerCase() === "super_admin" ||
-    user?.role?.toLowerCase() === "hr" 
+    user?.role?.toLowerCase() === "hr";
 
   const canManageTeam = (team) => {
     if (!team || !user) return false;
@@ -78,7 +78,11 @@ export default function TeamsPage() {
     return false;
   };
 
-  const canManageMembers = canManageTeam(selectedTeam);
+  const canManageMembers =
+    canManageTeam(selectedTeam) ||
+    (user?.role?.toLowerCase() === "dept_head" &&
+      selectedTeam &&
+      Number(selectedTeam.department_id) === Number(user?.department_id));
 
   const availableDepartments =
     user?.role?.toLowerCase() === "dept_head"
@@ -321,28 +325,6 @@ export default function TeamsPage() {
                     <span>{team.member_count || 0} members</span>
                   </div>
                 </div>
-
-                {isManagement && (
-                  <div className="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenEdit(team, e)}
-                      className="p-1.5 rounded-lg border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] transition-colors"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(team.id);
-                      }}
-                      className="p-1.5 rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           ))
