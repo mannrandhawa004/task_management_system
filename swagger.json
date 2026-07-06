@@ -219,20 +219,7 @@
         "tags": ["Authentication"],
         "summary": "Get authenticated user profile",
         "responses": {
-          "200": {
-            "description": "User profile data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "success": { "type": "boolean", "example": true },
-                    "data": { "$ref": "#/components/schemas/User" }
-                  }
-                }
-              }
-            }
-          }
+          "200": { "description": "User profile data", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/User" } } } } } }
         }
       }
     },
@@ -392,6 +379,19 @@
         }
       }
     },
+    "/project/{projectId}/members/{userId}": {
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Remove member from project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Member removed successfully" }
+        }
+      }
+    },
     "/task/{projectId}/tasks": {
       "post": {
         "tags": ["Tasks"],
@@ -437,12 +437,61 @@
         }
       }
     },
+    "/task/allTasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get all tasks across all projects (Admin only)",
+        "responses": {
+          "200": { "description": "All system tasks", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } } } } } } }
+        }
+      }
+    },
     "/task/mytask": {
       "get": {
         "tags": ["Tasks"],
         "summary": "Get tasks assigned to the current user",
         "responses": {
           "200": { "description": "User tasks fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } } } } } } }
+        }
+      }
+    },
+    "/task/{taskId}": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get task details and comments",
+        "parameters": [
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task details fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Task" } } } } } }
+        }
+      }
+    },
+    "/task/update/{taskId}": {
+      "patch": {
+        "tags": ["Tasks"],
+        "summary": "Update task details (title, priority, due date)",
+        "parameters": [
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" },
+                  "priority": { "type": "string" },
+                  "due_date": { "type": "string", "format": "date" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Task updated successfully" }
         }
       }
     },
@@ -472,6 +521,44 @@
         }
       }
     },
+    "/task/{taskId}/assign": {
+      "post": {
+        "tags": ["Tasks"],
+        "summary": "Assign task to user",
+        "parameters": [
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userIds"],
+                "properties": {
+                  "userIds": { "type": "array", "items": { "type": "integer" }, "example": [5] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Task assigned successfully" }
+        }
+      }
+    },
+    "/task/delete/{taskId}": {
+      "delete": {
+        "tags": ["Tasks"],
+        "summary": "Delete task permanently",
+        "parameters": [
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Task deleted successfully" }
+        }
+      }
+    },
     "/departments": {
       "get": {
         "tags": ["Departments"],
@@ -479,7 +566,9 @@
         "responses": {
           "200": { "description": "Departments list fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Department" } } } } } } }
         }
-      },
+      }
+    },
+    "/departments/create": {
       "post": {
         "tags": ["Departments"],
         "summary": "Create a new department (Super Admin only)",
@@ -503,12 +592,94 @@
         }
       }
     },
+    "/departments/{id}": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "Get department details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Department details", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Department" } } } } } }
+        }
+      },
+      "patch": {
+        "tags": ["Departments"],
+        "summary": "Update department details (Super Admin only)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "status": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Department updated successfully" }
+        }
+      }
+    },
+    "/departments/delete/{id}": {
+      "delete": {
+        "tags": ["Departments"],
+        "summary": "Delete department (Super Admin only)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Department deleted successfully" }
+        }
+      }
+    },
+    "/departments/{id}/users": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "Get all employees belonging to department",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Department employees list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/User" } } } } } } }
+        }
+      }
+    },
+    "/departments/{id}/stats": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "Get department statistical metrics",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Department metrics fetched successfully" }
+        }
+      }
+    },
     "/teams": {
       "get": {
         "tags": ["Teams"],
-        "summary": "List teams",
+        "summary": "List all teams",
         "responses": {
           "200": { "description": "Teams list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Team" } } } } } } }
+        }
+      }
+    },
+    "/teams/my-teams": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Get teams led by or containing current user",
+        "responses": {
+          "200": { "description": "My teams list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Team" } } } } } } }
         }
       }
     },
@@ -534,6 +705,142 @@
         },
         "responses": {
           "201": { "description": "Team created successfully" }
+        }
+      }
+    },
+    "/teams/{id}": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Get team details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Team details", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Team" } } } } } }
+        }
+      },
+      "patch": {
+        "tags": ["Teams"],
+        "summary": "Update team details (Admin / Dept Head)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "lead_id": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Team updated successfully" }
+        }
+      }
+    },
+    "/teams/delete/{id}": {
+      "delete": {
+        "tags": ["Teams"],
+        "summary": "Delete team (Admin / Dept Head)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Team deleted successfully" }
+        }
+      }
+    },
+    "/teams/{id}/members": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Get all members of a team",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Team members list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/TeamMember" } } } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Teams"],
+        "summary": "Add member to team (Team Lead / Admin)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId"],
+                "properties": {
+                  "userId": { "type": "integer", "example": 5 },
+                  "role": { "type": "string", "example": "Developer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Member added successfully" }
+        }
+      }
+    },
+    "/teams/{id}/members/{userId}": {
+      "delete": {
+        "tags": ["Teams"],
+        "summary": "Remove member from team",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "userId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Member removed successfully" }
+        }
+      }
+    },
+    "/teams/assign-project": {
+      "post": {
+        "tags": ["Teams"],
+        "summary": "Assign team to a project",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["teamId", "projectId"],
+                "properties": {
+                  "teamId": { "type": "integer", "example": 2 },
+                  "projectId": { "type": "integer", "example": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Team assigned to project successfully" }
+        }
+      }
+    },
+    "/teams/project/{projectId}/team/{teamId}": {
+      "delete": {
+        "tags": ["Teams"],
+        "summary": "Remove team assignment from project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "teamId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Team assignment removed successfully" }
         }
       }
     },
@@ -568,12 +875,57 @@
         }
       }
     },
+    "/attendance/start-break": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Log start of employee break",
+        "responses": {
+          "200": { "description": "Break started successfully" }
+        }
+      }
+    },
+    "/attendance/end-break": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Log end of employee break",
+        "responses": {
+          "200": { "description": "Break ended successfully" }
+        }
+      }
+    },
     "/attendance/today-status": {
       "get": {
         "tags": ["Attendance"],
         "summary": "Get current day attendance status",
         "responses": {
           "200": { "description": "Today attendance status", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Attendance" } } } } } }
+        }
+      }
+    },
+    "/attendance/my-history": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get historical attendance records for current employee",
+        "responses": {
+          "200": { "description": "Attendance history", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Attendance" } } } } } } }
+        }
+      }
+    },
+    "/attendance/daily-logs": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get organization-wide daily attendance logs (Admin / HR)",
+        "responses": {
+          "200": { "description": "Daily logs fetched successfully" }
+        }
+      }
+    },
+    "/attendance/monthly-summary": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get monthly attendance summary report (Admin / HR)",
+        "responses": {
+          "200": { "description": "Monthly summary fetched successfully" }
         }
       }
     },
@@ -614,6 +966,110 @@
         }
       }
     },
+    "/leaves/balances": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "Get leave quota balances for current employee",
+        "responses": {
+          "200": { "description": "Leave balances fetched successfully" }
+        }
+      }
+    },
+    "/leaves/colleagues": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "Get list of colleagues currently on leave",
+        "responses": {
+          "200": { "description": "Colleagues on leave list" }
+        }
+      }
+    },
+    "/leaves/manage": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "Get pending leave requests requiring approval (Admin / HR / Head)",
+        "responses": {
+          "200": { "description": "Pending leave requests" }
+        }
+      }
+    },
+    "/leaves/{id}/status": {
+      "patch": {
+        "tags": ["Leaves"],
+        "summary": "Approve or reject leave application (Admin / HR / Head)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["approved", "rejected"], "example": "approved" },
+                  "comment": { "type": "string", "example": "Approved, enjoy your vacation!" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Leave status updated successfully" }
+        }
+      }
+    },
+    "/leaves/policies": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "List organizational leave policies",
+        "responses": {
+          "200": { "description": "Leave policies list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/LeavePolicy" } } } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Leaves"],
+        "summary": "Create leave policy (Super Admin only)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "days_allowed"],
+                "properties": {
+                  "name": { "type": "string", "example": "Annual Leave" },
+                  "days_allowed": { "type": "integer", "example": 20 },
+                  "carry_forward": { "type": "boolean", "example": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Leave policy created successfully" }
+        }
+      }
+    },
+    "/leaves/allocate": {
+      "post": {
+        "tags": ["Leaves"],
+        "summary": "Allocate leave quotas across employees (Super Admin only)",
+        "responses": {
+          "200": { "description": "Quotas allocated successfully" }
+        }
+      }
+    },
+    "/leaves/salary-report": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "Get salary deduction report for unpaid leaves (Admin / HR)",
+        "responses": {
+          "200": { "description": "Salary report fetched successfully" }
+        }
+      }
+    },
     "/users": {
       "get": {
         "tags": ["Users"],
@@ -628,6 +1084,98 @@
         "responses": {
           "200": { "description": "Users directory fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "object", "properties": { "rows": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }, "total": { "type": "integer" } } } } } } } }
         }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create new employee account (Super Admin / Admin / HR)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "name", "role_id"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string" },
+                  "name": { "type": "string" },
+                  "role_id": { "type": "integer" },
+                  "department_id": { "type": "integer" },
+                  "avatar": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created successfully" }
+        }
+      }
+    },
+    "/users/roles": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List system roles and permissions",
+        "responses": {
+          "200": { "description": "Roles list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Role" } } } } } } }
+        }
+      }
+    },
+    "/users/birthdays/today": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get employees celebrating birthdays today",
+        "responses": {
+          "200": { "description": "Today birthdays list" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user profile by ID",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User profile fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/User" } } } } } }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update employee profile & avatar (Super Admin / Admin / HR)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "department_id": { "type": "integer" },
+                  "role_id": { "type": "integer" },
+                  "avatar": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated successfully" }
+        }
+      },
+      "delete": {
+        "tags": ["Users"],
+        "summary": "Deactivate employee account (Super Admin / Admin / HR)",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "User deactivated successfully" }
+        }
       }
     },
     "/dashboard/projects-summary": {
@@ -636,6 +1184,108 @@
         "summary": "Get analytical metrics for projects and tasks",
         "responses": {
           "200": { "description": "Dashboard statistics", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/DashboardSummary" } } } } } }
+        }
+      }
+    },
+    "/dashboard/tasks-in-progress": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get count and list of active in-progress tasks",
+        "responses": {
+          "200": { "description": "In-progress tasks list" }
+        }
+      }
+    },
+    "/dashboard/tasks-completed": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get completed tasks summary",
+        "responses": {
+          "200": { "description": "Completed tasks list" }
+        }
+      }
+    },
+    "/dashboard/tasks-upcoming": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get upcoming tasks due soon",
+        "responses": {
+          "200": { "description": "Upcoming tasks list" }
+        }
+      }
+    },
+    "/dashboard/tasks-overdue": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get overdue tasks list",
+        "responses": {
+          "200": { "description": "Overdue tasks list" }
+        }
+      }
+    },
+    "/dashboard/recently-active-projects": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get recently active projects",
+        "responses": {
+          "200": { "description": "Recently active projects" }
+        }
+      }
+    },
+    "/dashboard/recently-active-tasks": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get recently active tasks",
+        "responses": {
+          "200": { "description": "Recently active tasks" }
+        }
+      }
+    },
+    "/dashboard/daily-task-progress": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get 7-day task completion trend chart data",
+        "responses": {
+          "200": { "description": "Daily task progress chart data" }
+        }
+      }
+    },
+    "/dashboard/admin-metrics": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get system-wide admin KPIs (Super Admin / Admin only)",
+        "responses": {
+          "200": { "description": "Admin KPI metrics" }
+        }
+      }
+    },
+    "/dashboard/department-metrics": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get department analytical metrics",
+        "responses": {
+          "200": { "description": "Department metrics" }
+        }
+      }
+    },
+    "/dashboard/department-metrics/{deptId}": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get specific department analytical breakdown",
+        "parameters": [
+          { "name": "deptId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Department breakdown" }
+        }
+      }
+    },
+    "/dashboard/user-metrics": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get individual user productivity metrics",
+        "responses": {
+          "200": { "description": "User productivity metrics" }
         }
       }
     },
