@@ -1,0 +1,942 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Enterprise Task Management System API",
+    "description": "Complete REST API specification for the Enterprise Task Management System. Features Multi-Factor Authentication (MFA/2FA via Microsoft Authenticator), Role-Based Access Control (RBAC), Real-Time Socket.IO Notifications, Department & Team Scoping, and Attendance & Leave Management.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Manpreet Singh",
+      "email": "support@taskmanagement.local"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/v1",
+      "description": "Local Development Server (API v1)"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "cookieAuth": []
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Register a new user account",
+        "description": "Creates a new employee account with role and department assignment. Supports optional multipart/form-data avatar upload.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password", "name"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "john.doe@company.com" },
+                  "password": { "type": "string", "format": "password", "example": "Secret@12345" },
+                  "name": { "type": "string", "example": "John Doe" },
+                  "first_name": { "type": "string", "example": "John" },
+                  "last_name": { "type": "string", "example": "Doe" },
+                  "phone": { "type": "string", "example": "+1-555-0192" },
+                  "employee_id": { "type": "string", "example": "EMP-2026-004" },
+                  "dob": { "type": "string", "format": "date", "example": "1995-04-12" },
+                  "role_id": { "type": "integer", "example": 2 },
+                  "department_id": { "type": "integer", "example": 1 },
+                  "avatar": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "400": { "description": "Validation error or user already exists" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User login",
+        "description": "Authenticates user credentials. If 2FA is enabled, returns `requires2FA: true` and a temporary token.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "format": "email", "example": "john.doe@company.com" },
+                  "password": { "type": "string", "format": "password", "example": "Secret@12345" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful or 2FA verification required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/AuthResponse" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "success": { "type": "boolean", "example": true },
+                        "requires2FA": { "type": "boolean", "example": true },
+                        "tempToken": { "type": "string", "example": "eyJhbGciOiJIUzI1Ni..." },
+                        "message": { "type": "string", "example": "Two-Factor Authentication required." }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/login/2fa-verify": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify 2FA TOTP code during login",
+        "description": "Verifies the 6-digit TOTP code from Microsoft Authenticator using the temporary token issued during login.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["tempToken", "otp"],
+                "properties": {
+                  "tempToken": { "type": "string", "example": "eyJhbGciOiJIUzI1Ni..." },
+                  "otp": { "type": "string", "example": "123456" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "2FA verified successfully. Full session tokens issued.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuthResponse" } } } },
+          "401": { "description": "Invalid or expired OTP verification code" }
+        }
+      }
+    },
+    "/auth/2fa/generate": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Generate 2FA QR Code for Microsoft Authenticator setup",
+        "description": "Generates a new base32 TOTP secret and returns a Data URL QR Code image ready to be scanned.",
+        "responses": {
+          "200": {
+            "description": "QR Code generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "qrCodeUrl": { "type": "string", "example": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." },
+                        "secret": { "type": "string", "example": "JBSWY3DPEHPK3PXP" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/2fa/verify-setup": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Verify and activate 2FA setup",
+        "description": "Validates the initial 6-digit code from Microsoft Authenticator against the secret to activate MFA on the account.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["secret", "token"],
+                "properties": {
+                  "secret": { "type": "string", "example": "JBSWY3DPEHPK3PXP" },
+                  "token": { "type": "string", "example": "849201" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Two-Factor Authentication enabled successfully" },
+          "400": { "description": "Invalid verification code" }
+        }
+      }
+    },
+    "/auth/2fa/disable": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Disable 2FA on account",
+        "description": "Disables MFA protection. Requires current account password confirmation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["password"],
+                "properties": {
+                  "password": { "type": "string", "example": "Secret@12345" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Two-Factor Authentication disabled successfully" },
+          "401": { "description": "Incorrect password" }
+        }
+      }
+    },
+    "/auth/profile": {
+      "get": {
+        "tags": ["Authentication"],
+        "summary": "Get authenticated user profile",
+        "responses": {
+          "200": {
+            "description": "User profile data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Refresh access token",
+        "description": "Generates a new access token using the refresh token stored in HTTP-only cookies or authorization header.",
+        "responses": {
+          "200": { "description": "Token refreshed successfully" },
+          "401": { "description": "Invalid or expired refresh token" }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Log out user",
+        "description": "Clears authentication cookies and invalidates session.",
+        "responses": {
+          "200": { "description": "Logged out successfully" }
+        }
+      }
+    },
+    "/project": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "List all accessible projects",
+        "description": "Returns projects filtered by user visibility rules and optional department filter.",
+        "parameters": [
+          { "name": "departmentId", "in": "query", "schema": { "type": "integer" }, "description": "Filter projects by department ID" },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "List of projects", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Project" } } } } } } }
+        }
+      }
+    },
+    "/project/create": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Create a new project",
+        "description": "Creates a new project assigned to an optional department. Requires `create_project` permission.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "status"],
+                "properties": {
+                  "name": { "type": "string", "example": "Website Redesign 2026" },
+                  "description": { "type": "string", "example": "Overhauling frontend architecture with Next.js 15" },
+                  "status": { "type": "string", "enum": ["active", "completed", "archived", "on_hold"], "example": "active" },
+                  "department_id": { "type": "integer", "nullable": true, "example": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Project created successfully" },
+          "403": { "description": "Permission denied" }
+        }
+      }
+    },
+    "/project/details/{id}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get individual project details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Project details fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Project" } } } } } },
+          "404": { "description": "Project not found" }
+        }
+      }
+    },
+    "/project/{id}": {
+      "patch": {
+        "tags": ["Projects"],
+        "summary": "Update project details",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" },
+                  "status": { "type": "string" },
+                  "department_id": { "type": "integer", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Project updated successfully" }
+        }
+      }
+    },
+    "/project/delete/{id}": {
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete project",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Project deleted successfully" }
+        }
+      }
+    },
+    "/project/{projectId}/members": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get all members of a project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Project members list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/ProjectMember" } } } } } } }
+        }
+      }
+    },
+    "/project/{id}/members": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Add members to project",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userId", "roleId"],
+                "properties": {
+                  "userId": { "type": "array", "items": { "type": "integer" }, "example": [5, 8] },
+                  "roleId": { "type": "array", "items": { "type": "integer" }, "example": [2, 2] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Members added successfully" }
+        }
+      }
+    },
+    "/task/{projectId}/tasks": {
+      "post": {
+        "tags": ["Tasks"],
+        "summary": "Create a new task in a project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "priority"],
+                "properties": {
+                  "title": { "type": "string", "example": "Implement Authentication Middleware" },
+                  "description": { "type": "string", "example": "Add JWT verification and RBAC checks" },
+                  "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"], "example": "high" },
+                  "status": { "type": "string", "enum": ["todo", "in_progress", "review", "completed"], "example": "todo" },
+                  "due_date": { "type": "string", "format": "date", "example": "2026-07-15" },
+                  "assignee_id": { "type": "integer", "example": 5 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Task created successfully", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Task" } } } }
+        }
+      }
+    },
+    "/task/project/{projectId}/tasks": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get all tasks for a project",
+        "parameters": [
+          { "name": "projectId", "in": "path", "required": true, "schema": { "type": "integer" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "priority", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Tasks list fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } } } } } } }
+        }
+      }
+    },
+    "/task/mytask": {
+      "get": {
+        "tags": ["Tasks"],
+        "summary": "Get tasks assigned to the current user",
+        "responses": {
+          "200": { "description": "User tasks fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Task" } } } } } } }
+        }
+      }
+    },
+    "/task/update/{taskId}/status": {
+      "patch": {
+        "tags": ["Tasks"],
+        "summary": "Update task status (Assignee or Manager)",
+        "parameters": [
+          { "name": "taskId", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["status"],
+                "properties": {
+                  "status": { "type": "string", "enum": ["todo", "in_progress", "review", "completed"], "example": "in_progress" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Status updated successfully" }
+        }
+      }
+    },
+    "/departments": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "List all departments",
+        "responses": {
+          "200": { "description": "Departments list fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Department" } } } } } } }
+        }
+      },
+      "post": {
+        "tags": ["Departments"],
+        "summary": "Create a new department (Super Admin only)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "Engineering" },
+                  "description": { "type": "string", "example": "Software Development & Infrastructure" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Department created successfully" }
+        }
+      }
+    },
+    "/teams": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "List teams",
+        "responses": {
+          "200": { "description": "Teams list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Team" } } } } } } }
+        }
+      }
+    },
+    "/teams/create": {
+      "post": {
+        "tags": ["Teams"],
+        "summary": "Create a new team (Admin / Dept Head)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "department_id"],
+                "properties": {
+                  "name": { "type": "string", "example": "Frontend Core" },
+                  "department_id": { "type": "integer", "example": 2 },
+                  "lead_id": { "type": "integer", "example": 4 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Team created successfully" }
+        }
+      }
+    },
+    "/attendance/check-in": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Employee Check-In for the workday",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notes": { "type": "string", "example": "Working from home today" },
+                  "work_location": { "type": "string", "enum": ["office", "remote", "hybrid"], "example": "remote" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Checked in successfully", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Attendance" } } } }
+        }
+      }
+    },
+    "/attendance/check-out": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Employee Check-Out",
+        "responses": {
+          "200": { "description": "Checked out successfully" }
+        }
+      }
+    },
+    "/attendance/today-status": {
+      "get": {
+        "tags": ["Attendance"],
+        "summary": "Get current day attendance status",
+        "responses": {
+          "200": { "description": "Today attendance status", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/Attendance" } } } } } }
+        }
+      }
+    },
+    "/leaves/apply": {
+      "post": {
+        "tags": ["Leaves"],
+        "summary": "Apply for leave",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["type", "start_date", "end_date", "reason"],
+                "properties": {
+                  "type": { "type": "string", "enum": ["annual", "sick", "casual", "maternity", "paternity", "unpaid"], "example": "annual" },
+                  "leave_policy_id": { "type": "integer", "example": 1 },
+                  "start_date": { "type": "string", "format": "date", "example": "2026-08-01" },
+                  "end_date": { "type": "string", "format": "date", "example": "2026-08-05" },
+                  "total_days": { "type": "number", "example": 5 },
+                  "reason": { "type": "string", "example": "Family vacation" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Leave application submitted", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Leave" } } } }
+        }
+      }
+    },
+    "/leaves/my": {
+      "get": {
+        "tags": ["Leaves"],
+        "summary": "Get current employee leave applications",
+        "responses": {
+          "200": { "description": "Leave list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Leave" } } } } } } }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List employees directory",
+        "parameters": [
+          { "name": "departmentId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "roleId", "in": "query", "schema": { "type": "integer" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "Users directory fetched successfully", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "object", "properties": { "rows": { "type": "array", "items": { "$ref": "#/components/schemas/User" } }, "total": { "type": "integer" } } } } } } } }
+        }
+      }
+    },
+    "/dashboard/projects-summary": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get analytical metrics for projects and tasks",
+        "responses": {
+          "200": { "description": "Dashboard statistics", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "$ref": "#/components/schemas/DashboardSummary" } } } } } }
+        }
+      }
+    },
+    "/audit-logs": {
+      "get": {
+        "tags": ["Audit Logs"],
+        "summary": "Get system audit logs (Super Admin only)",
+        "responses": {
+          "200": { "description": "Audit logs list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/AuditLog" } } } } } } }
+        }
+      }
+    },
+    "/notification": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get user notifications",
+        "responses": {
+          "200": { "description": "Notifications list", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "data": { "type": "array", "items": { "$ref": "#/components/schemas/Notification" } } } } } } }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Global system search across projects, tasks, and members",
+        "parameters": [
+          { "name": "q", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Search results" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "description": "Complete Employee / User Account Schema representing the `users` table along with joined organizational relations.",
+        "properties": {
+          "id": { "type": "integer", "example": 5 },
+          "name": { "type": "string", "example": "John Doe" },
+          "first_name": { "type": "string", "example": "John" },
+          "last_name": { "type": "string", "example": "Doe" },
+          "email": { "type": "string", "format": "email", "example": "john.doe@company.com" },
+          "phone": { "type": "string", "example": "+1-555-0192" },
+          "employee_id": { "type": "string", "example": "EMP-2026-004" },
+          "dob": { "type": "string", "format": "date", "example": "1995-04-12" },
+          "reporting_manager_id": { "type": "integer", "nullable": true, "example": 3 },
+          "manager_name": { "type": "string", "nullable": true, "example": "Sarah Jenkins" },
+          "team_id": { "type": "integer", "nullable": true, "example": 2 },
+          "team_name": { "type": "string", "nullable": true, "example": "Frontend Core" },
+          "status": { "type": "string", "enum": ["active", "inactive", "suspended", "on_leave"], "example": "active" },
+          "avatar": { "type": "string", "example": "https://res.cloudinary.com/demo/image/upload/avatar.jpg" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-01-15T10:30:00Z" },
+          "department_id": { "type": "integer", "nullable": true, "example": 1 },
+          "department_name": { "type": "string", "nullable": true, "example": "Engineering" },
+          "role_id": { "type": "integer", "example": 2 },
+          "role": { "type": "string", "example": "manager" },
+          "today_attendance_status": { "type": "string", "enum": ["present", "absent", "half_day", "on_break", "working", "on_leave"], "nullable": true, "example": "working" },
+          "two_factor_enabled": { "type": "boolean", "example": true },
+          "two_factor_secret": { "type": "string", "description": "Base32 TOTP secret for Microsoft Authenticator (excluded in public profile responses)", "example": "JBSWY3DPEHPK3PXP" }
+        }
+      },
+      "Role": {
+        "type": "object",
+        "description": "System Role Schema representing the `roles` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "name": { "type": "string", "example": "manager" },
+          "description": { "type": "string", "example": "Department or Project Manager with team oversight" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-01-01T00:00:00Z" }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "description": "Project Schema representing the `projects` table along with creator and department relations.",
+        "properties": {
+          "id": { "type": "integer", "example": 10 },
+          "name": { "type": "string", "example": "Website Redesign" },
+          "description": { "type": "string", "example": "Next.js 15 Migration and UI Overhaul" },
+          "status": { "type": "string", "enum": ["active", "completed", "archived", "on_hold"], "example": "active" },
+          "department_id": { "type": "integer", "nullable": true, "example": 2 },
+          "department_name": { "type": "string", "nullable": true, "example": "Engineering" },
+          "creator_id": { "type": "integer", "example": 3 },
+          "creator_name": { "type": "string", "example": "Alice Smith" },
+          "creator_email": { "type": "string", "example": "alice@company.com" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-06-01T14:20:00Z" }
+        }
+      },
+      "ProjectMember": {
+        "type": "object",
+        "description": "Project Member Assignment Schema representing the `project_members` junction table.",
+        "properties": {
+          "project_id": { "type": "integer", "example": 10 },
+          "user_id": { "type": "integer", "example": 5 },
+          "role_id": { "type": "integer", "example": 2 },
+          "role": { "type": "string", "enum": ["Manager", "Member"], "example": "Member" },
+          "user_name": { "type": "string", "example": "John Doe" },
+          "user_email": { "type": "string", "example": "john.doe@company.com" },
+          "avatar": { "type": "string", "example": "https://res.cloudinary.com/demo/image/upload/avatar.jpg" }
+        }
+      },
+      "Task": {
+        "type": "object",
+        "description": "Task Schema representing the `tasks` table with assignees and project details.",
+        "properties": {
+          "id": { "type": "integer", "example": 101 },
+          "title": { "type": "string", "example": "Implement Authentication Middleware" },
+          "description": { "type": "string", "example": "Add JWT verification and RBAC checks" },
+          "status": { "type": "string", "enum": ["todo", "in_progress", "review", "completed"], "example": "in_progress" },
+          "priority": { "type": "string", "enum": ["low", "medium", "high", "urgent"], "example": "high" },
+          "due_date": { "type": "string", "format": "date", "example": "2026-07-15" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-07-01T09:00:00Z" },
+          "project": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "example": 10 },
+              "name": { "type": "string", "example": "Website Redesign" }
+            }
+          },
+          "created_by": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "integer", "example": 3 },
+              "name": { "type": "string", "example": "Alice Smith" }
+            }
+          },
+          "assigned_users": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": { "type": "integer", "example": 5 },
+                "name": { "type": "string", "example": "John Doe" }
+              }
+            }
+          }
+        }
+      },
+      "TaskComment": {
+        "type": "object",
+        "description": "Task Comment Schema representing the `task_comments` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 501 },
+          "task_id": { "type": "integer", "example": 101 },
+          "user_id": { "type": "integer", "example": 5 },
+          "comment": { "type": "string", "example": "PR is ready for review!" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-07-05T16:45:00Z" },
+          "user_name": { "type": "string", "example": "John Doe" },
+          "avatar": { "type": "string", "example": "https://res.cloudinary.com/demo/image/upload/avatar.jpg" }
+        }
+      },
+      "Department": {
+        "type": "object",
+        "description": "Organizational Department Schema representing the `departments` table with aggregate statistics.",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Engineering" },
+          "description": { "type": "string", "example": "Software Development & Infrastructure" },
+          "status": { "type": "string", "enum": ["active", "inactive"], "example": "active" },
+          "user_count": { "type": "integer", "example": 24 },
+          "project_count": { "type": "integer", "example": 8 },
+          "team_count": { "type": "integer", "example": 4 },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-01-01T00:00:00Z" }
+        }
+      },
+      "Team": {
+        "type": "object",
+        "description": "Team Schema representing the `teams` table within a department.",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "department_id": { "type": "integer", "example": 1 },
+          "department_name": { "type": "string", "example": "Engineering" },
+          "name": { "type": "string", "example": "Frontend Core" },
+          "description": { "type": "string", "example": "Next.js & React UI specialists" },
+          "lead_id": { "type": "integer", "nullable": true, "example": 4 },
+          "lead_name": { "type": "string", "nullable": true, "example": "David Miller" },
+          "lead_email": { "type": "string", "nullable": true, "example": "david@company.com" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-02-01T10:00:00Z" }
+        }
+      },
+      "TeamMember": {
+        "type": "object",
+        "description": "Team Member Schema representing the `team_members` junction table.",
+        "properties": {
+          "team_id": { "type": "integer", "example": 2 },
+          "user_id": { "type": "integer", "example": 5 },
+          "user_name": { "type": "string", "example": "John Doe" },
+          "user_email": { "type": "string", "example": "john.doe@company.com" },
+          "role": { "type": "string", "example": "Senior Developer" },
+          "joined_at": { "type": "string", "format": "date-time", "example": "2026-02-15T09:00:00Z" }
+        }
+      },
+      "Attendance": {
+        "type": "object",
+        "description": "Daily Employee Attendance Schema representing the `attendance` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 801 },
+          "user_id": { "type": "integer", "example": 5 },
+          "date": { "type": "string", "format": "date", "example": "2026-07-06" },
+          "check_in": { "type": "string", "format": "date-time", "example": "2026-07-06T09:02:15Z" },
+          "check_out": { "type": "string", "format": "date-time", "nullable": true, "example": "2026-07-06T18:05:00Z" },
+          "status": { "type": "string", "enum": ["present", "absent", "working", "on_break", "half_day", "on_leave"], "example": "working" },
+          "working_hours": { "type": "number", "format": "float", "example": 8.5 },
+          "break_start": { "type": "string", "format": "date-time", "nullable": true, "example": "2026-07-06T13:00:00Z" },
+          "total_break_seconds": { "type": "integer", "example": 3600 },
+          "work_location": { "type": "string", "enum": ["office", "remote", "hybrid"], "example": "remote" },
+          "notes": { "type": "string", "nullable": true, "example": "Working from home today" }
+        }
+      },
+      "Leave": {
+        "type": "object",
+        "description": "Employee Leave Application Schema representing the `leaves` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 301 },
+          "user_id": { "type": "integer", "example": 5 },
+          "user_name": { "type": "string", "example": "John Doe" },
+          "user_email": { "type": "string", "example": "john.doe@company.com" },
+          "type": { "type": "string", "enum": ["annual", "sick", "casual", "maternity", "paternity", "unpaid"], "example": "annual" },
+          "leave_policy_id": { "type": "integer", "nullable": true, "example": 1 },
+          "start_date": { "type": "string", "format": "date", "example": "2026-08-01" },
+          "end_date": { "type": "string", "format": "date", "example": "2026-08-05" },
+          "total_days": { "type": "number", "example": 5 },
+          "lwp_days": { "type": "number", "example": 0 },
+          "status": { "type": "string", "enum": ["pending", "approved", "rejected", "cancelled"], "example": "approved" },
+          "reason": { "type": "string", "example": "Family vacation" },
+          "attachment": { "type": "string", "nullable": true, "example": "https://res.cloudinary.com/demo/image/upload/medical_cert.pdf" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-07-01T11:00:00Z" }
+        }
+      },
+      "LeavePolicy": {
+        "type": "object",
+        "description": "Leave Quota Policy Schema representing the `leave_policies` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Annual Leave Quota" },
+          "days_allowed": { "type": "integer", "example": 20 },
+          "carry_forward": { "type": "boolean", "example": true },
+          "applicable_role_id": { "type": "integer", "nullable": true, "example": null },
+          "description": { "type": "string", "example": "Standard paid annual leave for all full-time employees" }
+        }
+      },
+      "AuditLog": {
+        "type": "object",
+        "description": "System Audit Trail Schema representing the `audit_logs` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 9001 },
+          "user_id": { "type": "integer", "nullable": true, "example": 3 },
+          "user_name": { "type": "string", "example": "Alice Smith" },
+          "action": { "type": "string", "example": "PROJECT_MEMBER_ADDED" },
+          "target_type": { "type": "string", "example": "project" },
+          "target_id": { "type": "integer", "example": 10 },
+          "details": { "type": "string", "example": "Added user ID 5 as Member to project 10" },
+          "ip_address": { "type": "string", "example": "192.168.1.50" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-07-06T15:30:00Z" }
+        }
+      },
+      "Notification": {
+        "type": "object",
+        "description": "In-App Notification Schema representing the `notifications` table.",
+        "properties": {
+          "id": { "type": "integer", "example": 401 },
+          "user_id": { "type": "integer", "example": 5 },
+          "title": { "type": "string", "example": "New Task Assigned" },
+          "message": { "type": "string", "example": "You have been assigned to 'Implement Authentication Middleware'" },
+          "type": { "type": "string", "enum": ["task_assign", "project_update", "leave_status", "system"], "example": "task_assign" },
+          "is_read": { "type": "boolean", "example": false },
+          "reference_id": { "type": "integer", "example": 101 },
+          "reference_type": { "type": "string", "example": "task" },
+          "created_at": { "type": "string", "format": "date-time", "example": "2026-07-06T14:15:00Z" }
+        }
+      },
+      "DashboardSummary": {
+        "type": "object",
+        "description": "Analytical KPI Summary Schema returned by `/v1/dashboard/projects-summary`.",
+        "properties": {
+          "total_projects": { "type": "integer", "example": 12 },
+          "active_projects": { "type": "integer", "example": 8 },
+          "completed_projects": { "type": "integer", "example": 3 },
+          "total_tasks": { "type": "integer", "example": 64 },
+          "in_progress_tasks": { "type": "integer", "example": 18 },
+          "overdue_tasks": { "type": "integer", "example": 2 }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "description": "Standard Authentication Session Response returned upon login or registration.",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Authentication successful" },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": { "$ref": "#/components/schemas/User" },
+              "accessToken": { "type": "string", "example": "eyJhbGciOiJIUzI1Ni..." },
+              "refreshToken": { "type": "string", "example": "eyJhbGciOiJIUzI1Ni..." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -5,6 +5,9 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import http from "http";
 import { Server } from "socket.io";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import cors from "cors";
 import compression from "compression";
@@ -36,7 +39,7 @@ dotenv.config({
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
 app.use(
   cors({
@@ -60,8 +63,76 @@ app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(clientIpMiddleware);
-app.get("/", (req, res) => {
-  res.send("Server running");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.get(["/swagger.json", "/v1/swagger.json"], (req, res) => {
+  try {
+    const swaggerData = fs.readFileSync(path.join(__dirname, "../swagger.json"), "utf8");
+    res.setHeader("Content-Type", "application/json");
+    res.send(swaggerData);
+  } catch (err) {
+    res.status(404).json({ success: false, message: "Swagger spec not found" });
+  }
+});
+
+const swaggerHtml = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Enterprise Task Management System — API Docs</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    .swagger-ui {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
+    .swagger-ui .topbar {
+      display: none;
+    }
+    .swagger-ui .info .title {
+      color: #0284c7 !important;
+    }
+    .swagger-ui .scheme-container {
+      background: #ffffff !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+    }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-standalone-preset.js" crossorigin></script>
+  <script>
+    window.onload = () => {
+      window.ui = SwaggerUIBundle({
+        url: '/swagger.json',
+        dom_id: '#swagger-ui',
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout",
+        deepLinking: true,
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1
+      });
+    };
+  </script>
+</body>
+</html>
+`;
+
+app.get(["/", "/v1", "/api-docs", "/docs"], (req, res) => {
+  res.setHeader("Content-Type", "text/html");
+  res.send(swaggerHtml);
 });
 
 app.use("/v1/auth", authRoutes);

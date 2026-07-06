@@ -78,20 +78,20 @@ export default function UsersPage() {
     dispatch(getDepartmentsThunk({ page: 1, limit: 100 }));
     dispatch(getTeamsThunk({ page: 1, limit: 100 }));
     dispatch(getRolesThunk());
-    fetchManagersList();
+    // fetchManagersList();
   }, [dispatch]);
 
-  const fetchManagersList = async () => {
-    try {
-      setManagersLoading(true);
-      const res = await api.get("/users?limit=1000");
-      setManagers(res.data?.data?.data || []);
-    } catch (err) {
-      console.error("Failed to fetch managers list:", err);
-    } finally {
-      setManagersLoading(false);
-    }
-  };
+  // const fetchManagersList = async () => {
+  //   try {
+  //     setManagersLoading(true);
+  //     const res = await api.get("/users?limit=1000");
+  //     setManagers(res.data?.data?.data || []);
+  //   } catch (err) {
+  //     console.error("Failed to fetch managers list:", err);
+  //   } finally {
+  //     setManagersLoading(false);
+  //   }
+  // };
 
   // Fetch users when pagination or filters change
   const fetchUsers = () => {
@@ -305,19 +305,8 @@ export default function UsersPage() {
             <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
           </div>
 
-          {/* MANAGER */}
-          <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
-            <User size={13} className="text-[var(--muted)] mr-2 shrink-0" />
-            <select
-              value={managerFilter}
-              onChange={(e) => { setManagerFilter(e.target.value); setPage(1); }}
-              className="text-xs font-bold bg-transparent py-2.5 outline-none appearance-none cursor-pointer text-[var(--text)] w-full"
-            >
-              <option value="all">All Managers</option>
-              {managers.map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-            </select>
-            <ChevronDown size={13} className="absolute right-3 text-[var(--muted)] pointer-events-none" />
-          </div>
+        
+          
 
           {/* ATTENDANCE STATUS */}
           <div className="relative flex items-center bg-[var(--hover)]/40 rounded-2xl border border-[var(--border)] px-3 focus-within:border-[var(--primary)] transition-all">
