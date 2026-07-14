@@ -1,794 +1,1250 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NexusTask — Enterprise Multi-Tenant SaaS Task Management Platform</title>
-  <meta name="description" content="The next-generation multi-tenant SaaS platform for enterprise task management, attendance, custom RBAC, and real-time collaboration. Every team gets their own isolated database." />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <title>TaskFlow — Enterprise Multi-Tenant SaaS Task Management Platform</title>
+  <meta name="description" content="TaskFlow is the next-generation multi-tenant SaaS platform for enterprise task management, attendance, RBAC, and real-time collaboration with dedicated per-tenant databases." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/landing.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Outfit', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50:  '#f0fdf4',
+              100: '#dcfce7',
+              200: '#bbf7d0',
+              300: '#86efac',
+              400: '#4ade80',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            dark: {
+              base: '#050A18',
+              900: '#080F20',
+              800: '#0D1628',
+              700: '#111D35',
+              600: '#162340',
+              500: '#1e3a5f',
+            },
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'float-slow': 'float 10s ease-in-out infinite',
+            'shimmer': 'shimmer 3s linear infinite',
+            'pulse-dot': 'pulseDot 2s ease-in-out infinite',
+            'slide-up': 'slideUp 0.5s ease-out',
+            'spin-slow': 'spin 8s linear infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-12px)' },
+            },
+            shimmer: {
+              '0%': { backgroundPosition: '0% center' },
+              '100%': { backgroundPosition: '200% center' },
+            },
+            pulseDot: {
+              '0%, 100%': { transform: 'scale(1)', opacity: '1' },
+              '50%': { transform: 'scale(1.5)', opacity: '0.6' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            },
+          },
+          backdropBlur: { xs: '2px' },
+          backgroundSize: { '200': '200%' },
+        },
+      },
+    }
+  </script>
+  <style>
+    /* Base overrides */
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
+
+    /* Gradient text */
+    .text-gradient {
+      background: linear-gradient(135deg, #86efac 0%, #4ade80 25%, #22c55e 50%, #67e8f9 80%, #a5b4fc 100%);
+      background-size: 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    /* Animated orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Noise texture */
+    .noise::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.02;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Glow utilities */
+    .glow-green { box-shadow: 0 0 40px rgba(34, 197, 94, 0.25); }
+    .glow-green-sm { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
+    .glow-blue { box-shadow: 0 0 40px rgba(99, 102, 241, 0.2); }
+    .text-glow { text-shadow: 0 0 30px rgba(74, 222, 128, 0.4); }
+
+    /* Card hover */
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-6px);
+    }
+
+    /* Browser mockup scrollbar hidden */
+    .mockup-scroll::-webkit-scrollbar { display: none; }
+
+    /* Stripe top on cards */
+    .card-stripe::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.6), transparent);
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: transform 0.4s ease;
+    }
+    .card-stripe:hover::before { transform: scaleX(1); }
+
+    /* Shimmer btn */
+    .btn-shimmer { overflow: hidden; }
+    .btn-shimmer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn-shimmer:hover::before { left: 100%; }
+
+    /* Pricing popular scale */
+    .pricing-popular { transform: scale(1.04); }
+
+    /* FAQ transition */
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease, padding 0.3s ease;
+    }
+    .faq-open .faq-answer { max-height: 300px; }
+    .faq-open .faq-icon { transform: rotate(45deg); }
+    .faq-icon { transition: transform 0.3s ease; }
+
+    /* Modal transition */
+    .modal-box {
+      transform: translateY(20px) scale(0.97);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-open .modal-box { transform: translateY(0) scale(1); }
+
+    /* Showcase image frame */
+    .showcase-frame {
+      background: linear-gradient(135deg, rgba(22,163,74,0.08), rgba(6,182,212,0.05));
+      border: 1px solid rgba(34,197,94,0.15);
+    }
+
+    /* Step done */
+    .step-done { background: #22c55e; border-color: #22c55e; color: white; }
+    .step-active { background: #16a34a; border-color: #22c55e; color: white; box-shadow: 0 0 16px rgba(34,197,94,0.5); }
+  </style>
 </head>
-<body>
+<body class="bg-dark-base text-white antialiased overflow-x-hidden noise">
 
-<!-- Decorative Background -->
-<div class="bg-mesh"></div>
-<div class="noise"></div>
-<div class="orb orb-1"></div>
-<div class="orb orb-2"></div>
-<div class="orb orb-3"></div>
+  <!-- Decorative orbs -->
+  <div class="orb w-[700px] h-[700px] bg-brand-600/10 -top-52 -left-32 animate-float-slow"></div>
+  <div class="orb w-[500px] h-[500px] bg-indigo-600/8 top-1/2 -right-32 animate-float" style="animation-delay:-4s"></div>
+  <div class="orb w-[400px] h-[400px] bg-cyan-500/6 bottom-0 left-1/3 animate-float-slow" style="animation-delay:-8s"></div>
 
-<!-- =============== HEADER =============== -->
-<header class="header">
-  <div class="header-inner">
-    <div class="container header-content">
-      <a href="#" class="logo">
-        <div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div>
-        <span class="logo-text">NexusTask<sup>®</sup></span>
-      </a>
+  <!-- ==================== HEADER ==================== -->
+  <header class="sticky top-0 z-50">
+    <div class="bg-dark-base/80 backdrop-blur-xl border-b border-white/5">
+      <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-[70px]">
 
-      <ul class="nav">
-        <li><a href="#features">Features</a></li>
-        <li><a href="#architecture">Security</a></li>
-        <li><a href="#pricing">Pricing</a></li>
-        <li><a href="#testimonials">Customers</a></li>
-        <li><a href="#faq">FAQ</a></li>
-      </ul>
-
-      <div class="header-actions">
-        <button class="btn btn-ghost" onclick="openLoginModal()">
-          <i class="fa-solid fa-right-to-bracket"></i> Sign In
-        </button>
-        <button class="btn btn-primary" onclick="openCheckoutModal(2,'Professional Suite')">
-          <i class="fa-solid fa-bolt"></i> Start Free Trial
-        </button>
-      </div>
-    </div>
-  </div>
-</header>
-
-<main>
-
-<!-- =============== HERO =============== -->
-<section class="hero">
-  <div class="container hero-content">
-
-    <div class="pill-badge">
-      <span class="pill-dot"></span>
-      <span>100% Database-Per-Tenant · Enterprise Grade · Built for Scale</span>
-    </div>
-
-    <h1 class="hero-headline">
-      The Operating System<br>
-      for <span class="gradient-text">Modern Enterprise Teams</span>
-    </h1>
-
-    <p class="hero-sub">
-      Real-time task management, HR attendance, granular RBAC, and Socket.IO collaboration — each company gets its own fully isolated MySQL database, provisioned in under one second.
-    </p>
-
-    <div class="hero-cta">
-      <button class="btn btn-primary btn-lg" onclick="openCheckoutModal(2,'Professional Suite')">
-        <i class="fa-solid fa-rocket"></i> Provision Your Workspace
-      </button>
-      <a href="#architecture" class="btn btn-outline btn-lg">
-        <i class="fa-solid fa-shield-halved"></i> Explore Security Engine
-      </a>
-    </div>
-
-    <!-- Stats Strip -->
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <div class="hero-stat-num">21</div>
-        <div class="hero-stat-label">Isolated Tables Per Tenant</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">&lt;1s</div>
-        <div class="hero-stat-label">Database Provisioning</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">100%</div>
-        <div class="hero-stat-label">Data Isolation</div>
-      </div>
-      <div class="hero-stat">
-        <div class="hero-stat-num">TOTP</div>
-        <div class="hero-stat-label">Multi-Factor Auth</div>
-      </div>
-    </div>
-
-    <!-- Interactive Browser Mockup -->
-    <div class="mockup-wrapper">
-      <div class="browser-frame">
-        <div class="browser-bar">
-          <div class="browser-dots">
-            <span class="browser-dot bd-red"></span>
-            <span class="browser-dot bd-yellow"></span>
-            <span class="browser-dot bd-green"></span>
+        <!-- Logo -->
+        <a href="#" class="flex items-center gap-3 no-underline">
+          <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center text-white font-bold text-lg shadow-lg glow-green-sm">
+            <i class="fa-solid fa-layer-group text-base"></i>
           </div>
-          <div class="browser-url">
-            <i class="fa-solid fa-lock"></i>
-            https://nexustask.io/workspace/<strong style="color:#a5b4fc">acme-corp</strong>/dashboard
-          </div>
-          <div class="tenant-tag">
-            <i class="fa-solid fa-database"></i> tenant_acme_corp · 21 tables
-          </div>
-        </div>
-
-        <div class="dash-grid">
-          <!-- Sidebar -->
-          <div class="dash-sidebar">
-            <div class="dash-logo">
-              <i class="fa-solid fa-building"></i> Acme Corp
-            </div>
-            <div class="dash-nav-item active">
-              <i class="fa-solid fa-chart-pie"></i> Dashboard
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-list-check"></i> Projects
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-user-clock"></i> Attendance
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-calendar-xmark"></i> Leave Manager
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-users"></i> Departments
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-shield-halved"></i> Roles & RBAC
-            </div>
-            <div class="dash-nav-item">
-              <i class="fa-solid fa-scroll"></i> Audit Logs
-            </div>
-          </div>
-
-          <!-- Main Area -->
-          <div class="dash-main">
-            <!-- Metrics Row -->
-            <div class="dash-metrics">
-              <div class="metric-card">
-                <div class="metric-label">Active Projects</div>
-                <div class="metric-val">24</div>
-                <div class="metric-sub clr-green">↑ 8% this week</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Team Online</div>
-                <div class="metric-val" style="color:#67e8f9">142</div>
-                <div class="metric-sub clr-blue">of 150 employees</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Tasks Due Today</div>
-                <div class="metric-val" style="color:#fcd34d">7</div>
-                <div class="metric-sub clr-amber">3 pending review</div>
-              </div>
-              <div class="metric-card">
-                <div class="metric-label">Attendance Rate</div>
-                <div class="metric-val" style="color:#6ee7b7">94%</div>
-                <div class="metric-sub clr-green">Above target</div>
-              </div>
-            </div>
-
-            <!-- Content Row -->
-            <div class="dash-row">
-              <!-- Tasks Panel -->
-              <div class="dash-panel">
-                <div class="panel-title">
-                  Recent Tasks
-                  <span class="live-badge"><i class="fa-solid fa-circle-dot" style="animation:pulse-dot 2s infinite"></i> Live</span>
-                </div>
-                <div class="task-row">
-                  <span class="task-dot" style="background:#10b981"></span>
-                  <span>Q3 Security Audit Report</span>
-                  <span class="status-badge-sm s-done">Done</span>
-                </div>
-                <div class="task-row">
-                  <span class="task-dot" style="background:#6366f1"></span>
-                  <span>Onboarding Flow - Engineering Dept</span>
-                  <span class="status-badge-sm s-prog">In Progress</span>
-                </div>
-                <div class="task-row">
-                  <span class="task-dot" style="background:#f59e0b"></span>
-                  <span>Design System v2.0 Review</span>
-                  <span class="status-badge-sm s-todo">Todo</span>
-                </div>
-                <div class="task-row">
-                  <span class="task-dot" style="background:#10b981"></span>
-                  <span>Backend API Documentation</span>
-                  <span class="status-badge-sm s-done">Done</span>
-                </div>
-              </div>
-
-              <!-- Chart Panel -->
-              <div class="dash-panel">
-                <div class="panel-title">Task Velocity</div>
-                <div class="mini-chart" id="miniChart">
-                  <div class="bar" style="height:45%"></div>
-                  <div class="bar" style="height:60%"></div>
-                  <div class="bar" style="height:52%"></div>
-                  <div class="bar" style="height:78%"></div>
-                  <div class="bar" style="height:65%"></div>
-                  <div class="bar" style="height:88%"></div>
-                  <div class="bar" style="height:72%"></div>
-                </div>
-                <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#64748b;margin-top:8px">
-                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="mockup-glow"></div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== FEATURES =============== -->
-<section class="section" id="features">
-  <div class="container">
-    <div class="section-title-wrap">
-      <div class="section-tag"><i class="fa-solid fa-sparkles"></i> Core Capabilities</div>
-      <h2>Everything Your Enterprise Needs.<br><span class="gradient-text">Nothing You Don't.</span></h2>
-      <p>A complete HR & task orchestration platform with dedicated per-tenant infrastructure and real-time synchronization built in from day one.</p>
-    </div>
-
-    <div class="features-grid">
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-violet">
-          <i class="fa-solid fa-server"></i>
-        </div>
-        <h3>100% Database Isolation</h3>
-        <p>Unlike shared-table SaaS platforms, every workspace receives its own dedicated MySQL database instance — 21 tables, zero data bleed, provable isolation.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-cyan">
-          <i class="fa-solid fa-bolt"></i>
-        </div>
-        <h3>Real-Time Socket.IO</h3>
-        <p>Kanban boards, attendance punches, and task updates propagate instantly across all connected devices without polling. True live collaboration.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-emerald">
-          <i class="fa-solid fa-user-shield"></i>
-        </div>
-        <h3>Granular RBAC Engine</h3>
-        <p>Build custom role hierarchies from scratch. Assign permissions at project, department, and module level for Super Admins, Managers, Team Leads, and Employees.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-amber">
-          <i class="fa-solid fa-clock"></i>
-        </div>
-        <h3>Attendance & Leave Suite</h3>
-        <p>Complete HR lifecycle: check-in/out stamps, geolocation validation, leave balance ledgers, approval workflows, and customizable company holiday calendars.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-rose">
-          <i class="fa-solid fa-key"></i>
-        </div>
-        <h3>TOTP 2-Factor Auth</h3>
-        <p>Enforce TOTP multi-factor authentication compatible with Microsoft Authenticator and Google Authenticator across all user accounts for full identity protection.</p>
-      </div>
-
-      <div class="feature-card">
-        <div class="feature-icon-wrap fi-purple">
-          <i class="fa-solid fa-scroll"></i>
-        </div>
-        <h3>Cryptographic Audit Logs</h3>
-        <p>Every action — login, task update, permission change, role assignment — is immutably logged inside the tenant's private audit ledger for full compliance.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== ARCHITECTURE =============== -->
-<section class="arch-section" id="architecture">
-  <div class="container">
-    <div class="arch-grid">
-      <div class="arch-content">
-        <div class="section-tag"><i class="fa-solid fa-shield-cat"></i> Isolation Architecture</div>
-        <h2>Why Database-Per-Tenant is the Only Acceptable Standard</h2>
-        <p>In shared-table SaaS architectures, a single missing <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">WHERE tenant_id = X</code> clause can expose your entire company's payroll, tasks, and confidential HR data to a competitor. We eliminated this risk entirely.</p>
-
-        <ul class="arch-list">
-          <li>
-            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
-            <span><strong>AsyncLocalStorage Routing</strong> — Node.js transparently switches MySQL connection pools per request lifecycle without modifying a single line of business logic.</span>
-          </li>
-          <li>
-            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
-            <span><strong>Sub-Second Provisioning</strong> — TenantProvisioningService creates all 21 tables and seeds Super Admin credentials in under 800ms on checkout.</span>
-          </li>
-          <li>
-            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
-            <span><strong>LRU Connection Pool Cleanup</strong> — TenantConnectionManager automatically evicts idle pools after 30 minutes, optimizing server memory in production.</span>
-          </li>
-          <li>
-            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
-            <span><strong>JWT Tenant Identity Binding</strong> — Access tokens embed <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">tenantSlug</code> + <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">tenantDbName</code> so every subsequent API call is cryptographically scoped to the correct isolated database.</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="arch-diagram">
-        <div class="diag-title">Architecture: Control Plane vs. Isolated Tenant Planes</div>
-
-        <div class="diag-box diag-platform">
-          <div class="diag-platform-title"><i class="fa-solid fa-tower-control" style="margin-right:8px;color:#a5b4fc"></i>saas_platform_db (Control Plane)</div>
-          <div class="diag-platform-sub">tenants · subscription_plans · tenant_subscriptions</div>
-        </div>
-
-        <div class="diag-arrow"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
-
-        <div class="diag-tenants">
-          <div class="diag-tenant dt-green">
-            <div class="dt-name dt-name-green"><i class="fa-solid fa-database" style="margin-right:4px"></i>Acme DB</div>
-            <div class="dt-db">tenant_acme_corp<br>21 tables · Full RBAC</div>
-          </div>
-          <div class="diag-tenant dt-violet">
-            <div class="dt-name dt-name-violet"><i class="fa-solid fa-database" style="margin-right:4px"></i>Globex DB</div>
-            <div class="dt-db">tenant_globex_inc<br>21 tables · Full RBAC</div>
-          </div>
-          <div class="diag-tenant dt-cyan">
-            <div class="dt-name dt-name-cyan"><i class="fa-solid fa-database" style="margin-right:4px"></i>Stark DB</div>
-            <div class="dt-db">tenant_stark_ind<br>21 tables · Full RBAC</div>
-          </div>
-        </div>
-
-        <div class="diag-badges">
-          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> Zero Cross-Tenant Bleed</div>
-          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> AsyncLocalStorage</div>
-          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> LRU Pool Cache</div>
-          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> JWT Scoped Tokens</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== PRICING =============== -->
-<section class="pricing-section" id="pricing">
-  <div class="container">
-    <div class="section-title-wrap">
-      <div class="section-tag"><i class="fa-solid fa-tags"></i> Pricing</div>
-      <h2>Transparent. Scalable. <span class="gradient-text">No Surprises.</span></h2>
-      <p>Every plan includes a dedicated isolated database. Choose the scale that fits your team today.</p>
-    </div>
-
-    <div class="billing-toggle-row">
-      <span class="toggle-label" id="label-monthly">Monthly</span>
-      <div class="toggle-pill on" id="billingToggle" onclick="toggleBilling()">
-        <div class="toggle-thumb"></div>
-      </div>
-      <span class="toggle-label active" id="label-annual">Annual</span>
-      <span class="save-tag">Save 20%</span>
-    </div>
-
-    <div class="pricing-cards">
-      <!-- Starter -->
-      <div class="pricing-card">
-        <div class="pricing-plan-name">Starter</div>
-        <div class="pricing-plan-desc">Perfect for small teams getting started with structured task management.</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount" id="price-starter">24</span>
-          <span class="price-period">/ month</span>
-        </div>
-        <div class="price-billing-note" id="note-starter">Billed $288/year — save $60</div>
-        <div class="divider"></div>
-        <ul class="feature-list">
-          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
-          <li><i class="fa-solid fa-check"></i> Up to 25 Active Employees</li>
-          <li><i class="fa-solid fa-check"></i> Unlimited Projects & Tasks</li>
-          <li><i class="fa-solid fa-check"></i> Standard RBAC Roles</li>
-          <li><i class="fa-solid fa-check"></i> Daily Database Backups</li>
-          <li><i class="fa-solid fa-check"></i> Email Support</li>
-        </ul>
-        <button class="btn btn-outline" style="width:100%" onclick="openCheckoutModal(1,'Starter')">
-          Get Started with Starter
-        </button>
-      </div>
-
-      <!-- Professional (Featured) -->
-      <div class="pricing-card popular">
-        <div class="popular-ribbon">Most Popular</div>
-        <div class="pricing-plan-name" style="color:#a5b4fc">Professional</div>
-        <div class="pricing-plan-desc">Full HR suite, real-time sync, 2FA, and custom permission builder for growing companies.</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount" id="price-pro">64</span>
-          <span class="price-period">/ month</span>
-        </div>
-        <div class="price-billing-note" id="note-pro">Billed $768/year — save $180</div>
-        <div class="divider"></div>
-        <ul class="feature-list">
-          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
-          <li><i class="fa-solid fa-check"></i> Up to 150 Active Employees</li>
-          <li><i class="fa-solid fa-check"></i> Complete Attendance & Leave Engine</li>
-          <li><i class="fa-solid fa-check"></i> TOTP 2FA (Microsoft Authenticator)</li>
-          <li><i class="fa-solid fa-check"></i> Real-time Socket.IO Collaboration</li>
-          <li><i class="fa-solid fa-check"></i> Custom Roles & Permissions Builder</li>
-          <li><i class="fa-solid fa-check"></i> Priority Support (24h SLA)</li>
-        </ul>
-        <button class="btn btn-primary" style="width:100%" onclick="openCheckoutModal(2,'Professional Suite')">
-          <i class="fa-solid fa-bolt"></i> Start Free Trial
-        </button>
-      </div>
-
-      <!-- Enterprise -->
-      <div class="pricing-card">
-        <div class="pricing-plan-name">Enterprise</div>
-        <div class="pricing-plan-desc">Unlimited scale, compliance-grade audit logs, and a dedicated account manager for large orgs.</div>
-        <div class="pricing-price">
-          <span class="price-currency">$</span>
-          <span class="price-amount" id="price-enterprise">159</span>
-          <span class="price-period">/ month</span>
-        </div>
-        <div class="price-billing-note" id="note-enterprise">Billed $1,908/year — save $480</div>
-        <div class="divider"></div>
-        <ul class="feature-list">
-          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
-          <li><i class="fa-solid fa-check"></i> Unlimited Active Employees</li>
-          <li><i class="fa-solid fa-check"></i> Full Cryptographic Audit Ledger</li>
-          <li><i class="fa-solid fa-check"></i> 99.99% Uptime SLA</li>
-          <li><i class="fa-solid fa-check"></i> Custom API Integrations & Webhooks</li>
-          <li><i class="fa-solid fa-check"></i> Dedicated Account Manager</li>
-          <li><i class="fa-solid fa-check"></i> White-Label Option Available</li>
-        </ul>
-        <button class="btn btn-outline" style="width:100%" onclick="openCheckoutModal(3,'Enterprise Grid')">
-          Contact Sales
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== TESTIMONIALS =============== -->
-<section class="testimonials-section" id="testimonials">
-  <div class="container">
-    <div class="section-title-wrap">
-      <div class="section-tag"><i class="fa-solid fa-heart"></i> Customer Stories</div>
-      <h2>Trusted by Teams Who Can't <span class="gradient-text">Afford Downtime</span></h2>
-      <p>From growing startups to 500-person enterprises — teams rely on NexusTask to keep their operations running flawlessly.</p>
-    </div>
-
-    <div class="testimonials-grid">
-      <div class="testimonial-card">
-        <div class="stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <p class="testimonial-quote">"We evaluated ClickUp, Asana, and Jira. None of them offered true database isolation. NexusTask was provisioned in 45 seconds and our compliance team was immediately satisfied."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar av-violet">S</div>
-          <div>
-            <div class="author-name">Sarah Chen</div>
-            <div class="author-role">CTO @ Meridian Health Systems</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <p class="testimonial-quote">"The real-time Socket.IO sync means our 80-person remote team sees task updates instantly. It feels like we're all in the same room. The attendance module alone replaced two legacy tools."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar av-cyan">M</div>
-          <div>
-            <div class="author-name">Marcus Thompson</div>
-            <div class="author-role">VP Engineering @ BuildFlow Inc</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="testimonial-card">
-        <div class="stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <p class="testimonial-quote">"Setting up custom roles for 12 different departments took 20 minutes. The RBAC builder is intuitive and the audit logs give our legal team everything they need for SOC 2 compliance."</p>
-        <div class="testimonial-author">
-          <div class="author-avatar av-emerald">A</div>
-          <div>
-            <div class="author-name">Aisha Patel</div>
-            <div class="author-role">Head of Operations @ TrustVault</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== FAQ =============== -->
-<section class="faq-section" id="faq">
-  <div class="container">
-    <div class="section-title-wrap">
-      <div class="section-tag"><i class="fa-solid fa-circle-question"></i> FAQ</div>
-      <h2>Questions? <span class="gradient-text">We've Got Answers.</span></h2>
-    </div>
-
-    <div class="faq-wrap">
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          How fast is database provisioning after checkout?
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-a">Our automated TenantProvisioningService creates your dedicated database, executes all 21 system tables, and initializes your Super Admin account in under one second right when checkout completes. No waiting, no setup emails.</div>
-      </div>
-
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          Is my company's data physically separate from other companies?
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-a">Yes, completely. We do not co-mingle your records into a shared table. Every workspace receives its own MySQL database instance (e.g., tenant_your_company). A SQL query from Workspace A cannot ever access data from Workspace B — it's physically impossible by design.</div>
-      </div>
-
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          Can I upgrade or downgrade my subscription plan later?
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-a">Absolutely. Upgrading instantly modifies your platform subscription tier without any database migration, immediately unlocking advanced modules like attendance tracking, 2FA enforcement, and the custom RBAC builder.</div>
-      </div>
-
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          What happens to my data if I cancel?
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-a">We retain your complete database backup for 90 days after cancellation. You can export a full MySQL dump at any time through the Super Admin panel. Your data is always yours.</div>
-      </div>
-
-      <div class="faq-item" onclick="toggleFaq(this)">
-        <div class="faq-q">
-          Does NexusTask support Single Sign-On (SSO)?
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-a">TOTP 2FA (compatible with Microsoft Authenticator and Google Authenticator) is available on all plans. SAML/Okta SSO integration is available on Enterprise plans through our custom API integration option.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- =============== CTA =============== -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-card">
-      <div class="section-tag" style="justify-content:center"><i class="fa-solid fa-rocket"></i> Get Started Today</div>
-      <h2>Your Isolated Workspace.<br><span class="gradient-text">Ready in Under a Second.</span></h2>
-      <p>Join teams who chose enterprise-grade isolation over shared-table risk. Provision your dedicated 21-table database right now.</p>
-      <div class="cta-buttons">
-        <button class="btn btn-primary btn-lg" onclick="openCheckoutModal(2,'Professional Suite')">
-          <i class="fa-solid fa-bolt"></i> Provision Free Workspace
-        </button>
-        <button class="btn btn-outline btn-lg" onclick="openLoginModal()">
-          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Existing Workspace
-        </button>
-      </div>
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- =============== FOOTER =============== -->
-<footer>
-  <div class="container">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <a href="#" class="logo">
-          <div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div>
-          <span class="logo-text">NexusTask<sup>®</sup></span>
+          <span class="font-display font-800 text-xl tracking-tight text-white">Task<span class="text-brand-400">Flow</span></span>
         </a>
-        <p>The enterprise-grade Multi-Tenant SaaS platform for task management, HR, and team collaboration — with 100% database isolation per workspace.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Product</h4>
-        <ul>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#architecture">Security</a></li>
-          <li><a href="#testimonials">Customers</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Platform</h4>
-        <ul>
-          <li><a href="#">API Docs</a></li>
-          <li><a href="#">Status Page</a></li>
-          <li><a href="#">Changelog</a></li>
-          <li><a href="#">Integrations</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="#">Privacy Policy</a></li>
-          <li><a href="#">Terms of Service</a></li>
-          <li><a href="#">GDPR</a></li>
-          <li><a href="#">SOC 2</a></li>
-        </ul>
+
+        <!-- Nav -->
+        <nav class="hidden md:flex items-center gap-1">
+          <a href="#features" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Features</a>
+          <a href="#showcase" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Screenshots</a>
+          <a href="#architecture" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Security</a>
+          <a href="#pricing" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Pricing</a>
+          <a href="#faq" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">FAQ</a>
+        </nav>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-3">
+          <button onclick="openLoginModal()" class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-white transition-all duration-200">
+            <i class="fa-solid fa-right-to-bracket text-xs"></i> Sign In
+          </button>
+          <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 transition-all duration-200 glow-green-sm hover:-translate-y-0.5">
+            <i class="fa-solid fa-bolt text-xs"></i> Get Started Free
+          </button>
+        </div>
+
       </div>
     </div>
-    <div class="footer-bottom">
-      <span>&copy; 2026 NexusTask. All rights reserved. Built with enterprise-grade isolation engineering.</span>
-      <span style="display:flex;align-items:center;gap:12px">
-        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-github"></i></a>
-        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-twitter"></i></a>
-        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-linkedin"></i></a>
-      </span>
-    </div>
-  </div>
-</footer>
+  </header>
 
-<!-- =============== LOGIN MODAL =============== -->
-<div class="modal-overlay" id="loginModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
-    <div class="modal-header">
-      <h3>Sign in to Your Workspace</h3>
-      <p>Enter your company slug and credentials to connect to your isolated tenant database.</p>
-    </div>
-    <form onsubmit="handleWorkspaceLogin(event)">
-      <div class="form-group">
-        <label>Company Workspace Slug</label>
-        <input type="text" class="form-input" id="loginSlug" placeholder="e.g. acme-corp" required />
-      </div>
-      <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" class="form-input" id="loginEmail" placeholder="you@company.com" required />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required />
-      </div>
-      <div class="form-error" id="loginError"></div>
-      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;padding:14px;font-size:1rem">
-        <i class="fa-solid fa-right-to-bracket"></i> Connect & Enter Workspace
-      </button>
-    </form>
-  </div>
-</div>
+  <main class="relative z-10">
 
-<!-- =============== CHECKOUT MODAL =============== -->
-<div class="modal-overlay" id="checkoutModal">
-  <div class="modal">
-    <button class="modal-close" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
+    <!-- ==================== HERO ==================== -->
+    <section class="relative pt-28 pb-24 text-center overflow-hidden">
+      <!-- Hero bg image -->
+      <div class="absolute inset-0 bg-[url('assets/hero_bg.png')] bg-cover bg-center opacity-20 pointer-events-none"></div>
+      <div class="absolute inset-0 bg-gradient-to-b from-dark-base/0 via-dark-base/20 to-dark-base pointer-events-none"></div>
 
-    <!-- Wizard Steps Header -->
-    <div class="wizard-header" id="wizardHeader">
-      <div class="wstep active" id="wstep-1">
-        <div class="wstep-num">1</div>
-        <div class="wstep-label">Plan</div>
-      </div>
-      <div class="wstep-line"></div>
-      <div class="wstep" id="wstep-2">
-        <div class="wstep-num">2</div>
-        <div class="wstep-label">Details</div>
-      </div>
-      <div class="wstep-line"></div>
-      <div class="wstep" id="wstep-3">
-        <div class="wstep-num">3</div>
-        <div class="wstep-label">Payment</div>
-      </div>
-    </div>
+      <div class="relative max-w-7xl mx-auto px-6">
 
-    <!-- Step 1: Plan -->
-    <div id="ws1">
-      <div class="modal-header">
-        <h3>Your Selected Plan</h3>
-        <p>You're provisioning a dedicated 21-table isolated workspace database.</p>
-      </div>
-      <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:24px;margin-bottom:28px">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:1.3rem;font-weight:800;color:white" id="selPlanName">Professional Suite</div>
-            <div style="font-size:0.85rem;color:#a5b4fc;margin-top:4px" id="selPlanBilling">Annual Billing · 2 Months Free</div>
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600/10 border border-brand-600/25 text-brand-300 text-sm font-semibold mb-8 animate-float">
+          <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse-dot"></span>
+          100% Database-Per-Tenant · Real-Time · Enterprise Grade
+        </div>
+
+        <!-- Headline -->
+        <h1 class="font-display font-black text-5xl md:text-7xl leading-[1.08] tracking-tight mb-6 max-w-5xl mx-auto">
+          The Operating System<br/>for <span class="text-gradient">Modern Enterprise Teams</span>
+        </h1>
+
+        <!-- Sub -->
+        <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+          Real-time task management, HR attendance, granular RBAC, and Socket.IO collaboration — every company gets its own fully isolated database provisioned in under one second.
+        </p>
+
+        <!-- CTAs -->
+        <div class="flex items-center justify-center gap-4 flex-wrap mb-16">
+          <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:-translate-y-1 transition-all duration-300 glow-green shadow-2xl">
+            <i class="fa-solid fa-rocket"></i> Provision Your Workspace
+          </button>
+          <a href="#showcase" class="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
+            <i class="fa-regular fa-circle-play"></i> See It In Action
+          </a>
+        </div>
+
+        <!-- Stats row -->
+        <div class="inline-flex items-center justify-center rounded-2xl bg-dark-800/70 border border-white/8 backdrop-blur-md divide-x divide-white/8 mb-16 overflow-hidden">
+          <div class="px-8 py-4 text-center">
+            <div class="font-display font-black text-3xl text-white">21</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Tables Per Tenant</div>
           </div>
-          <div style="font-size:2rem;font-weight:900;color:#a5b4fc;font-family:Outfit,sans-serif" id="selPlanPrice">$64/mo</div>
+          <div class="px-8 py-4 text-center">
+            <div class="font-display font-black text-3xl text-brand-400">&lt;1s</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Provisioning Time</div>
+          </div>
+          <div class="px-8 py-4 text-center">
+            <div class="font-display font-black text-3xl text-cyan-400">100%</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Data Isolation</div>
+          </div>
+          <div class="hidden sm:block px-8 py-4 text-center">
+            <div class="font-display font-black text-3xl text-violet-400">TOTP</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Multi-Factor Auth</div>
+          </div>
+        </div>
+
+        <!-- Browser mockup -->
+        <div class="relative max-w-5xl mx-auto">
+          <!-- Glow under -->
+          <div class="absolute -bottom-12 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-brand-500/20 blur-3xl rounded-full pointer-events-none"></div>
+
+          <div class="rounded-2xl overflow-hidden border border-white/10 bg-dark-800/90 shadow-[0_40px_100px_rgba(0,0,0,0.7)] backdrop-blur-sm">
+            <!-- Browser bar -->
+            <div class="flex items-center gap-3 px-5 py-3.5 bg-dark-700/60 border-b border-white/6">
+              <div class="flex gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.8)]"></span>
+                <span class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)]"></span>
+              </div>
+              <div class="flex-1 flex items-center gap-2 bg-dark-900/60 border border-white/6 rounded-lg px-3 py-1.5 text-xs text-slate-500">
+                <i class="fa-solid fa-lock text-brand-400"></i>
+                https://app.taskflow.io/workspace/<span class="text-slate-300 font-semibold">acme-corp</span>/dashboard
+              </div>
+              <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-600/15 border border-brand-600/25 text-brand-300 text-xs font-bold">
+                <i class="fa-solid fa-database"></i> tenant_acme_corp · 21 tables
+              </div>
+            </div>
+
+            <!-- Dashboard UI inside browser -->
+            <div class="grid grid-cols-[220px_1fr] h-[400px] overflow-hidden">
+              <!-- Sidebar -->
+              <div class="bg-dark-900/80 border-r border-white/5 p-4 flex flex-col gap-1">
+                <div class="flex items-center gap-2 text-sm font-bold text-white mb-3 pb-3 border-b border-white/6">
+                  <i class="fa-solid fa-building text-brand-400"></i> Acme Corporation
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-brand-600/20 border border-brand-600/20 text-brand-300 text-xs font-semibold">
+                  <i class="fa-solid fa-chart-pie w-3.5"></i> Dashboard
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-list-check w-3.5"></i> Projects & Tasks
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-user-clock w-3.5"></i> Attendance
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-calendar-xmark w-3.5"></i> Leave Manager
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-users w-3.5"></i> Departments
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-shield-halved w-3.5"></i> Roles & RBAC
+                </div>
+                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
+                  <i class="fa-solid fa-scroll w-3.5"></i> Audit Logs
+                </div>
+              </div>
+
+              <!-- Main -->
+              <div class="p-5 bg-dark-800/50 overflow-hidden flex flex-col gap-4">
+                <!-- Metrics -->
+                <div class="grid grid-cols-4 gap-3">
+                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Projects</div>
+                    <div class="text-2xl font-black text-white font-display">13</div>
+                    <div class="text-[10px] text-brand-400 mt-0.5">↑ 10 active</div>
+                  </div>
+                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Tasks</div>
+                    <div class="text-2xl font-black text-cyan-400 font-display">34</div>
+                    <div class="text-[10px] text-slate-500 mt-0.5">4 in progress</div>
+                  </div>
+                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Completed</div>
+                    <div class="text-2xl font-black text-brand-400 font-display">19</div>
+                    <div class="text-[10px] text-brand-400 mt-0.5">86% completion</div>
+                  </div>
+                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
+                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Upcoming</div>
+                    <div class="text-2xl font-black text-amber-400 font-display">11</div>
+                    <div class="text-[10px] text-amber-400 mt-0.5">5 overdue</div>
+                  </div>
+                </div>
+
+                <!-- Chart + Tasks row -->
+                <div class="grid grid-cols-[1.5fr_1fr] gap-3 flex-1 overflow-hidden">
+                  <!-- Chart panel -->
+                  <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4 overflow-hidden">
+                    <div class="flex items-center justify-between mb-3">
+                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Project Task Distribution</span>
+                      <span class="flex items-center gap-1 text-[10px] text-brand-400 font-bold"><span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>Live</span>
+                    </div>
+                    <div class="flex items-end gap-2 h-20">
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:55%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:70%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:45%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:80%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:62%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-800 to-brand-600/20 rounded-t border border-brand-700/30" style="height:100%"></div>
+                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:74%"></div>
+                    </div>
+                    <div class="flex justify-between mt-1">
+                      <span class="text-[9px] text-slate-600">Data Ana...</span>
+                      <span class="text-[9px] text-slate-600">Hospital</span>
+                      <span class="text-[9px] text-slate-600">Real-Time</span>
+                      <span class="text-[9px] text-slate-600">Task M...</span>
+                    </div>
+                  </div>
+
+                  <!-- Tasks panel -->
+                  <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4 overflow-hidden">
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recent Tasks</div>
+                    <div class="flex flex-col gap-2">
+                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0"></span>
+                        <span class="flex-1 truncate">Q3 Security Audit</span>
+                        <span class="px-2 py-0.5 rounded-md bg-brand-600/20 text-brand-300 font-bold text-[10px]">Done</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
+                        <span class="flex-1 truncate">Onboarding Flow</span>
+                        <span class="px-2 py-0.5 rounded-md bg-indigo-600/20 text-indigo-300 font-bold text-[10px]">Active</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
+                        <span class="flex-1 truncate">Design System v2</span>
+                        <span class="px-2 py-0.5 rounded-md bg-amber-600/20 text-amber-300 font-bold text-[10px]">Todo</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-[11px] text-slate-400">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0"></span>
+                        <span class="flex-1 truncate">API Docs v2.1</span>
+                        <span class="px-2 py-0.5 rounded-md bg-brand-600/20 text-brand-300 font-bold text-[10px]">Done</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== FEATURES ==================== -->
+    <section class="py-28" id="features">
+      <div class="max-w-7xl mx-auto px-6">
+
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i class="fa-solid fa-sparkles"></i> Core Capabilities
+          </div>
+          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
+            Everything Your Enterprise Needs.<br/><span class="text-gradient">Nothing You Don't.</span>
+          </h2>
+          <p class="text-slate-400 text-lg max-w-xl mx-auto">Complete HR & task orchestration with dedicated per-tenant infrastructure and real-time sync built in from day one.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Feature cards -->
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-brand-600/15 flex items-center justify-center text-brand-400 text-2xl mb-6 border border-brand-600/20 group-hover:glow-green-sm transition-all">
+              <i class="fa-solid fa-server"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">100% Database Isolation</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Every workspace gets its own dedicated MySQL database — 21 tables, zero data bleed, provable physical isolation from day one.</p>
+          </div>
+
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-600/15 flex items-center justify-center text-cyan-400 text-2xl mb-6 border border-cyan-600/20">
+              <i class="fa-solid fa-bolt"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Real-Time Socket.IO</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Kanban boards, attendance punches, and task updates propagate instantly to all connected devices. True live collaboration, zero polling.</p>
+          </div>
+
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-violet-600/15 flex items-center justify-center text-violet-400 text-2xl mb-6 border border-violet-600/20">
+              <i class="fa-solid fa-user-shield"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Granular RBAC Engine</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Build custom role hierarchies from scratch. Control permissions at project, department, and module level for Super Admins through Employees.</p>
+          </div>
+
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-amber-600/15 flex items-center justify-center text-amber-400 text-2xl mb-6 border border-amber-600/20">
+              <i class="fa-solid fa-clock"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Attendance & Leave Suite</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Full HR lifecycle: check-in/out stamps, leave balance ledgers, manager approval flows, and customizable company holiday calendars.</p>
+          </div>
+
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-rose-600/15 flex items-center justify-center text-rose-400 text-2xl mb-6 border border-rose-600/20">
+              <i class="fa-solid fa-key"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">TOTP 2-Factor Auth</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Enforce TOTP multi-factor authentication compatible with Microsoft Authenticator and Google Authenticator across all user accounts.</p>
+          </div>
+
+          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-600/15 flex items-center justify-center text-emerald-400 text-2xl mb-6 border border-emerald-600/20">
+              <i class="fa-solid fa-scroll"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-white mb-3">Cryptographic Audit Logs</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Every login, task update, and permission change is immutably logged inside each tenant's private audit ledger for full compliance.</p>
+          </div>
+
         </div>
       </div>
-      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="goStep(2)">
-        Continue to Workspace Details <i class="fa-solid fa-arrow-right"></i>
+    </section>
+
+    <!-- ==================== APP SHOWCASE ==================== -->
+    <section class="py-24 relative overflow-hidden" id="showcase">
+      <!-- Subtle bg -->
+      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-900/5 to-transparent pointer-events-none"></div>
+
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i class="fa-solid fa-display"></i> App Screenshots
+          </div>
+          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
+            Built for How <span class="text-gradient">Real Teams Work</span>
+          </h2>
+          <p class="text-slate-400 text-lg max-w-xl mx-auto">See TaskFlow's actual interface — clean, powerful, and purpose-built for enterprise operations.</p>
+        </div>
+
+        <!-- Screenshot 1: Dashboard -->
+        <div class="mb-10">
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-lg bg-brand-600/20 border border-brand-600/30 flex items-center justify-center text-brand-400 text-sm">
+              <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <div>
+              <div class="font-display font-bold text-white text-lg">Executive Dashboard</div>
+              <div class="text-slate-500 text-sm">Project metrics, task velocity, real-time activity & live clock</div>
+            </div>
+          </div>
+          <div class="relative rounded-2xl overflow-hidden border border-brand-600/15 shadow-[0_30px_80px_rgba(0,0,0,0.6)] showcase-frame p-2">
+            <!-- Browser chrome -->
+            <div class="flex items-center gap-2 px-4 py-2.5 bg-dark-800/80 rounded-xl mb-2 border border-white/5">
+              <div class="flex gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+              </div>
+              <span class="text-[11px] text-slate-500 ml-2">
+                <i class="fa-solid fa-lock text-brand-500 mr-1"></i>
+                app.taskflow.io/workspace/acme-corp/dashboard
+              </span>
+            </div>
+            <img src="assets/showcase_dashboard.png" alt="TaskFlow Dashboard — Project metrics, task distribution charts, and real-time activity" class="w-full rounded-xl object-cover" loading="lazy" />
+          </div>
+        </div>
+
+        <!-- Screenshot 2: Employee Directory -->
+        <div>
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-8 h-8 rounded-lg bg-cyan-600/20 border border-cyan-600/30 flex items-center justify-center text-cyan-400 text-sm">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <div class="font-display font-bold text-white text-lg">Employee Directory</div>
+              <div class="text-slate-500 text-sm">Full HR roster with roles, departments, teams, attendance status & admin actions</div>
+            </div>
+          </div>
+          <div class="relative rounded-2xl overflow-hidden border border-cyan-600/15 shadow-[0_30px_80px_rgba(0,0,0,0.6)] bg-gradient-to-br from-cyan-600/5 to-transparent p-2">
+            <div class="flex items-center gap-2 px-4 py-2.5 bg-dark-800/80 rounded-xl mb-2 border border-white/5">
+              <div class="flex gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+              </div>
+              <span class="text-[11px] text-slate-500 ml-2">
+                <i class="fa-solid fa-lock text-brand-500 mr-1"></i>
+                app.taskflow.io/workspace/acme-corp/users
+              </span>
+            </div>
+            <img src="assets/showcase_employees.png" alt="TaskFlow Employee Directory — HR management with roles, departments, and team assignments" class="w-full rounded-xl object-cover" loading="lazy" />
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== ARCHITECTURE ==================== -->
+    <section class="py-28" id="architecture">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+
+          <!-- Left: content -->
+          <div>
+            <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-5">
+              <i class="fa-solid fa-shield-cat"></i> Isolation Architecture
+            </div>
+            <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5 leading-tight">
+              Why Database-Per-Tenant is the Only Acceptable Standard
+            </h2>
+            <p class="text-slate-400 mb-8 leading-relaxed">
+              In shared-table SaaS, a single missing
+              <code class="bg-brand-600/15 text-brand-300 px-2 py-0.5 rounded-md text-sm font-mono">WHERE tenant_id = X</code>
+              clause can expose your entire company's HR and financial data to a competitor. We eliminated this risk entirely.
+            </p>
+
+            <ul class="space-y-5">
+              <li class="flex items-start gap-4">
+                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="text-slate-300 text-sm leading-relaxed">
+                  <strong class="text-white">AsyncLocalStorage Routing</strong> — Node.js transparently switches MySQL pools per request lifecycle without touching a single line of business logic.
+                </div>
+              </li>
+              <li class="flex items-start gap-4">
+                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="text-slate-300 text-sm leading-relaxed">
+                  <strong class="text-white">Sub-Second Provisioning</strong> — All 21 tables + Super Admin seeded in under 800ms right at checkout completion.
+                </div>
+              </li>
+              <li class="flex items-start gap-4">
+                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="text-slate-300 text-sm leading-relaxed">
+                  <strong class="text-white">LRU Pool Cleanup</strong> — TenantConnectionManager evicts idle connection pools after 30 minutes to keep production memory lean.
+                </div>
+              </li>
+              <li class="flex items-start gap-4">
+                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="text-slate-300 text-sm leading-relaxed">
+                  <strong class="text-white">JWT Tenant Scoping</strong> — Tokens embed <code class="bg-dark-700 text-brand-300 px-1.5 py-0.5 rounded text-xs font-mono">tenantDbName</code> so every API call is cryptographically bound to the correct database.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right: diagram -->
+          <div class="bg-dark-800/70 border border-white/8 rounded-3xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
+            <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">Control Plane vs. Isolated Tenant Planes</div>
+
+            <!-- Control plane -->
+            <div class="bg-brand-600/10 border border-brand-600/25 rounded-2xl p-5 text-center mb-3">
+              <div class="flex items-center justify-center gap-2 text-brand-300 font-bold text-sm mb-1">
+                <i class="fa-solid fa-tower-control"></i> saas_platform_db
+              </div>
+              <div class="text-slate-500 text-xs">tenants · subscription_plans · tenant_subscriptions</div>
+            </div>
+
+            <!-- Arrow -->
+            <div class="text-center text-cyan-400 text-xl my-4"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+
+            <!-- Tenant DBs -->
+            <div class="grid grid-cols-3 gap-3 mb-6">
+              <div class="bg-brand-600/8 border border-brand-600/20 rounded-xl p-4 text-center">
+                <div class="text-brand-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Acme DB</div>
+                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_acme_corp<br/>21 tables · Full RBAC</div>
+              </div>
+              <div class="bg-violet-600/8 border border-violet-600/20 rounded-xl p-4 text-center">
+                <div class="text-violet-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Globex DB</div>
+                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_globex_inc<br/>21 tables · Full RBAC</div>
+              </div>
+              <div class="bg-cyan-600/8 border border-cyan-600/20 rounded-xl p-4 text-center">
+                <div class="text-cyan-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Stark DB</div>
+                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_stark_ind<br/>21 tables · Full RBAC</div>
+              </div>
+            </div>
+
+            <!-- Badges -->
+            <div class="flex flex-wrap gap-2 justify-center">
+              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
+                <i class="fa-solid fa-circle-check text-brand-400"></i> Zero Cross-Tenant Bleed
+              </span>
+              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
+                <i class="fa-solid fa-circle-check text-brand-400"></i> AsyncLocalStorage
+              </span>
+              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
+                <i class="fa-solid fa-circle-check text-brand-400"></i> JWT Scoped Tokens
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PRICING ==================== -->
+    <section class="py-28" id="pricing">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-16">
+          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i class="fa-solid fa-tags"></i> Pricing
+          </div>
+          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
+            Transparent. Scalable.<br/><span class="text-gradient">No Surprises.</span>
+          </h2>
+          <p class="text-slate-400 text-lg max-w-lg mx-auto">Every plan includes a dedicated isolated database. Choose the scale that fits your team.</p>
+        </div>
+
+        <!-- Toggle -->
+        <div class="flex items-center justify-center gap-4 mb-12">
+          <span class="text-sm font-semibold text-slate-400" id="lbl-monthly">Monthly</span>
+          <button onclick="toggleBilling()" id="billingToggle" class="relative w-14 h-7 rounded-full bg-brand-600/40 border border-brand-600/40 transition-all duration-300">
+            <span id="toggleThumb" class="absolute top-[3px] left-[27px] w-[22px] h-[22px] bg-white rounded-full shadow-md transition-all duration-300"></span>
+          </button>
+          <span class="text-sm font-semibold text-white" id="lbl-annual">Annual</span>
+          <span class="px-2.5 py-1 bg-brand-600/15 border border-brand-600/25 rounded-full text-brand-300 text-xs font-bold uppercase tracking-wide">Save 20%</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+
+          <!-- Starter -->
+          <div class="bg-dark-800/60 border border-white/8 rounded-3xl p-8 card-hover">
+            <div class="text-sm font-black text-slate-500 uppercase tracking-widest mb-2">Starter</div>
+            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">For small teams getting started with structured task management.</div>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="text-slate-400 text-xl font-bold">$</span>
+              <span class="font-display font-black text-5xl text-white tracking-tight" id="ps">24</span>
+              <span class="text-slate-500 text-sm self-center">/mo</span>
+            </div>
+            <div class="text-slate-600 text-xs mb-6" id="pn-s">Billed $288/year · save $60</div>
+            <div class="border-t border-white/6 mb-6"></div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Up to 25 Active Employees</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Unlimited Projects & Tasks</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Standard RBAC Roles</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Daily Database Backups</li>
+            </ul>
+            <button onclick="openCheckoutModal(1,'Starter')" class="w-full py-3 rounded-xl font-semibold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-all duration-200">
+              Get Started with Starter
+            </button>
+          </div>
+
+          <!-- Professional (Popular) -->
+          <div class="pricing-popular relative bg-gradient-to-b from-dark-700 to-dark-800 border border-brand-600/40 rounded-3xl p-8 card-hover glow-green shadow-[0_0_60px_rgba(22,163,74,0.15)]">
+            <div class="absolute -top-px left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-black uppercase tracking-wider px-5 py-1.5 rounded-b-xl">
+              Most Popular
+            </div>
+            <div class="text-sm font-black text-brand-400 uppercase tracking-widest mb-2 mt-2">Professional</div>
+            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">Full HR suite, real-time sync, 2FA, and custom permission builder.</div>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="text-brand-400 text-xl font-bold">$</span>
+              <span class="font-display font-black text-5xl text-white tracking-tight" id="pp">64</span>
+              <span class="text-slate-500 text-sm self-center">/mo</span>
+            </div>
+            <div class="text-slate-600 text-xs mb-6" id="pn-p">Billed $768/year · save $180</div>
+            <div class="border-t border-brand-600/20 mb-6"></div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Up to 150 Active Employees</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Complete Attendance & Leaves</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>TOTP 2FA (MS Authenticator)</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Real-time Socket.IO Sync</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Custom Roles & Permissions</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Priority Support (24h SLA)</li>
+            </ul>
+            <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:from-brand-600 hover:to-brand-400 transition-all duration-200 glow-green-sm">
+              <i class="fa-solid fa-bolt mr-2"></i>Start Free Trial
+            </button>
+          </div>
+
+          <!-- Enterprise -->
+          <div class="bg-dark-800/60 border border-white/8 rounded-3xl p-8 card-hover">
+            <div class="text-sm font-black text-slate-500 uppercase tracking-widest mb-2">Enterprise</div>
+            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">Unlimited scale, compliance audit logs, and dedicated account manager.</div>
+            <div class="flex items-baseline gap-1 mb-1">
+              <span class="text-slate-400 text-xl font-bold">$</span>
+              <span class="font-display font-black text-5xl text-white tracking-tight" id="pe">159</span>
+              <span class="text-slate-500 text-sm self-center">/mo</span>
+            </div>
+            <div class="text-slate-600 text-xs mb-6" id="pn-e">Billed $1,908/year · save $480</div>
+            <div class="border-t border-white/6 mb-6"></div>
+            <ul class="space-y-3 mb-8">
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Unlimited Active Employees</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Full Audit Ledger & Compliance</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>99.99% Uptime SLA</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Custom API & Webhooks</li>
+              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Account Manager</li>
+            </ul>
+            <button onclick="openCheckoutModal(3,'Enterprise')" class="w-full py-3 rounded-xl font-semibold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-all duration-200">
+              Contact Sales
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TESTIMONIALS ==================== -->
+    <section class="py-24">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i class="fa-solid fa-heart"></i> Customer Stories
+          </div>
+          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight">
+            Trusted by Teams Who Can't <span class="text-gradient">Afford Downtime</span>
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
+            <div class="flex gap-1 mb-5">
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+            </div>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"We evaluated ClickUp, Asana, and Jira. None offered true database isolation. TaskFlow was provisioned in 45 seconds and our compliance team was immediately satisfied."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold">S</div>
+              <div>
+                <div class="font-bold text-sm text-white">Sarah Chen</div>
+                <div class="text-xs text-slate-500">CTO @ Meridian Health Systems</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
+            <div class="flex gap-1 mb-5">
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+            </div>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"The real-time Socket.IO sync means our 80-person remote team sees task updates instantly. The attendance module alone replaced two legacy tools we were paying for."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center text-white font-bold">M</div>
+              <div>
+                <div class="font-bold text-sm text-white">Marcus Thompson</div>
+                <div class="text-xs text-slate-500">VP Engineering @ BuildFlow Inc</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
+            <div class="flex gap-1 mb-5">
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
+            </div>
+            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"Setting up custom roles for 12 departments took 20 minutes. The RBAC builder is intuitive and audit logs give our legal team everything they need for SOC 2 compliance."</p>
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-emerald-600 flex items-center justify-center text-white font-bold">A</div>
+              <div>
+                <div class="font-bold text-sm text-white">Aisha Patel</div>
+                <div class="text-xs text-slate-500">Head of Operations @ TrustVault</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FAQ ==================== -->
+    <section class="py-24" id="faq">
+      <div class="max-w-3xl mx-auto px-6">
+        <div class="text-center mb-14">
+          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
+            <i class="fa-solid fa-circle-question"></i> FAQ
+          </div>
+          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight">
+            Questions? <span class="text-gradient">We've Got Answers.</span>
+          </h2>
+        </div>
+
+        <div class="space-y-3">
+          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
+              <span class="font-semibold text-base text-white">How fast is database provisioning after checkout?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
+              <div class="pb-5">Our automated TenantProvisioningService creates your dedicated database, executes all 21 system tables, and initializes your Super Admin account in under one second — right at checkout completion. No waiting, no setup emails.</div>
+            </div>
+          </div>
+
+          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
+              <span class="font-semibold text-base text-white">Is my company's data physically separate from other companies?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
+              <div class="pb-5">Yes, completely. We don't co-mingle your records into a shared table. Every workspace gets its own MySQL database instance (e.g., tenant_your_company). A SQL query from Workspace A cannot ever access data from Workspace B — it's physically impossible by design.</div>
+            </div>
+          </div>
+
+          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
+              <span class="font-semibold text-base text-white">Can I upgrade or downgrade my subscription later?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
+              <div class="pb-5">Absolutely. Upgrading modifies your platform tier without any database migration — immediately unlocking advanced attendance, 2FA enforcement, and the custom RBAC builder. Downgrading takes effect at the next billing cycle.</div>
+            </div>
+          </div>
+
+          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
+              <span class="font-semibold text-base text-white">What happens to my data if I cancel?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
+              <div class="pb-5">We retain your complete database backup for 90 days after cancellation. You can export a full MySQL dump at any time through the Super Admin panel. Your data is always yours — we never hold it hostage.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== CTA ==================== -->
+    <section class="py-20">
+      <div class="max-w-5xl mx-auto px-6">
+        <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-brand-900/40 via-dark-800/60 to-dark-800/80 border border-brand-600/25 p-16 text-center">
+          <!-- Glow -->
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-brand-600/20 blur-3xl rounded-full pointer-events-none"></div>
+
+          <div class="relative">
+            <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-5">
+              <i class="fa-solid fa-rocket"></i> Get Started Today
+            </div>
+            <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5 leading-tight">
+              Your Isolated Workspace.<br/><span class="text-gradient">Ready in Under a Second.</span>
+            </h2>
+            <p class="text-slate-400 text-lg max-w-lg mx-auto mb-10">
+              Provision your dedicated 21-table database right now. No credit card required for the trial.
+            </p>
+            <div class="flex items-center justify-center gap-4 flex-wrap">
+              <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:-translate-y-1 transition-all duration-300 glow-green shadow-xl">
+                <i class="fa-solid fa-bolt"></i> Provision Free Workspace
+              </button>
+              <button onclick="openLoginModal()" class="flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-base text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Workspace
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="border-t border-white/6 py-16">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div class="col-span-1 md:col-span-1">
+          <a href="#" class="flex items-center gap-2.5 mb-4">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center text-white glow-green-sm">
+              <i class="fa-solid fa-layer-group text-sm"></i>
+            </div>
+            <span class="font-display font-800 text-lg text-white">Task<span class="text-brand-400">Flow</span></span>
+          </a>
+          <p class="text-slate-500 text-sm leading-relaxed">Enterprise multi-tenant SaaS for task management, HR, and real-time collaboration with 100% database isolation.</p>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Product</h4>
+          <ul class="space-y-3">
+            <li><a href="#features" class="text-slate-400 text-sm hover:text-white transition-colors">Features</a></li>
+            <li><a href="#pricing" class="text-slate-400 text-sm hover:text-white transition-colors">Pricing</a></li>
+            <li><a href="#showcase" class="text-slate-400 text-sm hover:text-white transition-colors">Screenshots</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Changelog</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Platform</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">API Docs</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Status Page</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Integrations</a></li>
+            <li><a href="#architecture" class="text-slate-400 text-sm hover:text-white transition-colors">Security</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Legal</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">GDPR</a></li>
+            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">SOC 2</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <span class="text-slate-600 text-sm">&copy; 2026 TaskFlow. All rights reserved. Built with enterprise-grade isolation engineering.</span>
+        <div class="flex items-center gap-5">
+          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
+          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-twitter text-lg"></i></a>
+          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== LOGIN MODAL ==================== -->
+  <div class="fixed inset-0 z-[100] bg-dark-base/80 backdrop-blur-xl flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="loginModal">
+    <div class="modal-box bg-dark-800 border border-white/10 rounded-3xl w-full max-w-md p-10 relative shadow-[0_40px_100px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto">
+      <button onclick="closeLoginModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
       </button>
-    </div>
-
-    <!-- Step 2: Details -->
-    <div id="ws2" style="display:none">
-      <div class="modal-header">
-        <h3>Workspace Setup</h3>
-        <p>Configure your company workspace and Super Admin master credentials.</p>
+      <div class="mb-7">
+        <h3 class="font-display font-black text-2xl mb-2">Sign In to Workspace</h3>
+        <p class="text-slate-400 text-sm">Enter your company slug and credentials to access your isolated database.</p>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Company Name</label>
-          <input class="form-input" id="co" type="text" placeholder="e.g. Stark Industries" oninput="autoSlug()" required />
+      <form onsubmit="handleWorkspaceLogin(event)" class="space-y-4">
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Company Workspace Slug</label>
+          <input id="loginSlug" type="text" placeholder="e.g. acme-corp" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
         </div>
-        <div class="form-group">
-          <label>Workspace URL Slug</label>
-          <input class="form-input" id="slug" type="text" placeholder="stark-industries" required />
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Email Address</label>
+          <input id="loginEmail" type="email" placeholder="you@company.com" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
         </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Super Admin Name</label>
-          <input class="form-input" id="aName" type="text" placeholder="Tony Stark" required />
+        <div class="space-y-1.5">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
         </div>
-        <div class="form-group">
-          <label>Admin Email</label>
-          <input class="form-input" id="aEmail" type="email" placeholder="admin@stark.com" required />
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Master Password (min 6 chars)</label>
-        <input class="form-input" id="aPass" type="password" placeholder="••••••••••••" required />
-      </div>
-      <div style="display:flex;gap:10px;margin-top:8px">
-        <button class="btn btn-ghost" style="flex:1" onclick="goStep(1)">← Back</button>
-        <button class="btn btn-primary" style="flex:2" onclick="validateStep2()">Continue to Payment →</button>
-      </div>
-    </div>
-
-    <!-- Step 3: Payment -->
-    <div id="ws3" style="display:none">
-      <div class="modal-header">
-        <h3>Complete Payment</h3>
-        <p>Upon payment verification, your 21-table tenant database is provisioned instantly.</p>
-      </div>
-      <div class="form-group">
-        <label>Name on Card</label>
-        <input class="form-input" type="text" value="Enterprise Corporate Card" />
-      </div>
-      <div class="form-group">
-        <label>Card Number</label>
-        <input class="form-input" type="text" value="4242 •••• •••• 4242" />
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Expiry</label>
-          <input class="form-input" type="text" value="12/28" />
-        </div>
-        <div class="form-group">
-          <label>CVC</label>
-          <input class="form-input" type="password" value="888" />
-        </div>
-      </div>
-      <div class="form-error" id="checkoutError"></div>
-      <div style="display:flex;gap:10px;margin-top:8px">
-        <button class="btn btn-ghost" style="flex:1" onclick="goStep(2)">← Back</button>
-        <button class="btn btn-primary" style="flex:2;padding:14px" id="provBtn" onclick="executeProvision()">
-          <i class="fa-solid fa-server"></i> Pay & Provision Database
+        <div id="loginError" class="hidden bg-red-600/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm"></div>
+        <button type="submit" id="loginBtn" class="btn-shimmer relative w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:from-brand-600 hover:to-brand-400 transition-all duration-200 mt-2">
+          <i class="fa-solid fa-right-to-bracket mr-2"></i>Connect & Enter Workspace
         </button>
-      </div>
+      </form>
     </div>
-
-    <!-- Success -->
-    <div id="wsSuccess" style="display:none">
-      <div class="success-screen">
-        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
-        <h3 style="font-size:2rem;font-weight:900;margin-bottom:8px;font-family:Outfit,sans-serif">🎉 Workspace Live!</h3>
-        <p style="color:var(--text-secondary);margin-bottom:28px">Your isolated tenant database has been provisioned with all 21 tables and your Super Admin account is ready.</p>
-        <div class="success-details">
-          <div class="detail-row"><span>Company</span><span id="succCo">—</span></div>
-          <div class="detail-row"><span>Workspace Slug</span><span id="succSlug" style="color:#a5b4fc">—</span></div>
-          <div class="detail-row"><span>Database Name</span><span id="succDb" style="color:#6ee7b7">—</span></div>
-          <div class="detail-row"><span>Super Admin</span><span id="succEmail">—</span></div>
-        </div>
-        <button class="btn btn-primary btn-lg" style="width:100%" onclick="launchWorkspace()">
-          <i class="fa-solid fa-plane-up"></i> Launch Dashboard
-        </button>
-      </div>
-    </div>
-
   </div>
-</div>
 
-<script src="js/checkout.js"></script>
+  <!-- ==================== CHECKOUT MODAL ==================== -->
+  <div class="fixed inset-0 z-[100] bg-dark-base/80 backdrop-blur-xl flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="checkoutModal">
+    <div class="modal-box bg-dark-800 border border-white/10 rounded-3xl w-full max-w-lg p-10 relative shadow-[0_40px_100px_rgba(0,0,0,0.7)] max-h-[92vh] overflow-y-auto">
+      <button onclick="closeCheckoutModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Step Indicators -->
+      <div class="flex items-center gap-2 mb-8" id="wizardHeader">
+        <div class="flex items-center gap-2">
+          <div id="dot1" class="step-active w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all">1</div>
+          <span class="text-xs font-semibold text-white hidden sm:block">Plan</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-white/10" id="line1"></div>
+        <div class="flex items-center gap-2">
+          <div id="dot2" class="w-8 h-8 rounded-full border-2 border-white/15 flex items-center justify-center text-xs font-bold text-slate-500 transition-all">2</div>
+          <span class="text-xs font-semibold text-slate-500 hidden sm:block">Details</span>
+        </div>
+        <div class="flex-1 h-0.5 bg-white/10" id="line2"></div>
+        <div class="flex items-center gap-2">
+          <div id="dot3" class="w-8 h-8 rounded-full border-2 border-white/15 flex items-center justify-center text-xs font-bold text-slate-500 transition-all">3</div>
+          <span class="text-xs font-semibold text-slate-500 hidden sm:block">Payment</span>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <div id="ws1">
+        <h3 class="font-display font-black text-2xl mb-2">Selected Plan</h3>
+        <p class="text-slate-400 text-sm mb-6">You're provisioning a dedicated 21-table isolated database.</p>
+        <div class="bg-brand-600/10 border border-brand-600/25 rounded-2xl p-5 mb-7 flex justify-between items-center">
+          <div>
+            <div class="font-display font-black text-xl text-white mb-0.5" id="selPlanName">Professional</div>
+            <div class="text-brand-400 text-sm" id="selPlanBilling">Annual Billing · 2 Months Free</div>
+          </div>
+          <div class="font-display font-black text-3xl text-brand-300" id="selPlanPrice">$64/mo</div>
+        </div>
+        <button onclick="goStep(2)" class="btn-shimmer relative w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all">
+          Continue to Setup <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+      </div>
+
+      <!-- Step 2 -->
+      <div id="ws2" class="hidden">
+        <h3 class="font-display font-black text-2xl mb-2">Workspace Setup</h3>
+        <p class="text-slate-400 text-sm mb-6">Configure your company workspace and Super Admin credentials.</p>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Company Name</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="co" type="text" placeholder="Stark Industries" oninput="autoSlug()" required />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Workspace Slug</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="slug" type="text" placeholder="stark-industries" required />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Admin Name</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aName" type="text" placeholder="Tony Stark" required />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Admin Email</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aEmail" type="email" placeholder="admin@stark.com" required />
+          </div>
+        </div>
+        <div class="space-y-1.5 mb-6">
+          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Master Password</label>
+          <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aPass" type="password" placeholder="Min 6 characters" required />
+        </div>
+        <div class="flex gap-3">
+          <button onclick="goStep(1)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-400 border border-white/10 hover:bg-white/5 transition-all text-sm">← Back</button>
+          <button onclick="validateStep2()" class="flex-[2] py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all text-sm">Continue to Payment →</button>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div id="ws3" class="hidden">
+        <h3 class="font-display font-black text-2xl mb-2">Complete Payment</h3>
+        <p class="text-slate-400 text-sm mb-6">Your 21-table database is provisioned instantly upon payment.</p>
+        <div class="space-y-4 mb-6">
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Name on Card</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="Enterprise Corporate Card" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Card Number</label>
+            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="4242 •••• •••• 4242" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Expiry</label>
+              <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="12/28" />
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">CVC</label>
+              <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="password" value="888" />
+            </div>
+          </div>
+        </div>
+        <div id="checkoutError" class="hidden bg-red-600/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm mb-4"></div>
+        <div class="flex gap-3">
+          <button onclick="goStep(2)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-400 border border-white/10 hover:bg-white/5 transition-all text-sm">← Back</button>
+          <button onclick="executeProvision()" id="provBtn" class="btn-shimmer relative flex-[2] py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all text-sm">
+            <i class="fa-solid fa-server mr-2"></i>Pay & Provision Database
+          </button>
+        </div>
+      </div>
+
+      <!-- Success -->
+      <div id="wsSuccess" class="hidden text-center py-4">
+        <div class="w-20 h-20 rounded-full bg-brand-600/15 border-2 border-brand-500/30 flex items-center justify-center text-brand-400 text-3xl mx-auto mb-6">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="font-display font-black text-3xl mb-3">🎉 Workspace Live!</h3>
+        <p class="text-slate-400 text-sm mb-7 max-w-sm mx-auto">Your isolated tenant database is provisioned with all 21 tables and your Super Admin account is active.</p>
+        <div class="bg-dark-900/60 border border-white/8 rounded-2xl p-5 text-left space-y-3 mb-7">
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Company</span><span class="font-semibold text-white" id="succCo">—</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Slug</span><span class="font-semibold text-brand-300" id="succSlug">—</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Database</span><span class="font-semibold text-brand-400" id="succDb">—</span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Admin Email</span><span class="font-semibold text-white" id="succEmail">—</span></div>
+        </div>
+        <button onclick="launchWorkspace()" class="btn-shimmer relative w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all">
+          <i class="fa-solid fa-plane-up mr-2"></i>Launch Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/checkout.js"></script>
+  <script>
+    // Modal helpers (Tailwind class based)
+    function openLoginModal() {
+      const m = document.getElementById('loginModal');
+      m.classList.remove('opacity-0', 'pointer-events-none');
+      m.classList.add('modal-open');
+    }
+    function closeLoginModal() {
+      const m = document.getElementById('loginModal');
+      m.classList.add('opacity-0', 'pointer-events-none');
+      m.classList.remove('modal-open');
+      document.getElementById('loginError').classList.add('hidden');
+    }
+    function openCheckoutModal(planId, planName) {
+      currentPlan = { id: planId, name: planName };
+      updateStep1Summary();
+      goStep(1);
+      const m = document.getElementById('checkoutModal');
+      m.classList.remove('opacity-0', 'pointer-events-none');
+      m.classList.add('modal-open');
+    }
+    function closeCheckoutModal() {
+      const m = document.getElementById('checkoutModal');
+      m.classList.add('opacity-0', 'pointer-events-none');
+      m.classList.remove('modal-open');
+    }
+
+    // Close on overlay click
+    ['loginModal','checkoutModal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', function(e) {
+        if (e.target === this) { this.classList.add('opacity-0','pointer-events-none'); this.classList.remove('modal-open'); }
+      });
+    });
+
+    // Billing toggle
+    let isAnnual = true;
+    const PRICES = { monthly: { 1:29, 2:79, 3:199 }, annual: { 1:24, 2:64, 3:159 } };
+    const NOTES_A = { 1:"Billed $288/year · save $60", 2:"Billed $768/year · save $180", 3:"Billed $1,908/year · save $480" };
+
+    function toggleBilling() {
+      isAnnual = !isAnnual;
+      const t = document.getElementById('billingToggle');
+      const thumb = document.getElementById('toggleThumb');
+      t.classList.toggle('bg-brand-600/40', true);
+      thumb.style.left = isAnnual ? '27px' : '3px';
+      document.getElementById('lbl-monthly').classList.toggle('text-white', !isAnnual);
+      document.getElementById('lbl-monthly').classList.toggle('text-slate-400', isAnnual);
+      document.getElementById('lbl-annual').classList.toggle('text-white', isAnnual);
+      document.getElementById('lbl-annual').classList.toggle('text-slate-400', !isAnnual);
+      document.getElementById('ps').textContent = isAnnual ? 24 : 29;
+      document.getElementById('pp').textContent = isAnnual ? 64 : 79;
+      document.getElementById('pe').textContent = isAnnual ? 159 : 199;
+      document.getElementById('pn-s').textContent = isAnnual ? NOTES_A[1] : "Billed monthly, cancel anytime";
+      document.getElementById('pn-p').textContent = isAnnual ? NOTES_A[2] : "Billed monthly, cancel anytime";
+      document.getElementById('pn-e').textContent = isAnnual ? NOTES_A[3] : "Billed monthly, cancel anytime";
+      if (typeof updateStep1Summary === 'function') updateStep1Summary();
+    }
+
+    // Wizard dot updater
+    function updateWizardDots(step) {
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`dot${i}`);
+        dot.className = "w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all";
+        if (i < step) {
+          dot.classList.add('step-done');
+          dot.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
+        } else if (i === step) {
+          dot.classList.add('step-active');
+          dot.textContent = i;
+        } else {
+          dot.classList.add('border-white/15', 'text-slate-500');
+          dot.textContent = i;
+        }
+      }
+    }
+
+    // Override goStep to also update Tailwind dots
+    const _origGoStep = typeof goStep !== 'undefined' ? goStep : null;
+    function goStep(s) {
+      ['ws1','ws2','ws3','wsSuccess'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(`ws${s}`);
+      if (target) target.classList.remove('hidden');
+
+      const header = document.getElementById('wizardHeader');
+      if (s === 'Success') {
+        header.classList.add('hidden');
+      } else {
+        header.classList.remove('hidden');
+        updateWizardDots(s);
+      }
+    }
+  </script>
 </body>
 </html>
