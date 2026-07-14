@@ -3,503 +3,792 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Enterprise Task Management Platform — 100% Database Isolated Multi-Tenant SaaS</title>
-  <meta name="description" content="Experience the state-of-the-art Multi-Tenant SaaS Task & HR Management platform with dedicated per-tenant databases, real-time collaboration, and enterprise-grade security." />
+  <title>NexusTask — Enterprise Multi-Tenant SaaS Task Management Platform</title>
+  <meta name="description" content="The next-generation multi-tenant SaaS platform for enterprise task management, attendance, custom RBAC, and real-time collaboration. Every team gets their own isolated database." />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/landing.css" />
 </head>
 <body>
 
-  <!-- Header -->
-  <header class="header">
+<!-- Decorative Background -->
+<div class="bg-mesh"></div>
+<div class="noise"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- =============== HEADER =============== -->
+<header class="header">
+  <div class="header-inner">
     <div class="container header-content">
       <a href="#" class="logo">
-        <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
-        <span>Nexus<strong>Task</strong></span>
+        <div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div>
+        <span class="logo-text">NexusTask<sup>®</sup></span>
       </a>
-      <ul class="nav-links">
+
+      <ul class="nav">
         <li><a href="#features">Features</a></li>
-        <li><a href="#architecture">Isolation Engine</a></li>
+        <li><a href="#architecture">Security</a></li>
         <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#testimonials">Customers</a></li>
         <li><a href="#faq">FAQ</a></li>
       </ul>
+
       <div class="header-actions">
         <button class="btn btn-ghost" onclick="openLoginModal()">
-          <i class="fa-solid fa-right-to-bracket"></i> Workspace Login
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
         </button>
-        <button class="btn btn-primary btn-glow" onclick="openCheckoutModal(2, 'Professional Plan - $79/mo')">
-          <i class="fa-solid fa-rocket"></i> Get Started Free
+        <button class="btn btn-primary" onclick="openCheckoutModal(2,'Professional Suite')">
+          <i class="fa-solid fa-bolt"></i> Start Free Trial
         </button>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="container">
-        <div class="badge">
-          <span class="badge-pulse"></span>
-          <span>Enterprise 100% Database-Per-Tenant Architecture</span>
-        </div>
-        <h1>
-          The Next Generation of <br />
-          <span class="gradient-text">Isolated Enterprise Collaboration</span>
-        </h1>
-        <p>
-          Empower your entire organization with real-time task management, attendance tracking, custom RBAC, and instant Socket.IO synchronization. Every workspace receives its own isolated database with zero data bleed.
-        </p>
-        <div class="hero-cta">
-          <button class="btn btn-primary btn-glow" onclick="openCheckoutModal(2, 'Professional Plan - $79/mo')" style="padding: 16px 32px; font-size: 1.05rem;">
-            <i class="fa-solid fa-bolt"></i> Provision Your Workspace Now
-          </button>
-          <a href="#architecture" class="btn btn-ghost" style="padding: 16px 32px; font-size: 1.05rem;">
-            <i class="fa-solid fa-shield-halved"></i> Explore Security Engine
-          </a>
+<main>
+
+<!-- =============== HERO =============== -->
+<section class="hero">
+  <div class="container hero-content">
+
+    <div class="pill-badge">
+      <span class="pill-dot"></span>
+      <span>100% Database-Per-Tenant · Enterprise Grade · Built for Scale</span>
+    </div>
+
+    <h1 class="hero-headline">
+      The Operating System<br>
+      for <span class="gradient-text">Modern Enterprise Teams</span>
+    </h1>
+
+    <p class="hero-sub">
+      Real-time task management, HR attendance, granular RBAC, and Socket.IO collaboration — each company gets its own fully isolated MySQL database, provisioned in under one second.
+    </p>
+
+    <div class="hero-cta">
+      <button class="btn btn-primary btn-lg" onclick="openCheckoutModal(2,'Professional Suite')">
+        <i class="fa-solid fa-rocket"></i> Provision Your Workspace
+      </button>
+      <a href="#architecture" class="btn btn-outline btn-lg">
+        <i class="fa-solid fa-shield-halved"></i> Explore Security Engine
+      </a>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <div class="hero-stat-num">21</div>
+        <div class="hero-stat-label">Isolated Tables Per Tenant</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">&lt;1s</div>
+        <div class="hero-stat-label">Database Provisioning</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">100%</div>
+        <div class="hero-stat-label">Data Isolation</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-num">TOTP</div>
+        <div class="hero-stat-label">Multi-Factor Auth</div>
+      </div>
+    </div>
+
+    <!-- Interactive Browser Mockup -->
+    <div class="mockup-wrapper">
+      <div class="browser-frame">
+        <div class="browser-bar">
+          <div class="browser-dots">
+            <span class="browser-dot bd-red"></span>
+            <span class="browser-dot bd-yellow"></span>
+            <span class="browser-dot bd-green"></span>
+          </div>
+          <div class="browser-url">
+            <i class="fa-solid fa-lock"></i>
+            https://nexustask.io/workspace/<strong style="color:#a5b4fc">acme-corp</strong>/dashboard
+          </div>
+          <div class="tenant-tag">
+            <i class="fa-solid fa-database"></i> tenant_acme_corp · 21 tables
+          </div>
         </div>
 
-        <!-- Interactive Hero Mockup -->
-        <div class="hero-mockup">
-          <div class="mockup-topbar">
-            <div class="mockup-dots">
-              <span class="dot dot-red"></span>
-              <span class="dot dot-yellow"></span>
-              <span class="dot dot-green"></span>
+        <div class="dash-grid">
+          <!-- Sidebar -->
+          <div class="dash-sidebar">
+            <div class="dash-logo">
+              <i class="fa-solid fa-building"></i> Acme Corp
             </div>
-            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px;">
-              <i class="fa-solid fa-lock" style="color: var(--accent-emerald);"></i> https://nexustask.io/workspace/acme-corp
+            <div class="dash-nav-item active">
+              <i class="fa-solid fa-chart-pie"></i> Dashboard
             </div>
-            <div class="mockup-tenant-badge">
-              <i class="fa-solid fa-database"></i> Tenant DB: tenant_acme_corp
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-list-check"></i> Projects
+            </div>
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-user-clock"></i> Attendance
+            </div>
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-calendar-xmark"></i> Leave Manager
+            </div>
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-users"></i> Departments
+            </div>
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-shield-halved"></i> Roles & RBAC
+            </div>
+            <div class="dash-nav-item">
+              <i class="fa-solid fa-scroll"></i> Audit Logs
             </div>
           </div>
-          <div style="padding: 24px; text-align: left; display: grid; grid-template-columns: 240px 1fr; gap: 24px;">
-            <div style="background: rgba(0,0,0,0.3); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; border: 1px solid var(--border-color);">
-              <div style="font-weight: 700; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
-                <i class="fa-solid fa-building" style="color: var(--accent-cyan);"></i> Acme Corporation
+
+          <!-- Main Area -->
+          <div class="dash-main">
+            <!-- Metrics Row -->
+            <div class="dash-metrics">
+              <div class="metric-card">
+                <div class="metric-label">Active Projects</div>
+                <div class="metric-val">24</div>
+                <div class="metric-sub clr-green">↑ 8% this week</div>
               </div>
-              <div style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 600; background: rgba(99,102,241,0.15); padding: 8px 12px; border-radius: 8px;"><i class="fa-solid fa-chart-pie"></i> Executive Dashboard</div>
-              <div style="font-size: 0.85rem; color: var(--text-muted); padding: 8px 12px;"><i class="fa-solid fa-list-check"></i> Project Management</div>
-              <div style="font-size: 0.85rem; color: var(--text-muted); padding: 8px 12px;"><i class="fa-solid fa-user-clock"></i> Attendance & Leaves</div>
-              <div style="font-size: 0.85rem; color: var(--text-muted); padding: 8px 12px;"><i class="fa-solid fa-user-shield"></i> Custom RBAC & Roles</div>
+              <div class="metric-card">
+                <div class="metric-label">Team Online</div>
+                <div class="metric-val" style="color:#67e8f9">142</div>
+                <div class="metric-sub clr-blue">of 150 employees</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Tasks Due Today</div>
+                <div class="metric-val" style="color:#fcd34d">7</div>
+                <div class="metric-sub clr-amber">3 pending review</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Attendance Rate</div>
+                <div class="metric-val" style="color:#6ee7b7">94%</div>
+                <div class="metric-sub clr-green">Above target</div>
+              </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;">
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px;">
-                  <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Active Projects</div>
-                  <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 4px;">24</div>
+
+            <!-- Content Row -->
+            <div class="dash-row">
+              <!-- Tasks Panel -->
+              <div class="dash-panel">
+                <div class="panel-title">
+                  Recent Tasks
+                  <span class="live-badge"><i class="fa-solid fa-circle-dot" style="animation:pulse-dot 2s infinite"></i> Live</span>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px;">
-                  <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Online Team Members</div>
-                  <div style="font-size: 1.8rem; font-weight: 800; color: var(--accent-emerald); margin-top: 4px;">142 / 150</div>
+                <div class="task-row">
+                  <span class="task-dot" style="background:#10b981"></span>
+                  <span>Q3 Security Audit Report</span>
+                  <span class="status-badge-sm s-done">Done</span>
                 </div>
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); padding: 16px; border-radius: 16px;">
-                  <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Pending Task Approval</div>
-                  <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">7</div>
+                <div class="task-row">
+                  <span class="task-dot" style="background:#6366f1"></span>
+                  <span>Onboarding Flow - Engineering Dept</span>
+                  <span class="status-badge-sm s-prog">In Progress</span>
+                </div>
+                <div class="task-row">
+                  <span class="task-dot" style="background:#f59e0b"></span>
+                  <span>Design System v2.0 Review</span>
+                  <span class="status-badge-sm s-todo">Todo</span>
+                </div>
+                <div class="task-row">
+                  <span class="task-dot" style="background:#10b981"></span>
+                  <span>Backend API Documentation</span>
+                  <span class="status-badge-sm s-done">Done</span>
                 </div>
               </div>
-              <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                  <span style="font-weight: 700; font-size: 0.95rem;">Real-time Socket.IO Activity Stream</span>
-                  <span style="font-size: 0.75rem; color: var(--accent-emerald);"><i class="fa-solid fa-circle-dot"></i> Live Synced</span>
+
+              <!-- Chart Panel -->
+              <div class="dash-panel">
+                <div class="panel-title">Task Velocity</div>
+                <div class="mini-chart" id="miniChart">
+                  <div class="bar" style="height:45%"></div>
+                  <div class="bar" style="height:60%"></div>
+                  <div class="bar" style="height:52%"></div>
+                  <div class="bar" style="height:78%"></div>
+                  <div class="bar" style="height:65%"></div>
+                  <div class="bar" style="height:88%"></div>
+                  <div class="bar" style="height:72%"></div>
                 </div>
-                <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-                  <i class="fa-solid fa-check-circle" style="color: var(--accent-emerald);"></i> Super Admin Sarah completed task <strong>Q3 Security Audit</strong>
-                </div>
-                <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px; padding: 8px 0;">
-                  <i class="fa-solid fa-user-plus" style="color: var(--accent-cyan);"></i> New Employee onboarding packet assigned to <strong>Engineering Dept</strong>
+                <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:#64748b;margin-top:8px">
+                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+      <div class="mockup-glow"></div>
+    </div>
+  </div>
+</section>
 
-    <!-- Features Section -->
-    <section class="section" id="features">
-      <div class="container">
-        <div class="section-title">
-          <h2>State-of-the-Art Workspace Capabilities</h2>
-          <p>Everything you need to orchestrate modern teams without compromising security, speed, or customization.</p>
+<!-- =============== FEATURES =============== -->
+<section class="section" id="features">
+  <div class="container">
+    <div class="section-title-wrap">
+      <div class="section-tag"><i class="fa-solid fa-sparkles"></i> Core Capabilities</div>
+      <h2>Everything Your Enterprise Needs.<br><span class="gradient-text">Nothing You Don't.</span></h2>
+      <p>A complete HR & task orchestration platform with dedicated per-tenant infrastructure and real-time synchronization built in from day one.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-violet">
+          <i class="fa-solid fa-server"></i>
         </div>
-        <div class="grid-3">
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-server"></i></div>
-            <h3>100% Database Isolation</h3>
-            <p>Unlike standard SaaS where all companies share a single table, our automated provisioning engine spins up a dedicated 21-table MySQL database per subscription.</p>
+        <h3>100% Database Isolation</h3>
+        <p>Unlike shared-table SaaS platforms, every workspace receives its own dedicated MySQL database instance — 21 tables, zero data bleed, provable isolation.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-cyan">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h3>Real-Time Socket.IO</h3>
+        <p>Kanban boards, attendance punches, and task updates propagate instantly across all connected devices without polling. True live collaboration.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-emerald">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <h3>Granular RBAC Engine</h3>
+        <p>Build custom role hierarchies from scratch. Assign permissions at project, department, and module level for Super Admins, Managers, Team Leads, and Employees.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-amber">
+          <i class="fa-solid fa-clock"></i>
+        </div>
+        <h3>Attendance & Leave Suite</h3>
+        <p>Complete HR lifecycle: check-in/out stamps, geolocation validation, leave balance ledgers, approval workflows, and customizable company holiday calendars.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-rose">
+          <i class="fa-solid fa-key"></i>
+        </div>
+        <h3>TOTP 2-Factor Auth</h3>
+        <p>Enforce TOTP multi-factor authentication compatible with Microsoft Authenticator and Google Authenticator across all user accounts for full identity protection.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon-wrap fi-purple">
+          <i class="fa-solid fa-scroll"></i>
+        </div>
+        <h3>Cryptographic Audit Logs</h3>
+        <p>Every action — login, task update, permission change, role assignment — is immutably logged inside the tenant's private audit ledger for full compliance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== ARCHITECTURE =============== -->
+<section class="arch-section" id="architecture">
+  <div class="container">
+    <div class="arch-grid">
+      <div class="arch-content">
+        <div class="section-tag"><i class="fa-solid fa-shield-cat"></i> Isolation Architecture</div>
+        <h2>Why Database-Per-Tenant is the Only Acceptable Standard</h2>
+        <p>In shared-table SaaS architectures, a single missing <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">WHERE tenant_id = X</code> clause can expose your entire company's payroll, tasks, and confidential HR data to a competitor. We eliminated this risk entirely.</p>
+
+        <ul class="arch-list">
+          <li>
+            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
+            <span><strong>AsyncLocalStorage Routing</strong> — Node.js transparently switches MySQL connection pools per request lifecycle without modifying a single line of business logic.</span>
+          </li>
+          <li>
+            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
+            <span><strong>Sub-Second Provisioning</strong> — TenantProvisioningService creates all 21 tables and seeds Super Admin credentials in under 800ms on checkout.</span>
+          </li>
+          <li>
+            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
+            <span><strong>LRU Connection Pool Cleanup</strong> — TenantConnectionManager automatically evicts idle pools after 30 minutes, optimizing server memory in production.</span>
+          </li>
+          <li>
+            <span class="arch-check"><i class="fa-solid fa-check"></i></span>
+            <span><strong>JWT Tenant Identity Binding</strong> — Access tokens embed <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">tenantSlug</code> + <code style="background:rgba(99,102,241,0.15);color:#a5b4fc;padding:2px 6px;border-radius:4px;font-size:0.9em">tenantDbName</code> so every subsequent API call is cryptographically scoped to the correct isolated database.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="arch-diagram">
+        <div class="diag-title">Architecture: Control Plane vs. Isolated Tenant Planes</div>
+
+        <div class="diag-box diag-platform">
+          <div class="diag-platform-title"><i class="fa-solid fa-tower-control" style="margin-right:8px;color:#a5b4fc"></i>saas_platform_db (Control Plane)</div>
+          <div class="diag-platform-sub">tenants · subscription_plans · tenant_subscriptions</div>
+        </div>
+
+        <div class="diag-arrow"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
+
+        <div class="diag-tenants">
+          <div class="diag-tenant dt-green">
+            <div class="dt-name dt-name-green"><i class="fa-solid fa-database" style="margin-right:4px"></i>Acme DB</div>
+            <div class="dt-db">tenant_acme_corp<br>21 tables · Full RBAC</div>
           </div>
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-user-shield"></i></div>
-            <h3>Granular Role & RBAC</h3>
-            <p>Design multi-tiered roles from scratch. Control employee permissions across projects, departments, financial reports, and administrative tasks.</p>
+          <div class="diag-tenant dt-violet">
+            <div class="dt-name dt-name-violet"><i class="fa-solid fa-database" style="margin-right:4px"></i>Globex DB</div>
+            <div class="dt-db">tenant_globex_inc<br>21 tables · Full RBAC</div>
           </div>
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-bolt"></i></div>
-            <h3>Instant Socket.IO Real-time</h3>
-            <p>Watch Kanban board columns shift, attendance punches register, and notifications pop instantly across all connected screens with zero latency.</p>
+          <div class="diag-tenant dt-cyan">
+            <div class="dt-name dt-name-cyan"><i class="fa-solid fa-database" style="margin-right:4px"></i>Stark DB</div>
+            <div class="dt-db">tenant_stark_ind<br>21 tables · Full RBAC</div>
           </div>
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-clock"></i></div>
-            <h3>Attendance & Leave Engine</h3>
-            <p>Full HR suite built right in. Manage employee check-in/out stamps, leave balance ledgers, customizable holiday calendars, and manager approval flows.</p>
-          </div>
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-key"></i></div>
-            <h3>Multi-Factor Auth (2FA)</h3>
-            <p>Enforce TOTP multi-factor authentication compatible with Microsoft Authenticator and Google Authenticator for total corporate identity protection.</p>
-          </div>
-          <div class="card">
-            <div class="card-icon"><i class="fa-solid fa-file-shield"></i></div>
-            <h3>Complete Audit & Compliance</h3>
-            <p>Every login, permission change, and task update is cryptographically logged inside the tenant's private audit ledger for regulatory compliance.</p>
-          </div>
+        </div>
+
+        <div class="diag-badges">
+          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> Zero Cross-Tenant Bleed</div>
+          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> AsyncLocalStorage</div>
+          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> LRU Pool Cache</div>
+          <div class="diag-badge"><i class="fa-solid fa-circle-check" style="color:#10b981"></i> JWT Scoped Tokens</div>
         </div>
       </div>
-    </section>
+    </div>
+  </div>
+</section>
 
-    <!-- Architecture & Security Section -->
-    <section class="section" id="architecture" style="background: rgba(0, 0, 0, 0.4);">
-      <div class="container">
-        <div class="grid-2" style="align-items: center;">
+<!-- =============== PRICING =============== -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="section-title-wrap">
+      <div class="section-tag"><i class="fa-solid fa-tags"></i> Pricing</div>
+      <h2>Transparent. Scalable. <span class="gradient-text">No Surprises.</span></h2>
+      <p>Every plan includes a dedicated isolated database. Choose the scale that fits your team today.</p>
+    </div>
+
+    <div class="billing-toggle-row">
+      <span class="toggle-label" id="label-monthly">Monthly</span>
+      <div class="toggle-pill on" id="billingToggle" onclick="toggleBilling()">
+        <div class="toggle-thumb"></div>
+      </div>
+      <span class="toggle-label active" id="label-annual">Annual</span>
+      <span class="save-tag">Save 20%</span>
+    </div>
+
+    <div class="pricing-cards">
+      <!-- Starter -->
+      <div class="pricing-card">
+        <div class="pricing-plan-name">Starter</div>
+        <div class="pricing-plan-desc">Perfect for small teams getting started with structured task management.</div>
+        <div class="pricing-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount" id="price-starter">24</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <div class="price-billing-note" id="note-starter">Billed $288/year — save $60</div>
+        <div class="divider"></div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
+          <li><i class="fa-solid fa-check"></i> Up to 25 Active Employees</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited Projects & Tasks</li>
+          <li><i class="fa-solid fa-check"></i> Standard RBAC Roles</li>
+          <li><i class="fa-solid fa-check"></i> Daily Database Backups</li>
+          <li><i class="fa-solid fa-check"></i> Email Support</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="openCheckoutModal(1,'Starter')">
+          Get Started with Starter
+        </button>
+      </div>
+
+      <!-- Professional (Featured) -->
+      <div class="pricing-card popular">
+        <div class="popular-ribbon">Most Popular</div>
+        <div class="pricing-plan-name" style="color:#a5b4fc">Professional</div>
+        <div class="pricing-plan-desc">Full HR suite, real-time sync, 2FA, and custom permission builder for growing companies.</div>
+        <div class="pricing-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount" id="price-pro">64</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <div class="price-billing-note" id="note-pro">Billed $768/year — save $180</div>
+        <div class="divider"></div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
+          <li><i class="fa-solid fa-check"></i> Up to 150 Active Employees</li>
+          <li><i class="fa-solid fa-check"></i> Complete Attendance & Leave Engine</li>
+          <li><i class="fa-solid fa-check"></i> TOTP 2FA (Microsoft Authenticator)</li>
+          <li><i class="fa-solid fa-check"></i> Real-time Socket.IO Collaboration</li>
+          <li><i class="fa-solid fa-check"></i> Custom Roles & Permissions Builder</li>
+          <li><i class="fa-solid fa-check"></i> Priority Support (24h SLA)</li>
+        </ul>
+        <button class="btn btn-primary" style="width:100%" onclick="openCheckoutModal(2,'Professional Suite')">
+          <i class="fa-solid fa-bolt"></i> Start Free Trial
+        </button>
+      </div>
+
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <div class="pricing-plan-name">Enterprise</div>
+        <div class="pricing-plan-desc">Unlimited scale, compliance-grade audit logs, and a dedicated account manager for large orgs.</div>
+        <div class="pricing-price">
+          <span class="price-currency">$</span>
+          <span class="price-amount" id="price-enterprise">159</span>
+          <span class="price-period">/ month</span>
+        </div>
+        <div class="price-billing-note" id="note-enterprise">Billed $1,908/year — save $480</div>
+        <div class="divider"></div>
+        <ul class="feature-list">
+          <li><i class="fa-solid fa-check"></i> Dedicated Isolated MySQL Database</li>
+          <li><i class="fa-solid fa-check"></i> Unlimited Active Employees</li>
+          <li><i class="fa-solid fa-check"></i> Full Cryptographic Audit Ledger</li>
+          <li><i class="fa-solid fa-check"></i> 99.99% Uptime SLA</li>
+          <li><i class="fa-solid fa-check"></i> Custom API Integrations & Webhooks</li>
+          <li><i class="fa-solid fa-check"></i> Dedicated Account Manager</li>
+          <li><i class="fa-solid fa-check"></i> White-Label Option Available</li>
+        </ul>
+        <button class="btn btn-outline" style="width:100%" onclick="openCheckoutModal(3,'Enterprise Grid')">
+          Contact Sales
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== TESTIMONIALS =============== -->
+<section class="testimonials-section" id="testimonials">
+  <div class="container">
+    <div class="section-title-wrap">
+      <div class="section-tag"><i class="fa-solid fa-heart"></i> Customer Stories</div>
+      <h2>Trusted by Teams Who Can't <span class="gradient-text">Afford Downtime</span></h2>
+      <p>From growing startups to 500-person enterprises — teams rely on NexusTask to keep their operations running flawlessly.</p>
+    </div>
+
+    <div class="testimonials-grid">
+      <div class="testimonial-card">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+        </div>
+        <p class="testimonial-quote">"We evaluated ClickUp, Asana, and Jira. None of them offered true database isolation. NexusTask was provisioned in 45 seconds and our compliance team was immediately satisfied."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar av-violet">S</div>
           <div>
-            <div class="badge" style="background: rgba(6, 182, 212, 0.15); border-color: rgba(6, 182, 212, 0.3); color: var(--accent-cyan);">
-              <i class="fa-solid fa-shield-cat"></i> Zero-Bleed Security Architecture
-            </div>
-            <h2 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 24px;">
-              Why Leading Enterprises Demand <br /><span class="gradient-text">Database-Per-Tenant SaaS</span>
-            </h2>
-            <p style="color: var(--text-muted); margin-bottom: 24px;">
-              In shared-table SaaS, a single missing SQL `WHERE tenant_id = X` clause can expose your confidential payroll and task strategies to competitors. We solved this fundamentally.
-            </p>
-            <ul style="list-style: none; display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px;">
-              <li style="display: flex; align-items: center; gap: 12px; font-size: 1.05rem;">
-                <i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i>
-                <span><strong>AsyncLocalStorage Routing:</strong> Node.js transparent execution context switches pools automatically.</span>
-              </li>
-              <li style="display: flex; align-items: center; gap: 12px; font-size: 1.05rem;">
-                <i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i>
-                <span><strong>Instant Provisioning:</strong> New workspace database and 21 tables created in under 800 milliseconds.</span>
-              </li>
-              <li style="display: flex; align-items: center; gap: 12px; font-size: 1.05rem;">
-                <i class="fa-solid fa-circle-check" style="color: var(--accent-emerald);"></i>
-                <span><strong>LRU Connection Pool Cleanup:</strong> Automatic idle connection recycling guarantees high performance.</span>
-              </li>
-            </ul>
-          </div>
-          <div style="background: var(--glass-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 36px; box-shadow: 0 20px 80px rgba(0,0,0,0.5);">
-            <div style="text-align: center; font-weight: 800; font-size: 1.1rem; margin-bottom: 24px; color: #e2e8f0;">Control Plane vs. Isolated Tenant Plane</div>
-            <div style="display: flex; flex-direction: column; gap: 16px;">
-              <div style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 16px; text-align: center;">
-                <div style="font-weight: 700; color: #a5b4fc;">Platform Master Control (`saas_platform_db`)</div>
-                <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Tenants Registry | Subscription Plans | Global Billing Ledger</div>
-              </div>
-              <div style="text-align: center; color: var(--accent-cyan); font-size: 1.4rem;"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                <div style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 16px; text-align: center;">
-                  <div style="font-weight: 700; color: #6ee7b7; font-size: 0.9rem;">Acme DB (`tenant_acme_corp`)</div>
-                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">21 Tables | Private Users | Attendance | Tasks | RBAC</div>
-                </div>
-                <div style="background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 16px; text-align: center;">
-                  <div style="font-weight: 700; color: #d8b4fe; font-size: 0.9rem;">Globex DB (`tenant_globex`)</div>
-                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 6px;">21 Tables | Private Users | Attendance | Tasks | RBAC</div>
-                </div>
-              </div>
-            </div>
+            <div class="author-name">Sarah Chen</div>
+            <div class="author-role">CTO @ Meridian Health Systems</div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- Pricing Section -->
-    <section class="section" id="pricing">
-      <div class="container">
-        <div class="section-title">
-          <h2>Transparent, Scale-Ready Pricing</h2>
-          <p>Choose the right plan for your company size. Every plan includes dedicated database isolation and Super Admin controls.</p>
+      <div class="testimonial-card">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
         </div>
-
-        <div class="pricing-toggle">
-          <span>Monthly Billing</span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="billingToggle" onchange="toggleBillingCycle()" checked />
-            <span class="slider"></span>
-          </label>
-          <span style="display: flex; align-items: center; gap: 8px;">
-            Annual Billing <span class="save-badge">2 Months Free</span>
-          </span>
-        </div>
-
-        <div class="grid-3" id="pricingGrid">
-          <!-- Starter -->
-          <div class="pricing-card">
-            <h3>Starter Workspace</h3>
-            <p>Perfect for growing teams and startups launching structured task management.</p>
-            <div class="price" id="price-starter">$24 <span>/ month</span></div>
-            <ul class="features-list">
-              <li><i class="fa-solid fa-check"></i> Dedicated Isolated Database</li>
-              <li><i class="fa-solid fa-check"></i> Up to 25 Active Employees</li>
-              <li><i class="fa-solid fa-check"></i> Unlimited Tasks & Projects</li>
-              <li><i class="fa-solid fa-check"></i> Standard RBAC Roles</li>
-              <li><i class="fa-solid fa-check"></i> Daily Automated DB Backups</li>
-            </ul>
-            <button class="btn btn-ghost" style="width: 100%; margin-top: 24px;" onclick="openCheckoutModal(1, 'Starter Workspace')">
-              Select Starter Plan
-            </button>
-          </div>
-
-          <!-- Professional -->
-          <div class="pricing-card featured">
-            <div class="featured-tag">Most Popular</div>
-            <h3>Professional Suite</h3>
-            <p>Full HR attendance, leaves, multi-factor security, and real-time Socket.IO collaboration.</p>
-            <div class="price" id="price-pro">$64 <span>/ month</span></div>
-            <ul class="features-list">
-              <li><i class="fa-solid fa-check"></i> Dedicated Isolated Database</li>
-              <li><i class="fa-solid fa-check"></i> Up to 150 Active Employees</li>
-              <li><i class="fa-solid fa-check"></i> Complete Attendance & Leaves Engine</li>
-              <li><i class="fa-solid fa-check"></i> Multi-Factor Authentication (TOTP 2FA)</li>
-              <li><i class="fa-solid fa-check"></i> Real-time Socket.IO Collaboration</li>
-              <li><i class="fa-solid fa-check"></i> Custom Roles & Permissions Builder</li>
-            </ul>
-            <button class="btn btn-primary btn-glow" style="width: 100%; margin-top: 24px;" onclick="openCheckoutModal(2, 'Professional Suite')">
-              Select Professional Plan
-            </button>
-          </div>
-
-          <!-- Enterprise -->
-          <div class="pricing-card">
-            <h3>Enterprise Grid</h3>
-            <p>Maximum concurrency, VIP priority support, and custom compliance ledgers.</p>
-            <div class="price" id="price-enterprise">$159 <span>/ month</span></div>
-            <ul class="features-list">
-              <li><i class="fa-solid fa-check"></i> Dedicated Isolated Database</li>
-              <li><i class="fa-solid fa-check"></i> Unlimited Active Employees</li>
-              <li><i class="fa-solid fa-check"></i> Full Audit Log Trail & Ledgers</li>
-              <li><i class="fa-solid fa-check"></i> Custom SLA & 99.99% Uptime</li>
-              <li><i class="fa-solid fa-check"></i> Dedicated Account Manager</li>
-              <li><i class="fa-solid fa-check"></i> Custom API Integrations & Webhooks</li>
-            </ul>
-            <button class="btn btn-ghost" style="width: 100%; margin-top: 24px;" onclick="openCheckoutModal(3, 'Enterprise Grid')">
-              Select Enterprise Plan
-            </button>
+        <p class="testimonial-quote">"The real-time Socket.IO sync means our 80-person remote team sees task updates instantly. It feels like we're all in the same room. The attendance module alone replaced two legacy tools."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar av-cyan">M</div>
+          <div>
+            <div class="author-name">Marcus Thompson</div>
+            <div class="author-role">VP Engineering @ BuildFlow Inc</div>
           </div>
         </div>
       </div>
-    </section>
 
-    <!-- FAQ Section -->
-    <section class="section" id="faq">
-      <div class="container">
-        <div class="section-title">
-          <h2>Frequently Asked Questions</h2>
-          <p>Got questions about our multi-tenant isolation or subscription setup? We have answers.</p>
+      <div class="testimonial-card">
+        <div class="stars">
+          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
         </div>
-        <div class="faq-container">
-          <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-question">
-              <span>How fast is the database provisioning after I complete checkout?</span>
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Our automated `TenantProvisioningService` creates your dedicated database, executes all 21 system tables (`users`, `projects`, `attendance`, `leaves`, etc.), and initializes your Super Admin credentials in less than 1 second right when you complete checkout.
-            </div>
-          </div>
-          <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-question">
-              <span>Is my company data physically separated from other companies?</span>
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Yes! We do not pool your employee records into a single shared table. Every workspace has its own MySQL database instance (`tenant_yourcompany`). This means absolute cryptographic and physical isolation.
-            </div>
-          </div>
-          <div class="faq-item" onclick="toggleFaq(this)">
-            <div class="faq-question">
-              <span>Can I upgrade from Starter to Professional later?</span>
-              <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <div class="faq-answer">
-              Absolutely. Upgrading instantly modifies your platform subscription tier without any database migration required, immediately unlocking advanced attendance, 2FA, and custom RBAC modules.
-            </div>
+        <p class="testimonial-quote">"Setting up custom roles for 12 different departments took 20 minutes. The RBAC builder is intuitive and the audit logs give our legal team everything they need for SOC 2 compliance."</p>
+        <div class="testimonial-author">
+          <div class="author-avatar av-emerald">A</div>
+          <div>
+            <div class="author-name">Aisha Patel</div>
+            <div class="author-role">Head of Operations @ TrustVault</div>
           </div>
         </div>
       </div>
-    </section>
-  </main>
+    </div>
+  </div>
+</section>
 
-  <!-- Footer -->
-  <footer style="border-top: 1px solid var(--border-color); padding: 60px 0 30px; background: rgba(0,0,0,0.5);">
-    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px;">
-      <div>
-        <a href="#" class="logo" style="margin-bottom: 8px;">
-          <div class="logo-icon"><i class="fa-solid fa-layer-group"></i></div>
-          <span>Nexus<strong>Task</strong></span>
+<!-- =============== FAQ =============== -->
+<section class="faq-section" id="faq">
+  <div class="container">
+    <div class="section-title-wrap">
+      <div class="section-tag"><i class="fa-solid fa-circle-question"></i> FAQ</div>
+      <h2>Questions? <span class="gradient-text">We've Got Answers.</span></h2>
+    </div>
+
+    <div class="faq-wrap">
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          How fast is database provisioning after checkout?
+          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
+        </div>
+        <div class="faq-a">Our automated TenantProvisioningService creates your dedicated database, executes all 21 system tables, and initializes your Super Admin account in under one second right when checkout completes. No waiting, no setup emails.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          Is my company's data physically separate from other companies?
+          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
+        </div>
+        <div class="faq-a">Yes, completely. We do not co-mingle your records into a shared table. Every workspace receives its own MySQL database instance (e.g., tenant_your_company). A SQL query from Workspace A cannot ever access data from Workspace B — it's physically impossible by design.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          Can I upgrade or downgrade my subscription plan later?
+          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
+        </div>
+        <div class="faq-a">Absolutely. Upgrading instantly modifies your platform subscription tier without any database migration, immediately unlocking advanced modules like attendance tracking, 2FA enforcement, and the custom RBAC builder.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          What happens to my data if I cancel?
+          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
+        </div>
+        <div class="faq-a">We retain your complete database backup for 90 days after cancellation. You can export a full MySQL dump at any time through the Super Admin panel. Your data is always yours.</div>
+      </div>
+
+      <div class="faq-item" onclick="toggleFaq(this)">
+        <div class="faq-q">
+          Does NexusTask support Single Sign-On (SSO)?
+          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
+        </div>
+        <div class="faq-a">TOTP 2FA (compatible with Microsoft Authenticator and Google Authenticator) is available on all plans. SAML/Okta SSO integration is available on Enterprise plans through our custom API integration option.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============== CTA =============== -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <div class="section-tag" style="justify-content:center"><i class="fa-solid fa-rocket"></i> Get Started Today</div>
+      <h2>Your Isolated Workspace.<br><span class="gradient-text">Ready in Under a Second.</span></h2>
+      <p>Join teams who chose enterprise-grade isolation over shared-table risk. Provision your dedicated 21-table database right now.</p>
+      <div class="cta-buttons">
+        <button class="btn btn-primary btn-lg" onclick="openCheckoutModal(2,'Professional Suite')">
+          <i class="fa-solid fa-bolt"></i> Provision Free Workspace
+        </button>
+        <button class="btn btn-outline btn-lg" onclick="openLoginModal()">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In to Existing Workspace
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- =============== FOOTER =============== -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#" class="logo">
+          <div class="logo-mark"><i class="fa-solid fa-layer-group"></i></div>
+          <span class="logo-text">NexusTask<sup>®</sup></span>
         </a>
-        <p style="color: var(--text-muted); font-size: 0.88rem;">100% Database-Per-Tenant Enterprise SaaS Platform.</p>
+        <p>The enterprise-grade Multi-Tenant SaaS platform for task management, HR, and team collaboration — with 100% database isolation per workspace.</p>
       </div>
-      <div style="color: var(--text-muted); font-size: 0.85rem;">
-        &copy; 2026 NexusTask SaaS Platform. Built with state-of-the-art isolated engineering.
+      <div class="footer-col">
+        <h4>Product</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#architecture">Security</a></li>
+          <li><a href="#testimonials">Customers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a href="#">API Docs</a></li>
+          <li><a href="#">Status Page</a></li>
+          <li><a href="#">Changelog</a></li>
+          <li><a href="#">Integrations</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+          <li><a href="#">GDPR</a></li>
+          <li><a href="#">SOC 2</a></li>
+        </ul>
       </div>
     </div>
-  </footer>
-
-  <!-- Workspace Login Modal -->
-  <div class="modal-overlay" id="loginModal">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
-      <div style="margin-bottom: 24px;">
-        <h3 style="font-size: 1.6rem; font-weight: 800;">Log Into Your Workspace</h3>
-        <p style="color: var(--text-muted); font-size: 0.92rem;">Enter your workspace slug and employee credentials to connect to your isolated tenant database.</p>
-      </div>
-
-      <form id="workspaceLoginForm" onsubmit="handleWorkspaceLogin(event)">
-        <div class="form-group">
-          <label>Company Workspace Slug</label>
-          <input type="text" class="form-control" id="loginSlug" placeholder="e.g. acme-corp or globex-inc" required />
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" class="form-control" id="loginEmail" placeholder="you@company.com" required />
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required />
-        </div>
-        <div id="loginError" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;"></div>
-        <button type="submit" class="btn btn-primary btn-glow" id="loginBtn" style="width: 100%; padding: 14px;">
-          <i class="fa-solid fa-right-to-bracket"></i> Connect & Launch Workspace
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Subscription Checkout Wizard Modal -->
-  <div class="modal-overlay" id="checkoutModal">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
-      
-      <div class="wizard-steps">
-        <div class="step-dot active" id="dot-step-1">1</div>
-        <div class="step-dot" id="dot-step-2">2</div>
-        <div class="step-dot" id="dot-step-3">3</div>
-      </div>
-
-      <!-- Step 1: Plan Summary -->
-      <div id="wizard-step-1">
-        <h3 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;">Selected Subscription Plan</h3>
-        <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">You are setting up an isolated tenant workspace on our cloud infrastructure.</p>
-        <div style="background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3); border-radius: 16px; padding: 20px; margin-bottom: 28px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <div style="font-weight: 800; font-size: 1.25rem; color: #fff;" id="selectedPlanTitle">Professional Suite</div>
-              <div style="font-size: 0.85rem; color: var(--accent-cyan);" id="selectedBillingText">Annual Billing (2 Months Free)</div>
-            </div>
-            <div style="font-size: 1.6rem; font-weight: 800; color: var(--accent-primary);" id="selectedPlanPrice">$64 / mo</div>
-          </div>
-        </div>
-        <button class="btn btn-primary btn-glow" style="width: 100%; padding: 14px;" onclick="goToWizardStep(2)">
-          Continue to Workspace Details <i class="fa-solid fa-arrow-right"></i>
-        </button>
-      </div>
-
-      <!-- Step 2: Company & Super Admin Provisioning Details -->
-      <div id="wizard-step-2" style="display: none;">
-        <h3 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;">Workspace Provisioning Details</h3>
-        <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">Configure your isolated database name and Super Admin master credentials.</p>
-        
-        <div class="form-row">
-          <div class="form-group">
-            <label>Company Name</label>
-            <input type="text" class="form-control" id="companyName" placeholder="e.g. Stark Industries" oninput="autoGenerateSlug()" required />
-          </div>
-          <div class="form-group">
-            <label>Workspace Slug (Unique URL)</label>
-            <input type="text" class="form-control" id="workspaceSlug" placeholder="stark-industries" required />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label>Super Admin Full Name</label>
-            <input type="text" class="form-control" id="adminName" placeholder="e.g. Tony Stark" required />
-          </div>
-          <div class="form-group">
-            <label>Admin Work Email</label>
-            <input type="email" class="form-control" id="adminEmail" placeholder="admin@stark.com" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Super Admin Master Password</label>
-          <input type="password" class="form-control" id="adminPassword" placeholder="Minimum 8 characters" required />
-        </div>
-
-        <div style="display: flex; gap: 12px; margin-top: 16px;">
-          <button class="btn btn-ghost" style="width: 40%;" onclick="goToWizardStep(1)">Back</button>
-          <button class="btn btn-primary" style="width: 60%;" onclick="validateStep2AndContinue()">Continue to Payment <i class="fa-solid fa-arrow-right"></i></button>
-        </div>
-      </div>
-
-      <!-- Step 3: Payment & Instant Provisioning -->
-      <div id="wizard-step-3" style="display: none;">
-        <h3 style="font-size: 1.6rem; font-weight: 800; margin-bottom: 8px;">Complete Payment & Provisioning</h3>
-        <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 24px;">Instant automated provisioning will initialize your 21 tables upon verification.</p>
-        
-        <div class="form-group">
-          <label>Name on Card</label>
-          <input type="text" class="form-control" id="cardName" value="Enterprise Corporate Card" />
-        </div>
-        <div class="form-group">
-          <label>Card Number</label>
-          <input type="text" class="form-control" id="cardNumber" value="4242 •••• •••• 4242" />
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Expiration</label>
-            <input type="text" class="form-control" value="12/28" />
-          </div>
-          <div class="form-group">
-            <label>Security Code (CVC)</label>
-            <input type="password" class="form-control" value="888" />
-          </div>
-        </div>
-
-        <div id="checkoutError" style="color: #ef4444; font-size: 0.88rem; margin-bottom: 16px; display: none;"></div>
-
-        <div style="display: flex; gap: 12px; margin-top: 16px;">
-          <button class="btn btn-ghost" style="width: 35%;" onclick="goToWizardStep(2)">Back</button>
-          <button class="btn btn-primary btn-glow" style="width: 65%; padding: 14px;" id="provisionBtn" onclick="executeProvisioning()">
-            <i class="fa-solid fa-server"></i> Pay & Provision Database Now
-          </button>
-        </div>
-      </div>
-
-      <!-- Step 4: Celebration & Success Screen -->
-      <div id="wizard-step-success" style="display: none; text-align: center; padding: 20px 0;">
-        <div style="width: 80px; height: 80px; background: rgba(16, 185, 129, 0.2); color: var(--accent-emerald); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; margin: 0 auto 24px;">
-          <i class="fa-solid fa-check"></i>
-        </div>
-        <h3 style="font-size: 2rem; font-weight: 800; margin-bottom: 12px; color: #fff;">🎉 Workspace Provisioned!</h3>
-        <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 28px; max-width: 480px; margin-left: auto; margin-right: auto;">
-          Your dedicated tenant database has been spun up with all 21 tables verified and Super Admin account active.
-        </p>
-
-        <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; text-align: left; margin-bottom: 32px; display: flex; flex-direction: column; gap: 12px;">
-          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Workspace Company:</span> <strong style="color: #fff;" id="succ-company"></strong></div>
-          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Workspace Slug:</span> <strong style="color: var(--accent-cyan);" id="succ-slug"></strong></div>
-          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Database Name:</span> <strong style="color: var(--accent-emerald);" id="succ-db"></strong></div>
-          <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Super Admin Email:</span> <strong style="color: #fff;" id="succ-email"></strong></div>
-        </div>
-
-        <button class="btn btn-primary btn-glow" style="width: 100%; padding: 16px; font-size: 1.1rem;" onclick="launchProvisionedWorkspace()">
-          <i class="fa-solid fa-plane-up"></i> Launch Workspace & Go to Dashboard
-        </button>
-      </div>
-
+    <div class="footer-bottom">
+      <span>&copy; 2026 NexusTask. All rights reserved. Built with enterprise-grade isolation engineering.</span>
+      <span style="display:flex;align-items:center;gap:12px">
+        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-github"></i></a>
+        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#" style="color:var(--text-muted);text-decoration:none"><i class="fa-brands fa-linkedin"></i></a>
+      </span>
     </div>
   </div>
+</footer>
 
-  <script src="js/checkout.js"></script>
+<!-- =============== LOGIN MODAL =============== -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-header">
+      <h3>Sign in to Your Workspace</h3>
+      <p>Enter your company slug and credentials to connect to your isolated tenant database.</p>
+    </div>
+    <form onsubmit="handleWorkspaceLogin(event)">
+      <div class="form-group">
+        <label>Company Workspace Slug</label>
+        <input type="text" class="form-input" id="loginSlug" placeholder="e.g. acme-corp" required />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" class="form-input" id="loginEmail" placeholder="you@company.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required />
+      </div>
+      <div class="form-error" id="loginError"></div>
+      <button type="submit" class="btn btn-primary" id="loginBtn" style="width:100%;padding:14px;font-size:1rem">
+        <i class="fa-solid fa-right-to-bracket"></i> Connect & Enter Workspace
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- =============== CHECKOUT MODAL =============== -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeCheckoutModal()"><i class="fa-solid fa-xmark"></i></button>
+
+    <!-- Wizard Steps Header -->
+    <div class="wizard-header" id="wizardHeader">
+      <div class="wstep active" id="wstep-1">
+        <div class="wstep-num">1</div>
+        <div class="wstep-label">Plan</div>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-2">
+        <div class="wstep-num">2</div>
+        <div class="wstep-label">Details</div>
+      </div>
+      <div class="wstep-line"></div>
+      <div class="wstep" id="wstep-3">
+        <div class="wstep-num">3</div>
+        <div class="wstep-label">Payment</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Plan -->
+    <div id="ws1">
+      <div class="modal-header">
+        <h3>Your Selected Plan</h3>
+        <p>You're provisioning a dedicated 21-table isolated workspace database.</p>
+      </div>
+      <div style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:24px;margin-bottom:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:1.3rem;font-weight:800;color:white" id="selPlanName">Professional Suite</div>
+            <div style="font-size:0.85rem;color:#a5b4fc;margin-top:4px" id="selPlanBilling">Annual Billing · 2 Months Free</div>
+          </div>
+          <div style="font-size:2rem;font-weight:900;color:#a5b4fc;font-family:Outfit,sans-serif" id="selPlanPrice">$64/mo</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem" onclick="goStep(2)">
+        Continue to Workspace Details <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <!-- Step 2: Details -->
+    <div id="ws2" style="display:none">
+      <div class="modal-header">
+        <h3>Workspace Setup</h3>
+        <p>Configure your company workspace and Super Admin master credentials.</p>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company Name</label>
+          <input class="form-input" id="co" type="text" placeholder="e.g. Stark Industries" oninput="autoSlug()" required />
+        </div>
+        <div class="form-group">
+          <label>Workspace URL Slug</label>
+          <input class="form-input" id="slug" type="text" placeholder="stark-industries" required />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Super Admin Name</label>
+          <input class="form-input" id="aName" type="text" placeholder="Tony Stark" required />
+        </div>
+        <div class="form-group">
+          <label>Admin Email</label>
+          <input class="form-input" id="aEmail" type="email" placeholder="admin@stark.com" required />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Master Password (min 6 chars)</label>
+        <input class="form-input" id="aPass" type="password" placeholder="••••••••••••" required />
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-ghost" style="flex:1" onclick="goStep(1)">← Back</button>
+        <button class="btn btn-primary" style="flex:2" onclick="validateStep2()">Continue to Payment →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Payment -->
+    <div id="ws3" style="display:none">
+      <div class="modal-header">
+        <h3>Complete Payment</h3>
+        <p>Upon payment verification, your 21-table tenant database is provisioned instantly.</p>
+      </div>
+      <div class="form-group">
+        <label>Name on Card</label>
+        <input class="form-input" type="text" value="Enterprise Corporate Card" />
+      </div>
+      <div class="form-group">
+        <label>Card Number</label>
+        <input class="form-input" type="text" value="4242 •••• •••• 4242" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Expiry</label>
+          <input class="form-input" type="text" value="12/28" />
+        </div>
+        <div class="form-group">
+          <label>CVC</label>
+          <input class="form-input" type="password" value="888" />
+        </div>
+      </div>
+      <div class="form-error" id="checkoutError"></div>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn btn-ghost" style="flex:1" onclick="goStep(2)">← Back</button>
+        <button class="btn btn-primary" style="flex:2;padding:14px" id="provBtn" onclick="executeProvision()">
+          <i class="fa-solid fa-server"></i> Pay & Provision Database
+        </button>
+      </div>
+    </div>
+
+    <!-- Success -->
+    <div id="wsSuccess" style="display:none">
+      <div class="success-screen">
+        <div class="success-icon"><i class="fa-solid fa-check"></i></div>
+        <h3 style="font-size:2rem;font-weight:900;margin-bottom:8px;font-family:Outfit,sans-serif">🎉 Workspace Live!</h3>
+        <p style="color:var(--text-secondary);margin-bottom:28px">Your isolated tenant database has been provisioned with all 21 tables and your Super Admin account is ready.</p>
+        <div class="success-details">
+          <div class="detail-row"><span>Company</span><span id="succCo">—</span></div>
+          <div class="detail-row"><span>Workspace Slug</span><span id="succSlug" style="color:#a5b4fc">—</span></div>
+          <div class="detail-row"><span>Database Name</span><span id="succDb" style="color:#6ee7b7">—</span></div>
+          <div class="detail-row"><span>Super Admin</span><span id="succEmail">—</span></div>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%" onclick="launchWorkspace()">
+          <i class="fa-solid fa-plane-up"></i> Launch Dashboard
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/checkout.js"></script>
 </body>
 </html>
