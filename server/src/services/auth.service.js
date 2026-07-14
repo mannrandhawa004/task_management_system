@@ -11,6 +11,8 @@ import GenerateToken from "../utils/generateToken.js";
 import { formatPagination } from "../utils/pagination.js";
 import * as OTPAuth from "otpauth";
 import qrcode from "qrcode";
+import { tenantContext } from "../../../saas_platform/context/tenantContext.js";
+import { tenantManager } from "../../../saas_platform/services/TenantConnectionManager.js";
 
 class AuthServices {
   async register({ name, email, password, role_id, department_id, device, ip, avatar }) {
@@ -54,77 +56,104 @@ class AuthServices {
 
   }
 
-  async login({ email, password, device, ip }) {
-    const existingUser = await AuthModel.getUserByEmail(email);
+  async login({ email, password, tenantSlug, device, ip }) {
+    let tenantPool = null;
+    let activeTenantInfo = null;
 
-    if (!existingUser) {
-      throw new NotFoundError("Invalid email or password");
-    }
-
-    const isMatch = await bcrypt.compare(password, existingUser.password);
-    if (!isMatch) {
-      throw new BadRequestError("Invalid email or password");
-    }
-
-    if (existingUser.two_factor_enabled === 1 || existingUser.two_factor_enabled === true) {
-      const tempToken = await GenerateToken.Temp2FAToken({
-        id: existingUser.id,
-        email: existingUser.email,
-        type: "2fa_temp",
-      });
-      return {
-        requires2FA: true,
-        tempToken,
-        message: "Two-factor authentication required. Please enter code from Microsoft Authenticator.",
+    if (tenantSlug) {
+      const result = await tenantManager.getPoolBySlug(tenantSlug);
+      tenantPool = result.pool;
+      activeTenantInfo = {
+        tenantId: result.tenant.id,
+        tenantSlug: result.tenant.slug,
+        tenantDbName: result.tenant.db_name,
       };
     }
 
-    const payload = {
-      id: existingUser?.id,
-      role: existingUser?.role,
-      status: existingUser?.status,
-      department_id: existingUser?.department_id || null,
-      team_id: existingUser?.team_id || null,
-      reporting_manager_id: existingUser?.reporting_manager_id || null,
+    const executeLoginLogic = async () => {
+      const existingUser = await AuthModel.getUserByEmail(email);
+
+      if (!existingUser) {
+        throw new NotFoundError("Invalid email or password");
+      }
+
+      const isMatch = await bcrypt.compare(password, existingUser.password);
+      if (!isMatch) {
+        throw new BadRequestError("Invalid email or password");
+      }
+
+      if (existingUser.two_factor_enabled === 1 || existingUser.two_factor_enabled === true) {
+        const tempToken = await GenerateToken.Temp2FAToken({
+          id: existingUser.id,
+          email: existingUser.email,
+          type: "2fa_temp",
+          tenantId: activeTenantInfo?.tenantId || null,
+          tenantSlug: activeTenantInfo?.tenantSlug || null,
+          tenantDbName: activeTenantInfo?.tenantDbName || null,
+        });
+        return {
+          requires2FA: true,
+          tempToken,
+          message: "Two-factor authentication required. Please enter code from Microsoft Authenticator.",
+        };
+      }
+
+      const payload = {
+        id: existingUser?.id,
+        role: existingUser?.role,
+        status: existingUser?.status,
+        department_id: existingUser?.department_id || null,
+        team_id: existingUser?.team_id || null,
+        reporting_manager_id: existingUser?.reporting_manager_id || null,
+        tenantId: activeTenantInfo?.tenantId || null,
+        tenantSlug: activeTenantInfo?.tenantSlug || null,
+        tenantDbName: activeTenantInfo?.tenantDbName || null,
+      };
+
+      const accessToken = await GenerateToken.AccesToken(payload);
+      const refreshToken = await GenerateToken.RefreshToken(payload);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await AuthModel.deleteTokenByDevice(existingUser.id, device, ip);
+      await AuthModel.clearExpiredSessions(existingUser.id);
+      const activeSessions = await AuthModel.countUserSession(existingUser.id);
+      if (activeSessions >= 3) {
+        await AuthModel.deleteOldestSession(existingUser?.id);
+      }
+
+      await AuthModel.saveRefreshToken(
+        existingUser.id,
+        refreshToken,
+        device,
+        ip,
+        expiresAt,
+      );
+
+      return {
+        user: {
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          role: existingUser.role,
+          status: existingUser.status,
+          avatar: existingUser.avatar,
+          tenantSlug: activeTenantInfo?.tenantSlug || null,
+        },
+        accessToken,
+        refreshToken,
+      };
     };
 
-    // Here i created a token for multi-session authentication
-    const accessToken = await GenerateToken.AccesToken(payload);
-    const refreshToken = await GenerateToken.RefreshToken(payload);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    // Deleting the previous token if user try to login from same device and ip
-    await AuthModel.deleteTokenByDevice(existingUser.id, device, ip);
-    // Clearing or deletng the refresh_tokens which is expired
-    await AuthModel.clearExpiredSessions(existingUser.id);
-    // counting the refresh_token which is not expired
-    const activeSessions = await AuthModel.countUserSession(existingUser.id);
-    // checking for the condition if there is more than 3 refresh_token , means user try to login in 4 devices then deleting the odest one
-    if (activeSessions >= 3) {
-      await AuthModel.deleteOldestSession(existingUser?.id);
+    if (tenantPool) {
+      return await new Promise((resolve, reject) => {
+        tenantContext.run(
+          { tenantPool, ...activeTenantInfo },
+          () => executeLoginLogic().then(resolve).catch(reject)
+        );
+      });
+    } else {
+      return await executeLoginLogic();
     }
-
-    // after deleting the oldest one token , we can insert the new one refresh token
-    await AuthModel.saveRefreshToken(
-      existingUser.id,
-      refreshToken,
-      device,
-      ip,
-      expiresAt,
-    );
-
-    return {
-      user: {
-        id: existingUser.id,
-        name: existingUser.name,
-        email: existingUser.email,
-        role: existingUser.role,
-        status: existingUser.status,
-        avatar: existingUser.avatar,
-      },
-      accessToken,
-      refreshToken,
-    };
   }
 
   async refresh(refreshToken) {
@@ -310,53 +339,80 @@ class AuthServices {
       throw new UnauthorizedError("Invalid authentication token.");
     }
 
-    const user = await AuthModel.getUserById(decoded.id);
-    if (!user || !user.two_factor_enabled || !user.two_factor_secret) {
-      throw new UnauthorizedError("Two-Factor Authentication is not enabled for this account.");
+    let tenantPool = null;
+    if (decoded.tenantDbName) {
+      tenantPool = await tenantManager.getTenantPool(decoded.tenantDbName);
+    } else if (decoded.tenantSlug) {
+      const result = await tenantManager.getPoolBySlug(decoded.tenantSlug);
+      tenantPool = result.pool;
     }
 
-    const totp = new OTPAuth.TOTP({
-      issuer: "TaskManagementSystem",
-      algorithm: "SHA1",
-      digits: 6,
-      period: 30,
-      secret: OTPAuth.Secret.fromBase32(user.two_factor_secret),
-    });
+    const executeVerify2FALogic = async () => {
+      const user = await AuthModel.getUserById(decoded.id);
+      if (!user || !user.two_factor_enabled || !user.two_factor_secret) {
+        throw new UnauthorizedError("Two-Factor Authentication is not enabled for this account.");
+      }
 
-    const delta = totp.validate({ token: String(otp).trim(), window: 5 });
-    if (delta === null) {
-      throw new BadRequestError("Invalid authentication code. Please try again.");
-    }
+      const totp = new OTPAuth.TOTP({
+        issuer: "TaskManagementSystem",
+        algorithm: "SHA1",
+        digits: 6,
+        period: 30,
+        secret: OTPAuth.Secret.fromBase32(user.two_factor_secret),
+      });
 
-    const payload = {
-      id: user.id,
-      role: user.role,
-      status: user.status,
-      department_id: user.department_id || null,
-      team_id: user.team_id || null,
-      reporting_manager_id: user.reporting_manager_id || null,
+      const delta = totp.validate({ token: String(otp).trim(), window: 5 });
+      if (delta === null) {
+        throw new BadRequestError("Invalid authentication code. Please try again.");
+      }
+
+      const payload = {
+        id: user.id,
+        role: user.role,
+        status: user.status,
+        department_id: user.department_id || null,
+        team_id: user.team_id || null,
+        reporting_manager_id: user.reporting_manager_id || null,
+        tenantId: decoded.tenantId || null,
+        tenantSlug: decoded.tenantSlug || null,
+        tenantDbName: decoded.tenantDbName || null,
+      };
+
+      const accessToken = await GenerateToken.AccesToken(payload);
+      const refreshToken = await GenerateToken.RefreshToken(payload);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+      await AuthModel.deleteTokenByDevice(user.id, device, ip);
+      await AuthModel.clearExpiredSessions(user.id);
+      const activeSessions = await AuthModel.countUserSession(user.id);
+      if (activeSessions >= 3) {
+        await AuthModel.deleteOldestSession(user.id);
+      }
+
+      await AuthModel.saveRefreshToken(user.id, refreshToken, device, ip, expiresAt);
+
+      const { password: _, two_factor_secret: __, ...userWithoutSecret } = user;
+
+      return {
+        user: {
+          ...userWithoutSecret,
+          tenantSlug: decoded.tenantSlug || null,
+        },
+        accessToken,
+        refreshToken,
+      };
     };
 
-    const accessToken = await GenerateToken.AccesToken(payload);
-    const refreshToken = await GenerateToken.RefreshToken(payload);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-    await AuthModel.deleteTokenByDevice(user.id, device, ip);
-    await AuthModel.clearExpiredSessions(user.id);
-    const activeSessions = await AuthModel.countUserSession(user.id);
-    if (activeSessions >= 3) {
-      await AuthModel.deleteOldestSession(user.id);
+    if (tenantPool) {
+      return await new Promise((resolve, reject) => {
+        tenantContext.run(
+          { tenantPool, tenantDbName: decoded.tenantDbName, tenantSlug: decoded.tenantSlug, tenantId: decoded.tenantId },
+          () => executeVerify2FALogic().then(resolve).catch(reject)
+        );
+      });
+    } else {
+      return await executeVerify2FALogic();
     }
-
-    await AuthModel.saveRefreshToken(user.id, refreshToken, device, ip, expiresAt);
-
-    const { password: _, two_factor_secret: __, ...userWithoutSecret } = user;
-
-    return {
-      user: userWithoutSecret,
-      accessToken,
-      refreshToken,
-    };
   }
 }
 

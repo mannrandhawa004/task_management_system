@@ -27,6 +27,7 @@ import attendanceRoutes from "./src/routes/attendance.routes.js";
 import leaveRoutes from "./src/routes/leave.routes.js";
 import usersRoutes from "./src/routes/users.routes.js";
 import searchRoutes from "./src/routes/search.routes.js";
+import saasRoutes from "../saas_platform/routes/saas.routes.js";
 import { clientIpMiddleware } from "./src/middlewares/clientIp.middleware.js";
 import { registerUserSocket, removeUserSocket, setSocketIO } from "./src/socket/socket.js";
 import { setAuditServiceIO } from "./src/services/audit.service.js";
@@ -41,12 +42,19 @@ const PORT = process.env.PORT || 5000;
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  }),
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, file://) or any localhost/127.0.0.1 port
+    if (!origin || origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:") || origin.startsWith("file://")) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all during development/SaaS landing preview
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 500,
@@ -135,6 +143,7 @@ app.get(["/", "/v1", "/api-docs", "/docs"], (req, res) => {
   res.send(swaggerHtml);
 });
 
+app.use("/v1/saas", saasRoutes);
 app.use("/v1/auth", authRoutes);
 app.use("/v1/project", projectRoutes);
 app.use("/v1/task", taskRoutes);
@@ -152,10 +161,7 @@ app.use(errorHandler);
 
 const server = http.createServer(app);
 export const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    credentials: true,
-  },
+  cors: corsOptions,
 });
 // console.log(io)
 

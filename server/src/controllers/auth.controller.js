@@ -59,7 +59,8 @@ class AuthController {
   });
 
   login = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, tenantSlug: bodySlug } = req.body;
+    const tenantSlug = bodySlug || req.headers["x-tenant-slug"];
 
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0] ||
@@ -70,6 +71,7 @@ class AuthController {
     const result = await AuthService.login({
       email,
       password,
+      tenantSlug,
       device,
       ip,
     });

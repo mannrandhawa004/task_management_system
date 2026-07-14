@@ -1,8 +1,23 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/v1",
   withCredentials: true,
+});
+
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tenantSlug = urlParams.get("workspace") || localStorage.getItem("active_tenant_slug");
+    if (tenantSlug) {
+      config.headers["x-tenant-slug"] = tenantSlug;
+      localStorage.setItem("active_tenant_slug", tenantSlug);
+      if (config.url?.includes("/auth/login") && config.data && typeof config.data === "object") {
+        config.data.tenantSlug = tenantSlug;
+      }
+    }
+  }
+  return config;
 });
 
 let isRefreshing = false;
