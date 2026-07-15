@@ -1,9 +1,9 @@
 // =============================================
 // STATE
 // =============================================
-let currentPlan = { id: 2, name: "Professional Suite" };
-let isAnnual = true;
-let provisionedData = null;
+var currentPlan = { id: 2, name: "Professional Suite" };
+var isAnnual = true;
+var provisionedData = null;
 
 const API_BASE = "http://localhost:8000/v1";
 

@@ -623,7 +623,7 @@
         <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-brand-500 transition-all">
           <div>
             <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
-              <img src="assets/showcase_projects.png" alt="Engineering Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img src="assets/light_task_board.png" alt="Engineering Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="block dark:hidden w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" /><img src="assets/dark_task_board.png" alt="Engineering Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="hidden dark:block w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
             </div>
             <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Remote Dev Teams</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
@@ -638,7 +638,7 @@
         <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-accent-green transition-all">
           <div>
             <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
-              <img src="assets/showcase_attendance.png" alt="Healthcare Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img src="assets/light_attendence.png" alt="Healthcare Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="block dark:hidden w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" /><img src="assets/dark_attendence.png" alt="Healthcare Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="hidden dark:block w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
             </div>
             <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Healthcare Operations</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
@@ -653,7 +653,7 @@
         <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-blue-500 transition-all">
           <div>
             <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
-              <img src="assets/showcase_dashboard.png" alt="Financial Enterprises" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img src="assets/light_dashboard.png" alt="Financial Enterprises" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="block dark:hidden w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" /><img src="assets/dark_dashboard.png" alt="Financial Enterprises" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="hidden dark:block w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
             </div>
             <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Financial Enterprises</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
@@ -668,7 +668,7 @@
         <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-purple-500 transition-all">
           <div>
             <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
-              <img src="assets/showcase_employees.png" alt="Creative Agencies" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img src="assets/light_employees.png" alt="Creative Agencies" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="block dark:hidden w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" /><img src="assets/dark_all_user.png" alt="Creative Agencies" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" / class="hidden dark:block w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300" />
             </div>
             <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Creative Agencies</h3>
             <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
@@ -1310,7 +1310,7 @@
     // =============================================================
     // 4. PRICING & WIZARD HELPER
     // =============================================================
-    let isAnnual = true;
+    var isAnnual = true;
     const NOTES_A = { 1: "Billed $288/year — save $60", 2: "Billed $768/year — save $180", 3: "Billed $1,908/year — save $480" };
 
     function toggleBilling() {
