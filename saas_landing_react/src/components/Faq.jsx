@@ -24,39 +24,44 @@ const FAQ_DATA = [
 ];
 
 export default function Faq() {
-  const [openIdx, setOpenIdx] = useState(null);
+  const [openIdx, setOpenIdx] = useState(0);
 
   const toggle = (i) => {
     setOpenIdx(openIdx === i ? null : i);
   };
 
   return (
-    <section className="py-24 px-6 max-w-4xl mx-auto border-t border-light-border dark:border-dark-border" id="faq">
+    <section className="py-28 px-6 max-w-4xl mx-auto border-t border-light-border dark:border-dark-border relative" id="faq">
       
-      <div className="text-center mb-16">
+      <div className="text-center mb-16 gsap-scroll-header">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100 dark:bg-dark-card text-slate-700 dark:text-slate-300 font-mono text-xs font-bold mb-4 border border-light-border dark:border-dark-border">
+          <i className="fa-solid fa-circle-question text-brand-500"></i> Technical Documentation &amp; Architecture
+        </div>
         <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-3">
           Frequently Asked Questions
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base">
-          Got questions about our architecture or tenant provisioning? We've got answers.
+          Got questions about our architecture, multi-tenant database pools, or SSO? We've got answers.
         </p>
       </div>
 
-      <div className="space-y-4">
+      <div className="gsap-scroll-grid space-y-4">
         {FAQ_DATA.map((item, i) => {
           const isOpen = openIdx === i;
           return (
             <div 
               key={i} 
-              className="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden shadow-soft transition-all"
+              className={`gsap-scroll-card bg-white dark:bg-dark-card border rounded-2xl overflow-hidden shadow-soft transition-all duration-300 ${
+                isOpen ? 'border-brand-500/80 ring-1 ring-brand-500/20 shadow-md' : 'border-light-border dark:border-dark-border hover:border-slate-400'
+              }`}
             >
               <button 
                 type="button"
                 onClick={() => toggle(i)}
-                className="w-full p-6 text-left flex items-center justify-between gap-4 font-display font-bold text-base text-slate-900 dark:text-white focus:outline-none"
+                className="w-full p-6 text-left flex items-center justify-between gap-4 font-display font-bold text-base text-slate-900 dark:text-white focus:outline-none cursor-pointer"
               >
                 <span>{item.q}</span>
-                <div className={`w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 transition-transform duration-300 ${isOpen ? 'rotate-180 bg-brand-500/10 text-brand-500' : ''}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180 bg-brand-500 text-white shadow-orange-glow' : 'bg-slate-100 dark:bg-dark-bg text-slate-500'}`}>
                   <i className="fa-solid fa-chevron-down text-xs"></i>
                 </div>
               </button>

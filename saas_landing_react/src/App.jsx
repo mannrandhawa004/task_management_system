@@ -61,25 +61,67 @@ export default function App() {
     setIsCheckoutOpen(true);
   };
 
-  // GSAP Entrance Animations
+  // GSAP Entrance & ScrollTrigger Animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(".gsap-hero", {
-        opacity: 0,
-        y: 35,
-        duration: 0.8,
-        stagger: 0.15,
-        ease: "power3.out"
+      // 1. Hero Entrance
+      gsap.fromTo(".gsap-hero", 
+        { opacity: 0, y: 35 },
+        { opacity: 1, y: 0, duration: 0.8, stagger: 0.15, ease: "power3.out" }
+      );
+
+      gsap.fromTo(".gsap-hero-showcase", 
+        { opacity: 0, scale: 0.95, y: 40 },
+        { opacity: 1, scale: 1, y: 0, duration: 1, delay: 0.45, ease: "power3.out" }
+      );
+
+      // 2. ScrollTrigger for all Section Headers
+      gsap.utils.toArray(".gsap-scroll-header").forEach((header) => {
+        gsap.fromTo(header, 
+          { opacity: 0, y: 35 },
+          {
+            scrollTrigger: {
+              trigger: header,
+              start: "top 90%",
+              toggleActions: "play none none none"
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            immediateRender: false
+          }
+        );
       });
 
-      gsap.from(".gsap-hero-showcase", {
-        opacity: 0,
-        scale: 0.95,
-        y: 40,
-        duration: 1,
-        delay: 0.45,
-        ease: "power3.out"
+      // 3. ScrollTrigger for Grids & Cards (Staggered Reveal that never hides images)
+      gsap.utils.toArray(".gsap-scroll-grid").forEach((grid) => {
+        const cards = grid.querySelectorAll(".gsap-scroll-card");
+        if (cards.length > 0) {
+          gsap.fromTo(cards,
+            { opacity: 0, y: 40, scale: 0.97 },
+            {
+              scrollTrigger: {
+                trigger: grid,
+                start: "top 90%",
+                toggleActions: "play none none none"
+              },
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              duration: 0.75,
+              stagger: 0.12,
+              ease: "power3.out",
+              immediateRender: false
+            }
+          );
+        }
       });
+
+      // Refresh ScrollTrigger after all DOM images have finished loading heights
+      setTimeout(() => {
+        ScrollTrigger.refresh();
+      }, 500);
     });
 
     return () => ctx.revert();
