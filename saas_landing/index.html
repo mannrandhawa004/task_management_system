@@ -1,1158 +1,1275 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="dark scroll-smooth" id="html-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TaskFlow — Enterprise Multi-Tenant SaaS Task Management Platform</title>
-  <meta name="description" content="TaskFlow is the next-generation multi-tenant SaaS platform for enterprise task management, attendance, RBAC, and real-time collaboration with dedicated per-tenant databases." />
+  <title>TaskFlow — Manage Your Task & Enterprise Workflow</title>
+  <meta name="description" content="TaskFlow boards, lists, and cards enable you to organize and prioritize your projects in a fun, flexible, and rewarding way with dedicated multi-tenant database isolation." />
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- GSAP Animation Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"></script>
+
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
-            display: ['Outfit', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'sans-serif'],
             body: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
           },
           colors: {
             brand: {
-              50:  '#f0fdf4',
-              100: '#dcfce7',
-              200: '#bbf7d0',
-              300: '#86efac',
-              400: '#4ade80',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-              800: '#166534',
-              900: '#14532d',
+              50:  '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              300: '#fdba74',
+              400: '#fb923c',
+              500: '#ff6b2c', // Encan orange accent
+              600: '#ea580c',
+              700: '#c2410c',
+              800: '#9a3412',
+              900: '#7c2d12',
+            },
+            accent: {
+              green: '#22c55e',
+              yellow: '#facc15',
+              blue: '#3b82f6',
+              purple: '#a855f7',
             },
             dark: {
-              base: '#050A18',
-              900: '#080F20',
-              800: '#0D1628',
-              700: '#111D35',
-              600: '#162340',
-              500: '#1e3a5f',
+              bg: '#0a0d14',
+              card: '#131824',
+              hover: '#1c2436',
+              border: '#263046',
             },
+            light: {
+              bg: '#f8fafc',
+              card: '#ffffff',
+              hover: '#f1f5f9',
+              border: '#e2e8f0',
+            }
+          },
+          boxShadow: {
+            'soft': '0 10px 30px -10px rgba(0, 0, 0, 0.08)',
+            'soft-dark': '0 10px 30px -10px rgba(0, 0, 0, 0.6)',
+            'floating': '0 20px 40px -15px rgba(0, 0, 0, 0.12)',
+            'floating-dark': '0 20px 40px -15px rgba(0, 0, 0, 0.8)',
+            'orange-glow': '0 10px 25px -5px rgba(255, 107, 44, 0.4)',
           },
           animation: {
-            'float': 'float 6s ease-in-out infinite',
-            'float-slow': 'float 10s ease-in-out infinite',
-            'shimmer': 'shimmer 3s linear infinite',
-            'pulse-dot': 'pulseDot 2s ease-in-out infinite',
-            'slide-up': 'slideUp 0.5s ease-out',
-            'spin-slow': 'spin 8s linear infinite',
+            'float-slow': 'float 6s ease-in-out infinite',
+            'float-medium': 'float 4.5s ease-in-out infinite',
+            'float-fast': 'float 3.5s ease-in-out infinite',
+            'pulse-soft': 'pulseSoft 3s ease-in-out infinite',
           },
           keyframes: {
             float: {
-              '0%, 100%': { transform: 'translateY(0)' },
+              '0%, 100%': { transform: 'translateY(0px)' },
               '50%': { transform: 'translateY(-12px)' },
             },
-            shimmer: {
-              '0%': { backgroundPosition: '0% center' },
-              '100%': { backgroundPosition: '200% center' },
-            },
-            pulseDot: {
-              '0%, 100%': { transform: 'scale(1)', opacity: '1' },
-              '50%': { transform: 'scale(1.5)', opacity: '0.6' },
-            },
-            slideUp: {
-              '0%': { transform: 'translateY(20px)', opacity: '0' },
-              '100%': { transform: 'translateY(0)', opacity: '1' },
-            },
-          },
-          backdropBlur: { xs: '2px' },
-          backgroundSize: { '200': '200%' },
-        },
-      },
+            pulseSoft: {
+              '0%, 100%': { opacity: '1' },
+              '50%': { opacity: '0.6' },
+            }
+          }
+        }
+      }
     }
   </script>
+
   <style>
-    /* Base overrides */
-    body { font-family: 'Inter', sans-serif; }
-    h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; }
-
-    /* Gradient text */
-    .text-gradient {
-      background: linear-gradient(135deg, #86efac 0%, #4ade80 25%, #22c55e 50%, #67e8f9 80%, #a5b4fc 100%);
-      background-size: 200%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      animation: shimmer 3s linear infinite;
+    body {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    h1, h2, h3, h4, .font-display {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    /* Theme transitions */
+    .theme-transition * {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease !important;
     }
 
-    @keyframes shimmer {
-      0% { background-position: 0% center; }
-      100% { background-position: 200% center; }
+    /* Modal Animation */
+    .modal-box {
+      transform: translateY(24px) scale(0.96);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+    }
+    .modal-open .modal-box {
+      transform: translateY(0) scale(1);
+      opacity: 1;
     }
 
-    /* Animated orbs */
-    .orb {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* Noise texture */
-    .noise::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      opacity: 0.02;
-      pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    }
-
-    /* Glow utilities */
-    .glow-green { box-shadow: 0 0 40px rgba(34, 197, 94, 0.25); }
-    .glow-green-sm { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
-    .glow-blue { box-shadow: 0 0 40px rgba(99, 102, 241, 0.2); }
-    .text-glow { text-shadow: 0 0 30px rgba(74, 222, 128, 0.4); }
-
-    /* Card hover */
-    .card-hover {
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
-    }
-    .card-hover:hover {
-      transform: translateY(-6px);
-    }
-
-    /* Browser mockup scrollbar hidden */
-    .mockup-scroll::-webkit-scrollbar { display: none; }
-
-    /* Stripe top on cards */
-    .card-stripe::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.6), transparent);
-      transform: scaleX(0);
-      transform-origin: center;
-      transition: transform 0.4s ease;
-    }
-    .card-stripe:hover::before { transform: scaleX(1); }
-
-    /* Shimmer btn */
-    .btn-shimmer { overflow: hidden; }
-    .btn-shimmer::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      transition: left 0.5s ease;
-    }
-    .btn-shimmer:hover::before { left: 100%; }
-
-    /* Pricing popular scale */
-    .pricing-popular { transform: scale(1.04); }
-
-    /* FAQ transition */
+    /* FAQ Transitions */
     .faq-answer {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease, padding 0.3s ease;
+      transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+      opacity: 0;
     }
-    .faq-open .faq-answer { max-height: 300px; }
-    .faq-open .faq-icon { transform: rotate(45deg); }
-    .faq-icon { transition: transform 0.3s ease; }
-
-    /* Modal transition */
-    .modal-box {
-      transform: translateY(20px) scale(0.97);
-      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    .faq-open .faq-answer {
+      max-height: 250px;
+      opacity: 1;
     }
-    .modal-open .modal-box { transform: translateY(0) scale(1); }
-
-    /* Showcase image frame */
-    .showcase-frame {
-      background: linear-gradient(135deg, rgba(22,163,74,0.08), rgba(6,182,212,0.05));
-      border: 1px solid rgba(34,197,94,0.15);
+    .faq-open .faq-icon {
+      transform: rotate(45deg);
+      background-color: #ff6b2c !important;
+      color: #ffffff !important;
     }
 
-    /* Step done */
-    .step-done { background: #22c55e; border-color: #22c55e; color: white; }
-    .step-active { background: #16a34a; border-color: #22c55e; color: white; box-shadow: 0 0 16px rgba(34,197,94,0.5); }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .dark ::-webkit-scrollbar-thumb { background: #334155; }
+    ::-webkit-scrollbar-thumb:hover { background: #ff6b2c; }
   </style>
 </head>
-<body class="bg-dark-base text-white antialiased overflow-x-hidden noise">
+<body class="bg-light-bg dark:bg-dark-bg text-slate-800 dark:text-slate-100 selection:bg-brand-500 selection:text-white min-h-screen flex flex-col justify-between">
 
-  <!-- Decorative orbs -->
-  <div class="orb w-[700px] h-[700px] bg-brand-600/10 -top-52 -left-32 animate-float-slow"></div>
-  <div class="orb w-[500px] h-[500px] bg-indigo-600/8 top-1/2 -right-32 animate-float" style="animation-delay:-4s"></div>
-  <div class="orb w-[400px] h-[400px] bg-cyan-500/6 bottom-0 left-1/3 animate-float-slow" style="animation-delay:-8s"></div>
-
-  <!-- ==================== HEADER ==================== -->
-  <header class="sticky top-0 z-50">
-    <div class="bg-dark-base/80 backdrop-blur-xl border-b border-white/5">
-      <div class="max-w-7xl mx-auto px-6 flex items-center justify-between h-[70px]">
-
-        <!-- Logo -->
-        <a href="#" class="flex items-center gap-3 no-underline">
-          <div class="relative w-10 h-10 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center text-white font-bold text-lg shadow-lg glow-green-sm">
-            <i class="fa-solid fa-layer-group text-base"></i>
-          </div>
-          <span class="font-display font-800 text-xl tracking-tight text-white">Task<span class="text-brand-400">Flow</span></span>
-        </a>
-
-        <!-- Nav -->
-        <nav class="hidden md:flex items-center gap-1">
-          <a href="#features" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Features</a>
-          <a href="#showcase" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Screenshots</a>
-          <a href="#architecture" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Security</a>
-          <a href="#pricing" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">Pricing</a>
-          <a href="#faq" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200">FAQ</a>
-        </nav>
-
-        <!-- Actions -->
-        <div class="flex items-center gap-3">
-          <button onclick="openLoginModal()" class="hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-300 bg-white/5 border border-white/8 hover:bg-white/10 hover:text-white transition-all duration-200">
-            <i class="fa-solid fa-right-to-bracket text-xs"></i> Sign In
-          </button>
-          <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 transition-all duration-200 glow-green-sm hover:-translate-y-0.5">
-            <i class="fa-solid fa-bolt text-xs"></i> Get Started Free
-          </button>
+  <!-- ==================== STICKY NAVBAR ==================== -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-dark-bg/85 backdrop-blur-xl border-b border-light-border dark:border-dark-border transition-colors duration-300">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- Left Logo -->
+      <a href="#" class="flex items-center gap-3 group no-underline">
+        <div class="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold text-xl shadow-orange-glow group-hover:scale-105 transition-transform">
+          <i class="fa-solid fa-layer-group"></i>
         </div>
+        <span class="font-display font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">Task<span class="text-brand-500">Flow</span></span>
+      </a>
+
+      <!-- Center Navigation -->
+      <nav class="hidden lg:flex items-center gap-8 font-medium text-sm text-slate-600 dark:text-slate-300">
+        <a href="#hero" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">Products</a>
+        <a href="#features" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">Use Cases</a>
+        <a href="#solutions" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">Solutions</a>
+        <a href="#pricing" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">Pricing</a>
+        <a href="#faq" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">FAQ</a>
+        <a href="#reviews" class="hover:text-brand-500 dark:hover:text-brand-400 transition-colors">Reviews</a>
+      </nav>
+
+      <!-- Right Actions & Theme Switcher -->
+      <div class="flex items-center gap-4">
+        
+        <!-- Theme Toggle Switch -->
+        <button onclick="toggleTheme()" id="theme-toggle-btn" class="w-11 h-11 rounded-xl bg-slate-100 dark:bg-dark-card border border-light-border dark:border-dark-border flex items-center justify-center text-slate-600 dark:text-amber-400 hover:scale-105 transition-all shadow-sm" title="Toggle Light / Dark Mode">
+          <i class="fa-solid fa-sun hidden dark:inline-block text-lg"></i>
+          <i class="fa-solid fa-moon inline-block dark:hidden text-lg"></i>
+        </button>
+
+        <button onclick="openLoginModal()" class="hidden sm:inline-block font-semibold text-sm px-4 py-2 text-slate-700 dark:text-slate-200 hover:text-brand-500 dark:hover:text-brand-400 transition-colors">
+          Sign In
+        </button>
+        
+        <button onclick="openCheckoutModal(2, 'Professional Suite')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-white dark:bg-dark-card text-slate-900 dark:text-white border border-light-border dark:border-dark-border hover:border-brand-500 dark:hover:border-brand-500 hover:text-brand-500 transition-all shadow-soft dark:shadow-soft-dark">
+          Sign Up
+        </button>
 
       </div>
+
     </div>
   </header>
 
-  <main class="relative z-10">
+  <main class="flex-1 overflow-hidden">
 
-    <!-- ==================== HERO ==================== -->
-    <section class="relative pt-28 pb-24 text-center overflow-hidden">
-      <!-- Hero bg image -->
-      <div class="absolute inset-0 bg-[url('assets/hero_bg.png')] bg-cover bg-center opacity-20 pointer-events-none"></div>
-      <div class="absolute inset-0 bg-gradient-to-b from-dark-base/0 via-dark-base/20 to-dark-base pointer-events-none"></div>
+    <!-- ==================== HERO SECTION (ENCAN REFERENCE STYLE) ==================== -->
+    <section class="relative pt-16 pb-24 px-6 max-w-7xl mx-auto text-center" id="hero">
+      
+      <!-- Decorative Background Circles -->
+      <div class="absolute top-20 left-1/4 w-40 h-40 bg-accent-yellow/30 rounded-full blur-2xl -z-10 pointer-events-none"></div>
+      <div class="absolute top-40 right-1/4 w-52 h-52 bg-brand-500/20 rounded-full blur-3xl -z-10 pointer-events-none"></div>
 
-      <div class="relative max-w-7xl mx-auto px-6">
+      <!-- Main Headline -->
+      <h1 class="gsap-hero font-display font-extrabold text-5xl sm:text-6xl md:text-7xl text-slate-900 dark:text-white tracking-tight max-w-4xl mx-auto mb-6 leading-[1.12]">
+        Manage Your Task.
+      </h1>
 
-        <!-- Badge -->
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-600/10 border border-brand-600/25 text-brand-300 text-sm font-semibold mb-8 animate-float">
-          <span class="w-2 h-2 rounded-full bg-brand-400 animate-pulse-dot"></span>
-          100% Database-Per-Tenant · Real-Time · Enterprise Grade
-        </div>
+      <!-- Subheadline -->
+      <p class="gsap-hero text-slate-600 dark:text-slate-400 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-normal">
+        TaskFlow boards, lists, and cards enable you to organize and prioritize your projects in a fun, flexible, and rewarding way. Let's get started 😉
+      </p>
 
-        <!-- Headline -->
-        <h1 class="font-display font-black text-5xl md:text-7xl leading-[1.08] tracking-tight mb-6 max-w-5xl mx-auto">
-          The Operating System<br/>for <span class="text-gradient">Modern Enterprise Teams</span>
-        </h1>
+      <!-- Action Buttons -->
+      <div class="gsap-hero flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
+        <button onclick="openCheckoutModal(2, 'Professional Suite')" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base transition-all shadow-orange-glow hover:-translate-y-0.5">
+          Get Started
+        </button>
+        <a href="#features" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white dark:bg-dark-card hover:bg-slate-50 dark:hover:bg-dark-hover text-slate-800 dark:text-white font-semibold text-base border border-light-border dark:border-dark-border transition-all shadow-soft dark:shadow-soft-dark flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play text-brand-500 text-sm"></i> Discover In Video
+        </a>
+      </div>
 
-        <!-- Sub -->
-        <p class="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Real-time task management, HR attendance, granular RBAC, and Socket.IO collaboration — every company gets its own fully isolated database provisioned in under one second.
-        </p>
+      <!-- ==================== FLOATING HERO DASHBOARD SHOWCASE ==================== -->
+      <div class="gsap-hero-showcase relative max-w-5xl mx-auto mb-16">
+        
+        <!-- Large Yellow Decorative Circle Behind Mockup -->
+        <div class="absolute -top-12 -left-12 w-32 h-32 md:w-48 md:h-48 rounded-full bg-accent-yellow z-0 opacity-90 dark:opacity-70 animate-pulse-soft"></div>
+        <div class="absolute -bottom-8 -right-8 w-20 h-20 md:w-28 md:h-28 rounded-full bg-accent-green z-0 opacity-80 animate-pulse-soft"></div>
 
-        <!-- CTAs -->
-        <div class="flex items-center justify-center gap-4 flex-wrap mb-16">
-          <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:-translate-y-1 transition-all duration-300 glow-green shadow-2xl">
-            <i class="fa-solid fa-rocket"></i> Provision Your Workspace
-          </button>
-          <a href="#showcase" class="flex items-center gap-2 px-8 py-4 rounded-2xl text-base font-semibold text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
-            <i class="fa-regular fa-circle-play"></i> See It In Action
-          </a>
-        </div>
-
-        <!-- Stats row -->
-        <div class="inline-flex items-center justify-center rounded-2xl bg-dark-800/70 border border-white/8 backdrop-blur-md divide-x divide-white/8 mb-16 overflow-hidden">
-          <div class="px-8 py-4 text-center">
-            <div class="font-display font-black text-3xl text-white">21</div>
-            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Tables Per Tenant</div>
-          </div>
-          <div class="px-8 py-4 text-center">
-            <div class="font-display font-black text-3xl text-brand-400">&lt;1s</div>
-            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Provisioning Time</div>
-          </div>
-          <div class="px-8 py-4 text-center">
-            <div class="font-display font-black text-3xl text-cyan-400">100%</div>
-            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Data Isolation</div>
-          </div>
-          <div class="hidden sm:block px-8 py-4 text-center">
-            <div class="font-display font-black text-3xl text-violet-400">TOTP</div>
-            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wider mt-1">Multi-Factor Auth</div>
-          </div>
-        </div>
-
-        <!-- Browser mockup -->
-        <div class="relative max-w-5xl mx-auto">
-          <!-- Glow under -->
-          <div class="absolute -bottom-12 left-1/2 -translate-x-1/2 w-3/4 h-20 bg-brand-500/20 blur-3xl rounded-full pointer-events-none"></div>
-
-          <div class="rounded-2xl overflow-hidden border border-white/10 bg-dark-800/90 shadow-[0_40px_100px_rgba(0,0,0,0.7)] backdrop-blur-sm">
-            <!-- Browser bar -->
-            <div class="flex items-center gap-3 px-5 py-3.5 bg-dark-700/60 border-b border-white/6">
-              <div class="flex gap-1.5">
-                <span class="w-3 h-3 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]"></span>
-                <span class="w-3 h-3 rounded-full bg-yellow-400 shadow-[0_0_6px_rgba(250,204,21,0.8)]"></span>
-                <span class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_6px_rgba(34,197,94,0.8)]"></span>
+        <!-- Main Dashboard Mockup Window -->
+        <div class="relative z-10 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-4 md:p-6 shadow-2xl dark:shadow-[0_25px_60px_rgba(0,0,0,0.9)] text-left">
+          
+          <!-- Top Mockup Header Bar -->
+          <div class="flex items-center justify-between pb-4 border-b border-light-border dark:border-dark-border mb-6">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-brand-500 flex items-center justify-center text-white font-bold text-sm">
+                <i class="fa-solid fa-layer-group"></i>
               </div>
-              <div class="flex-1 flex items-center gap-2 bg-dark-900/60 border border-white/6 rounded-lg px-3 py-1.5 text-xs text-slate-500">
-                <i class="fa-solid fa-lock text-brand-400"></i>
-                https://app.taskflow.io/workspace/<span class="text-slate-300 font-semibold">acme-corp</span>/dashboard
+              <span class="font-display font-bold text-slate-900 dark:text-white text-base">TaskFlow.io</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-100 dark:bg-dark-bg px-3 py-1 rounded-full">
+              <span class="w-2 h-2 rounded-full bg-accent-green animate-pulse"></span>
+              <span>Workspace: acme-corp · MySQL Pool Isolated</span>
+            </div>
+          </div>
+
+          <!-- Mockup Internal Grid Layout -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Left Sidebar Simulation -->
+            <div class="hidden lg:block lg:col-span-3 space-y-3 pr-4 border-r border-light-border dark:border-dark-border">
+              <div class="p-3 rounded-xl bg-brand-500 text-white font-semibold text-xs flex items-center justify-between">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-plus"></i> Create New Task</span>
+                <span class="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">+</span>
               </div>
-              <div class="flex items-center gap-2 px-3 py-1 rounded-full bg-brand-600/15 border border-brand-600/25 text-brand-300 text-xs font-bold">
-                <i class="fa-solid fa-database"></i> tenant_acme_corp · 21 tables
+              <div class="p-2.5 rounded-lg text-slate-700 dark:text-slate-200 font-medium text-xs flex items-center gap-2 bg-slate-100 dark:bg-dark-hover">
+                <i class="fa-solid fa-border-all text-brand-500"></i> Dashboard
+              </div>
+              <div class="p-2.5 rounded-lg text-slate-500 dark:text-slate-400 font-medium text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
+                <i class="fa-solid fa-chart-line"></i> Analytics
+              </div>
+              <div class="p-2.5 rounded-lg text-slate-500 dark:text-slate-400 font-medium text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
+                <i class="fa-solid fa-list-check"></i> Task List
+              </div>
+              <div class="p-2.5 rounded-lg text-slate-500 dark:text-slate-400 font-medium text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-dark-hover transition-colors">
+                <i class="fa-solid fa-user-clock"></i> Attendance
               </div>
             </div>
 
-            <!-- Dashboard UI inside browser -->
-            <div class="grid grid-cols-[220px_1fr] h-[400px] overflow-hidden">
-              <!-- Sidebar -->
-              <div class="bg-dark-900/80 border-r border-white/5 p-4 flex flex-col gap-1">
-                <div class="flex items-center gap-2 text-sm font-bold text-white mb-3 pb-3 border-b border-white/6">
-                  <i class="fa-solid fa-building text-brand-400"></i> Acme Corporation
+            <!-- Center Content Area -->
+            <div class="col-span-1 lg:col-span-6 space-y-4">
+              
+              <!-- Greeting Banner Card -->
+              <div class="bg-gradient-to-r from-brand-50 via-orange-50 to-amber-50 dark:from-dark-bg dark:via-dark-hover dark:to-dark-bg border border-brand-200 dark:border-dark-border rounded-2xl p-5 flex items-center justify-between">
+                <div class="space-y-1">
+                  <span class="text-xs font-mono text-slate-400">Monday, 15 July 2026</span>
+                  <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white">Hi, Saepul Rohman</h3>
+                  <p class="text-xs text-slate-600 dark:text-slate-400 max-w-xs leading-relaxed">
+                    You have 4 tasks to finish today. Your team has already completed <strong class="text-accent-green font-bold">85% tasks</strong> for today!
+                  </p>
                 </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-brand-600/20 border border-brand-600/20 text-brand-300 text-xs font-semibold">
-                  <i class="fa-solid fa-chart-pie w-3.5"></i> Dashboard
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-list-check w-3.5"></i> Projects & Tasks
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-user-clock w-3.5"></i> Attendance
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-calendar-xmark w-3.5"></i> Leave Manager
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-users w-3.5"></i> Departments
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-shield-halved w-3.5"></i> Roles & RBAC
-                </div>
-                <div class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-500 text-xs hover:text-slate-300 cursor-default">
-                  <i class="fa-solid fa-scroll w-3.5"></i> Audit Logs
+                <div class="w-16 h-16 rounded-2xl bg-brand-500/20 border border-brand-500/30 flex items-center justify-center text-brand-500 text-2xl font-bold flex-shrink-0">
+                  SR
                 </div>
               </div>
 
-              <!-- Main -->
-              <div class="p-5 bg-dark-800/50 overflow-hidden flex flex-col gap-4">
-                <!-- Metrics -->
-                <div class="grid grid-cols-4 gap-3">
-                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Projects</div>
-                    <div class="text-2xl font-black text-white font-display">13</div>
-                    <div class="text-[10px] text-brand-400 mt-0.5">↑ 10 active</div>
+              <!-- Activity Wave & Progress Row -->
+              <div class="grid grid-cols-2 gap-4">
+                
+                <!-- Activity Graph Box -->
+                <div class="bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-2xl p-4">
+                  <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Activity Wave</span>
+                    <span class="text-[10px] font-mono text-accent-green font-bold">+24 Tasks</span>
                   </div>
-                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Total Tasks</div>
-                    <div class="text-2xl font-black text-cyan-400 font-display">34</div>
-                    <div class="text-[10px] text-slate-500 mt-0.5">4 in progress</div>
+                  <div class="h-16 flex items-end justify-between gap-1 pt-2">
+                    <div class="w-full bg-brand-500/30 rounded-t h-[40%]"></div>
+                    <div class="w-full bg-brand-500/50 rounded-t h-[70%]"></div>
+                    <div class="w-full bg-brand-500/80 rounded-t h-[55%]"></div>
+                    <div class="w-full bg-brand-500 rounded-t h-[90%]"></div>
+                    <div class="w-full bg-accent-green rounded-t h-[100%]"></div>
+                    <div class="w-full bg-brand-500/60 rounded-t h-[65%]"></div>
+                    <div class="w-full bg-brand-500/40 rounded-t h-[45%]"></div>
                   </div>
-                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Completed</div>
-                    <div class="text-2xl font-black text-brand-400 font-display">19</div>
-                    <div class="text-[10px] text-brand-400 mt-0.5">86% completion</div>
-                  </div>
-                  <div class="bg-white/[0.03] border border-white/6 rounded-xl p-3">
-                    <div class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Upcoming</div>
-                    <div class="text-2xl font-black text-amber-400 font-display">11</div>
-                    <div class="text-[10px] text-amber-400 mt-0.5">5 overdue</div>
+                  <div class="flex justify-between text-[9px] font-mono text-slate-400 mt-1">
+                    <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                   </div>
                 </div>
 
-                <!-- Chart + Tasks row -->
-                <div class="grid grid-cols-[1.5fr_1fr] gap-3 flex-1 overflow-hidden">
-                  <!-- Chart panel -->
-                  <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4 overflow-hidden">
-                    <div class="flex items-center justify-between mb-3">
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Project Task Distribution</span>
-                      <span class="flex items-center gap-1 text-[10px] text-brand-400 font-bold"><span class="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse"></span>Live</span>
+                <!-- Progress Circle & Metrics Box -->
+                <div class="bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-2xl p-4 flex flex-col justify-between">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Sprint Progress</span>
+                    <span class="text-[10px] font-mono text-brand-500 font-bold">20+ Projects</span>
+                  </div>
+                  <div class="flex items-center justify-around my-2">
+                    <div class="relative w-14 h-14 rounded-full border-4 border-accent-green flex items-center justify-center font-display font-black text-xs text-slate-800 dark:text-white">
+                      60%
                     </div>
-                    <div class="flex items-end gap-2 h-20">
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:55%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:70%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:45%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:80%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:62%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-800 to-brand-600/20 rounded-t border border-brand-700/30" style="height:100%"></div>
-                      <div class="flex-1 bg-gradient-to-t from-brand-700 to-brand-500/40 rounded-t border border-brand-600/30" style="height:74%"></div>
-                    </div>
-                    <div class="flex justify-between mt-1">
-                      <span class="text-[9px] text-slate-600">Data Ana...</span>
-                      <span class="text-[9px] text-slate-600">Hospital</span>
-                      <span class="text-[9px] text-slate-600">Real-Time</span>
-                      <span class="text-[9px] text-slate-600">Task M...</span>
+                    <div class="relative w-12 h-12 rounded-full border-4 border-brand-500 flex items-center justify-center font-display font-bold text-[11px] text-slate-600 dark:text-slate-300">
+                      30%
                     </div>
                   </div>
-
-                  <!-- Tasks panel -->
-                  <div class="bg-white/[0.02] border border-white/5 rounded-xl p-4 overflow-hidden">
-                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Recent Tasks</div>
-                    <div class="flex flex-col gap-2">
-                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
-                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0"></span>
-                        <span class="flex-1 truncate">Q3 Security Audit</span>
-                        <span class="px-2 py-0.5 rounded-md bg-brand-600/20 text-brand-300 font-bold text-[10px]">Done</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
-                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
-                        <span class="flex-1 truncate">Onboarding Flow</span>
-                        <span class="px-2 py-0.5 rounded-md bg-indigo-600/20 text-indigo-300 font-bold text-[10px]">Active</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-[11px] text-slate-400 pb-2 border-b border-white/4">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0"></span>
-                        <span class="flex-1 truncate">Design System v2</span>
-                        <span class="px-2 py-0.5 rounded-md bg-amber-600/20 text-amber-300 font-bold text-[10px]">Todo</span>
-                      </div>
-                      <div class="flex items-center gap-2 text-[11px] text-slate-400">
-                        <span class="w-1.5 h-1.5 rounded-full bg-brand-400 flex-shrink-0"></span>
-                        <span class="flex-1 truncate">API Docs v2.1</span>
-                        <span class="px-2 py-0.5 rounded-md bg-brand-600/20 text-brand-300 font-bold text-[10px]">Done</span>
-                      </div>
-                    </div>
+                  <div class="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 border-t border-light-border dark:border-dark-border pt-2">
+                    <span>50+ Client Tasks</span>
+                    <span class="text-accent-green font-bold">4:30:20 Tracked</span>
                   </div>
                 </div>
+
               </div>
+
             </div>
+
+            <!-- Right Profile & Ongoing Column -->
+            <div class="col-span-1 lg:col-span-3 space-y-4">
+              
+              <!-- Profile Card -->
+              <div class="bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-2xl p-4 text-center">
+                <div class="text-xs font-bold text-slate-700 dark:text-slate-200 mb-2 flex justify-between items-center">
+                  <span>My Profile</span>
+                  <span class="text-[10px] text-accent-green font-mono">75% Complete</span>
+                </div>
+                <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-500 to-amber-400 mx-auto mb-2 border-2 border-white dark:border-dark-card shadow flex items-center justify-center text-white font-bold">
+                  SR
+                </div>
+                <h4 class="font-bold text-xs text-slate-800 dark:text-white">Saepul Rohman</h4>
+                <p class="text-[10px] text-slate-400 mb-3">UI/UX Lead @ TaskFlow</p>
+                <div class="grid grid-cols-2 gap-2 border-t border-light-border dark:border-dark-border pt-2.5 text-center">
+                  <div>
+                    <div class="font-bold text-xs text-brand-500">15</div>
+                    <div class="text-[9px] text-slate-400 uppercase">Achievements</div>
+                  </div>
+                  <div>
+                    <div class="font-bold text-xs text-accent-green">28</div>
+                    <div class="text-[9px] text-slate-400 uppercase">Active Tasks</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ongoing Tasks List -->
+              <div class="bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-slate-700 dark:text-slate-200">Ongoing Task</span>
+                  <a href="#" class="text-[10px] text-brand-500 hover:underline">View All</a>
+                </div>
+                <div class="space-y-2.5">
+                  <div class="flex items-center gap-2.5 bg-white dark:bg-dark-card p-2 rounded-xl border border-light-border dark:border-dark-border shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-blue-500/20 text-blue-500 flex items-center justify-center text-[10px] font-bold">JR</div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-[11px] font-semibold text-slate-800 dark:text-white truncate">Call with Jonathan Ruslan</div>
+                      <div class="text-[9px] text-slate-400">Jan 20, 2026 · 9 AM - 11 AM</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2.5 bg-white dark:bg-dark-card p-2 rounded-xl border border-light-border dark:border-dark-border shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-purple-500/20 text-purple-500 flex items-center justify-center text-[10px] font-bold">VE</div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-[11px] font-semibold text-slate-800 dark:text-white truncate">Meet with Vlad Ermakov</div>
+                      <div class="text-[9px] text-slate-400">Jan 21, 2026 · 1 PM - 3 PM</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ==================== FLOATING REFERENCE CARDS (SATELLITES) ==================== -->
+        
+        <!-- Left Top Floating Card: Landing Page Tasks -->
+        <div class="hidden sm:flex absolute -top-6 -left-12 lg:-left-24 z-20 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-3.5 shadow-floating dark:shadow-floating-dark items-center gap-3 animate-float-slow">
+          <div class="w-10 h-10 rounded-xl bg-green-500/15 text-accent-green flex items-center justify-center text-lg">
+            <i class="fa-solid fa-square-check"></i>
+          </div>
+          <div>
+            <div class="font-bold text-xs text-slate-800 dark:text-white">Landing Page</div>
+            <div class="text-[11px] text-slate-400">10 tasks completed</div>
+          </div>
+        </div>
+
+        <!-- Left Bottom Floating Card: Workspace Selector -->
+        <div class="hidden md:flex absolute -bottom-6 -left-8 lg:-left-16 z-20 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-3.5 shadow-floating dark:shadow-floating-dark items-center gap-3 animate-float-medium">
+          <div class="w-9 h-9 rounded-full bg-brand-500 text-white font-bold flex items-center justify-center text-xs">
+            SR
+          </div>
+          <div>
+            <div class="font-bold text-xs text-slate-800 dark:text-white flex items-center gap-1.5">
+              <span>acme-corp.db</span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+            </div>
+            <div class="text-[10px] text-slate-400">Saepul Rohman · Tenant Admin</div>
+          </div>
+        </div>
+
+        <!-- Right Top Floating Card: Profile Complete -->
+        <div class="hidden sm:flex absolute -top-4 -right-10 lg:-right-20 z-20 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-3.5 shadow-floating dark:shadow-floating-dark items-center gap-3 animate-float-fast">
+          <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-500 to-amber-400 text-white font-bold flex items-center justify-center text-xs shadow">
+            SR
+          </div>
+          <div>
+            <div class="font-bold text-xs text-slate-800 dark:text-white">My Profile</div>
+            <div class="text-[10px] text-accent-green font-bold">75% Completed your profile</div>
+          </div>
+        </div>
+
+        <!-- Right Middle Floating Card: Invitation Card -->
+        <div class="hidden lg:flex absolute top-1/3 -right-24 z-20 bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-floating dark:shadow-floating-dark text-center animate-float-slow">
+          <div class="w-10 h-10 rounded-2xl bg-green-500/15 text-accent-green flex items-center justify-center text-base mx-auto mb-2">
+            <i class="fa-regular fa-envelope"></i>
+          </div>
+          <div class="font-bold text-xs text-slate-800 dark:text-white">Invitation</div>
+          <div class="text-[11px] text-accent-green font-semibold mt-0.5">You have 6 invitations</div>
+        </div>
+
+      </div>
+
+      <!-- ==================== 3 SUB-HERO PILL HIGHLIGHTS ==================== -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl mx-auto">
+        
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3 text-left">
+          <div class="w-11 h-11 rounded-xl bg-orange-500/15 text-brand-500 flex items-center justify-center text-lg flex-shrink-0">
+            <i class="fa-solid fa-users-viewfinder"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Task Collaboration</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Work seamlessly with your team in real time.</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3 text-left">
+          <div class="w-11 h-11 rounded-xl bg-green-500/15 text-accent-green flex items-center justify-center text-lg flex-shrink-0">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Task Progress</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Track milestones and completion rates automatically.</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3 text-left">
+          <div class="w-11 h-11 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center text-lg flex-shrink-0">
+            <i class="fa-solid fa-bolt"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Real-Time Analytics</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Instant Socket.IO synchronized velocity metrics.</p>
           </div>
         </div>
 
       </div>
+
     </section>
 
-    <!-- ==================== FEATURES ==================== -->
-    <section class="py-28" id="features">
-      <div class="max-w-7xl mx-auto px-6">
+    <!-- ==================== AUTOMATE COMPLEX WORKFLOW ==================== -->
+    <section class="py-24 px-6 max-w-7xl mx-auto text-center border-t border-light-border dark:border-dark-border" id="features">
+      
+      <div class="max-w-3xl mx-auto mb-16">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-4">
+          Automate Complex Workflow
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+          Our cloud multi-tenant architecture enables you to automate repetitive tasks, synchronize team boards, and enforce role security.
+        </p>
+      </div>
 
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
-            <i class="fa-solid fa-sparkles"></i> Core Capabilities
+      <!-- 3 Horizontal Feature Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto mb-20">
+        
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6 shadow-soft dark:shadow-soft-dark hover:-translate-y-1 transition-all text-left flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-brand-500/15 text-brand-500 flex items-center justify-center text-xl mb-5">
+              <i class="fa-solid fa-bolt-lightning"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Automatically Assign Tasks</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4">
+              Distribute sprint tickets instantly based on developer bandwidth and department specialization.
+            </p>
           </div>
-          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
-            Everything Your Enterprise Needs.<br/><span class="text-gradient">Nothing You Don't.</span>
-          </h2>
-          <p class="text-slate-400 text-lg max-w-xl mx-auto">Complete HR & task orchestration with dedicated per-tenant infrastructure and real-time sync built in from day one.</p>
+          <div class="text-xs font-semibold text-brand-500 flex items-center gap-1.5">
+            <span>Learn about automation</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6 shadow-soft dark:shadow-soft-dark hover:-translate-y-1 transition-all text-left flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-green-500/15 text-accent-green flex items-center justify-center text-xl mb-5">
+              <i class="fa-solid fa-database"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Dedicated Tenant DBs</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4">
+              Every workspace gets an isolated 21-table MySQL database pool (`tenant_yourcompany`) with zero shared row bleed.
+            </p>
+          </div>
+          <div class="text-xs font-semibold text-accent-green flex items-center gap-1.5">
+            <span>100% data isolation</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
 
-          <!-- Feature cards -->
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-brand-600/15 flex items-center justify-center text-brand-400 text-2xl mb-6 border border-brand-600/20 group-hover:glow-green-sm transition-all">
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-6 shadow-soft dark:shadow-soft-dark hover:-translate-y-1 transition-all text-left flex flex-col justify-between">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center text-xl mb-5">
+              <i class="fa-solid fa-user-clock"></i>
+            </div>
+            <h3 class="font-display font-bold text-lg text-slate-900 dark:text-white mb-2">Real-Time Attendance</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4">
+              Automate daily check-in/out stamps with office GPS geofencing and IP validation directly in the HR ledger.
+            </p>
+          </div>
+          <div class="text-xs font-semibold text-blue-500 flex items-center gap-1.5">
+            <span>Explore HR suite</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== WHY CHOOSE TASKFLOW (6 GRID PILLS) ==================== -->
+      <div class="max-w-3xl mx-auto mb-12">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-3">
+          Why Choose TaskFlow.io
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-base">
+          Everything your modern enterprise needs to scale sustainably under one roof.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl mx-auto">
+        
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-orange-500/15 text-brand-500 flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Team Task Collaboration</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Socket.IO real-time Kanban sync</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-green-500/15 text-accent-green flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-folder-tree"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">21 Isolated Schemas</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Users, tasks, roles, & attendance</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Granular RBAC Matrix</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Super Admin, Manager, Employee</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">TOTP 2FA Security</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Google & Microsoft Auth compatible</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-memory"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">LRU Pool Eviction</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Auto recovery of idle DB pools</p>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft dark:shadow-soft-dark flex items-center gap-3.5 text-left">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center text-base flex-shrink-0">
+            <i class="fa-solid fa-scroll"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900 dark:text-white">Audit Log Ledgers</h4>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Immutable compliance timestamps</p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== INDUSTRY TAILORED SOLUTIONS (4 CARDS) ==================== -->
+    <section class="py-24 px-6 max-w-7xl mx-auto text-center border-t border-light-border dark:border-dark-border" id="solutions">
+      
+      <div class="max-w-3xl mx-auto mb-16">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-4">
+          Industry Tailored Solutions
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-base">
+          Discover how organizations across engineering, healthcare, and finance leverage our dedicated database pools.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-brand-500 transition-all">
+          <div>
+            <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
+              <img src="assets/showcase_projects.png" alt="Engineering Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            </div>
+            <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Remote Dev Teams</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Synchronize sprint boards across multiple time zones with real-time Socket.IO and GitHub commit linking.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-semibold text-brand-500">
+            <span>Explore Engineering</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-accent-green transition-all">
+          <div>
+            <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
+              <img src="assets/showcase_attendance.png" alt="Healthcare Teams" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            </div>
+            <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Healthcare Operations</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Enforce strict patient and staff privacy with dedicated per-tenant database isolation and SOC 2 compliance.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-semibold text-accent-green">
+            <span>Healthcare Privacy</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-blue-500 transition-all">
+          <div>
+            <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
+              <img src="assets/showcase_dashboard.png" alt="Financial Enterprises" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            </div>
+            <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Financial Enterprises</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Cryptographic audit logs, role hierarchies, and automated timesheet ledgers built for audit validation.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-semibold text-blue-500">
+            <span>Financial Security</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-5 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between group hover:border-purple-500 transition-all">
+          <div>
+            <div class="w-full h-36 rounded-2xl bg-slate-100 dark:bg-dark-bg overflow-hidden mb-4 border border-light-border dark:border-dark-border relative">
+              <img src="assets/showcase_employees.png" alt="Creative Agencies" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            </div>
+            <h3 class="font-display font-bold text-base text-slate-900 dark:text-white mb-1.5">Creative Agencies</h3>
+            <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
+              Track client deliverables, employee working hours, and billing rates dynamically from one clean dashboard.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-semibold text-purple-500">
+            <span>Agency Workflows</span> <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== INTEGRATION PARTNERS & SECURITY ASSURANCE ==================== -->
+    <section class="py-20 px-6 max-w-7xl mx-auto text-center border-t border-light-border dark:border-dark-border">
+      
+      <div class="mb-10">
+        <h3 class="font-display font-bold text-sm text-slate-400 uppercase tracking-widest mb-6">Integration Partners</h3>
+        <div class="flex flex-wrap items-center justify-center gap-10 sm:gap-16 font-display font-extrabold text-xl sm:text-2xl text-slate-400 dark:text-slate-500">
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-brands fa-slack text-purple-500"></i> Slack</span>
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-brands fa-google text-red-500"></i> Workspace</span>
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-solid fa-n text-slate-700 dark:text-slate-300"></i> Notion</span>
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-brands fa-jira text-blue-500"></i> Jira</span>
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-brands fa-trello text-cyan-500"></i> Trello</span>
+          <span class="flex items-center gap-2 hover:text-brand-500 transition-colors"><i class="fa-solid fa-bolt text-amber-500"></i> Zapier</span>
+        </div>
+      </div>
+
+      <div class="pt-12 border-t border-light-border dark:border-dark-border max-w-4xl mx-auto">
+        <h3 class="font-display font-bold text-sm text-slate-400 uppercase tracking-widest mb-6">Security & Assurance</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          
+          <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-brand-500/15 text-brand-500 flex items-center justify-center text-lg flex-shrink-0 font-bold">
+              <i class="fa-solid fa-shield-check"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-slate-900 dark:text-white">SOC 2 Type II</div>
+              <div class="text-[10px] text-slate-400">Certified Audited</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-green-500/15 text-accent-green flex items-center justify-center text-lg flex-shrink-0 font-bold">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-slate-900 dark:text-white">End-to-End Encrypted</div>
+              <div class="text-[10px] text-slate-400">TLS 1.3 & Bcrypt</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/15 text-blue-500 flex items-center justify-center text-lg flex-shrink-0 font-bold">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Automated Backups</div>
+              <div class="text-[10px] text-slate-400">Daily SQL Dumps</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl p-4 shadow-soft flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-500 flex items-center justify-center text-lg flex-shrink-0 font-bold">
               <i class="fa-solid fa-server"></i>
             </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">100% Database Isolation</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Every workspace gets its own dedicated MySQL database — 21 tables, zero data bleed, provable physical isolation from day one.</p>
-          </div>
-
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-cyan-600/15 flex items-center justify-center text-cyan-400 text-2xl mb-6 border border-cyan-600/20">
-              <i class="fa-solid fa-bolt"></i>
+            <div class="text-left">
+              <div class="font-bold text-xs text-slate-900 dark:text-white">99.99% Uptime</div>
+              <div class="text-[10px] text-slate-400">LRU Pool Routing</div>
             </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">Real-Time Socket.IO</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Kanban boards, attendance punches, and task updates propagate instantly to all connected devices. True live collaboration, zero polling.</p>
-          </div>
-
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-violet-600/15 flex items-center justify-center text-violet-400 text-2xl mb-6 border border-violet-600/20">
-              <i class="fa-solid fa-user-shield"></i>
-            </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">Granular RBAC Engine</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Build custom role hierarchies from scratch. Control permissions at project, department, and module level for Super Admins through Employees.</p>
-          </div>
-
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-amber-600/15 flex items-center justify-center text-amber-400 text-2xl mb-6 border border-amber-600/20">
-              <i class="fa-solid fa-clock"></i>
-            </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">Attendance & Leave Suite</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Full HR lifecycle: check-in/out stamps, leave balance ledgers, manager approval flows, and customizable company holiday calendars.</p>
-          </div>
-
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-rose-600/15 flex items-center justify-center text-rose-400 text-2xl mb-6 border border-rose-600/20">
-              <i class="fa-solid fa-key"></i>
-            </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">TOTP 2-Factor Auth</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Enforce TOTP multi-factor authentication compatible with Microsoft Authenticator and Google Authenticator across all user accounts.</p>
-          </div>
-
-          <div class="card-hover card-stripe relative bg-dark-800/60 border border-white/6 rounded-2xl p-8 overflow-hidden group">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-600/15 flex items-center justify-center text-emerald-400 text-2xl mb-6 border border-emerald-600/20">
-              <i class="fa-solid fa-scroll"></i>
-            </div>
-            <h3 class="font-display font-bold text-xl text-white mb-3">Cryptographic Audit Logs</h3>
-            <p class="text-slate-400 text-sm leading-relaxed">Every login, task update, and permission change is immutably logged inside each tenant's private audit ledger for full compliance.</p>
           </div>
 
         </div>
       </div>
+
     </section>
 
-    <!-- ==================== APP SHOWCASE ==================== -->
-    <section class="py-24 relative overflow-hidden" id="showcase">
-      <!-- Subtle bg -->
-      <div class="absolute inset-0 bg-gradient-to-b from-transparent via-brand-900/5 to-transparent pointer-events-none"></div>
-
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
-            <i class="fa-solid fa-display"></i> App Screenshots
-          </div>
-          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
-            Built for How <span class="text-gradient">Real Teams Work</span>
-          </h2>
-          <p class="text-slate-400 text-lg max-w-xl mx-auto">See TaskFlow's actual interface — clean, powerful, and purpose-built for enterprise operations.</p>
-        </div>
-
-        <!-- Screenshot 1: Dashboard -->
-        <div class="mb-10">
-          <div class="flex items-center gap-3 mb-5">
-            <div class="w-8 h-8 rounded-lg bg-brand-600/20 border border-brand-600/30 flex items-center justify-center text-brand-400 text-sm">
-              <i class="fa-solid fa-chart-pie"></i>
-            </div>
-            <div>
-              <div class="font-display font-bold text-white text-lg">Executive Dashboard</div>
-              <div class="text-slate-500 text-sm">Project metrics, task velocity, real-time activity & live clock</div>
-            </div>
-          </div>
-          <div class="relative rounded-2xl overflow-hidden border border-brand-600/15 shadow-[0_30px_80px_rgba(0,0,0,0.6)] showcase-frame p-2">
-            <!-- Browser chrome -->
-            <div class="flex items-center gap-2 px-4 py-2.5 bg-dark-800/80 rounded-xl mb-2 border border-white/5">
-              <div class="flex gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
-              </div>
-              <span class="text-[11px] text-slate-500 ml-2">
-                <i class="fa-solid fa-lock text-brand-500 mr-1"></i>
-                app.taskflow.io/workspace/acme-corp/dashboard
-              </span>
-            </div>
-            <img src="assets/showcase_dashboard.png" alt="TaskFlow Dashboard — Project metrics, task distribution charts, and real-time activity" class="w-full rounded-xl object-cover" loading="lazy" />
-          </div>
-        </div>
-
-        <!-- Screenshot 2: Employee Directory -->
-        <div>
-          <div class="flex items-center gap-3 mb-5">
-            <div class="w-8 h-8 rounded-lg bg-cyan-600/20 border border-cyan-600/30 flex items-center justify-center text-cyan-400 text-sm">
-              <i class="fa-solid fa-users"></i>
-            </div>
-            <div>
-              <div class="font-display font-bold text-white text-lg">Employee Directory</div>
-              <div class="text-slate-500 text-sm">Full HR roster with roles, departments, teams, attendance status & admin actions</div>
-            </div>
-          </div>
-          <div class="relative rounded-2xl overflow-hidden border border-cyan-600/15 shadow-[0_30px_80px_rgba(0,0,0,0.6)] bg-gradient-to-br from-cyan-600/5 to-transparent p-2">
-            <div class="flex items-center gap-2 px-4 py-2.5 bg-dark-800/80 rounded-xl mb-2 border border-white/5">
-              <div class="flex gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
-              </div>
-              <span class="text-[11px] text-slate-500 ml-2">
-                <i class="fa-solid fa-lock text-brand-500 mr-1"></i>
-                app.taskflow.io/workspace/acme-corp/users
-              </span>
-            </div>
-            <img src="assets/showcase_employees.png" alt="TaskFlow Employee Directory — HR management with roles, departments, and team assignments" class="w-full rounded-xl object-cover" loading="lazy" />
-          </div>
-        </div>
-
+    <!-- ==================== PRICING TIERS (ENCAN REFERENCE STYLE) ==================== -->
+    <section class="py-24 px-6 max-w-7xl mx-auto text-center border-t border-light-border dark:border-dark-border" id="pricing">
+      
+      <div class="max-w-3xl mx-auto mb-16">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-4">
+          Pricing Tiers
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-base">
+          Every plan guarantees a dedicated, isolated MySQL database instance with all 21 core tables.
+        </p>
       </div>
-    </section>
 
-    <!-- ==================== ARCHITECTURE ==================== -->
-    <section class="py-28" id="architecture">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <!-- Billing Toggle -->
+      <div class="flex items-center justify-center gap-4 mb-16">
+        <span class="text-sm font-semibold text-slate-400" id="label-monthly">Monthly</span>
+        <button onclick="toggleBilling()" id="billingToggle" class="relative w-14 h-7 rounded-full bg-brand-500 transition-all duration-300">
+          <span id="toggleThumb" class="absolute top-[3px] left-[27px] w-[22px] h-[22px] bg-white rounded-full shadow transition-all duration-300"></span>
+        </button>
+        <span class="text-sm font-semibold text-slate-900 dark:text-white" id="label-annual">Annual</span>
+        <span class="px-3 py-1 rounded-full bg-brand-500/15 text-brand-500 text-xs font-mono font-bold uppercase animate-pulse">Save 20%</span>
+      </div>
 
-          <!-- Left: content -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
+        
+        <!-- Free / Starter Tier -->
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between">
           <div>
-            <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-5">
-              <i class="fa-solid fa-shield-cat"></i> Isolation Architecture
+            <div class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-2">Free</div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mb-6 min-h-[36px]">Ideal for small startups testing dedicated isolation.</p>
+            <div class="flex items-baseline gap-1 mb-6">
+              <span class="text-3xl font-bold text-slate-900 dark:text-white">$</span>
+              <span class="font-display font-extrabold text-5xl text-slate-900 dark:text-white tracking-tight" id="price-starter">0</span>
+              <span class="text-xs text-slate-400 font-mono">/month</span>
             </div>
-            <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5 leading-tight">
-              Why Database-Per-Tenant is the Only Acceptable Standard
-            </h2>
-            <p class="text-slate-400 mb-8 leading-relaxed">
-              In shared-table SaaS, a single missing
-              <code class="bg-brand-600/15 text-brand-300 px-2 py-0.5 rounded-md text-sm font-mono">WHERE tenant_id = X</code>
-              clause can expose your entire company's HR and financial data to a competitor. We eliminated this risk entirely.
-            </p>
-
-            <ul class="space-y-5">
-              <li class="flex items-start gap-4">
-                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
-                  <i class="fa-solid fa-check"></i>
-                </div>
-                <div class="text-slate-300 text-sm leading-relaxed">
-                  <strong class="text-white">AsyncLocalStorage Routing</strong> — Node.js transparently switches MySQL pools per request lifecycle without touching a single line of business logic.
-                </div>
-              </li>
-              <li class="flex items-start gap-4">
-                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
-                  <i class="fa-solid fa-check"></i>
-                </div>
-                <div class="text-slate-300 text-sm leading-relaxed">
-                  <strong class="text-white">Sub-Second Provisioning</strong> — All 21 tables + Super Admin seeded in under 800ms right at checkout completion.
-                </div>
-              </li>
-              <li class="flex items-start gap-4">
-                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
-                  <i class="fa-solid fa-check"></i>
-                </div>
-                <div class="text-slate-300 text-sm leading-relaxed">
-                  <strong class="text-white">LRU Pool Cleanup</strong> — TenantConnectionManager evicts idle connection pools after 30 minutes to keep production memory lean.
-                </div>
-              </li>
-              <li class="flex items-start gap-4">
-                <div class="w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/30 flex items-center justify-center text-brand-400 flex-shrink-0 mt-0.5 text-xs">
-                  <i class="fa-solid fa-check"></i>
-                </div>
-                <div class="text-slate-300 text-sm leading-relaxed">
-                  <strong class="text-white">JWT Tenant Scoping</strong> — Tokens embed <code class="bg-dark-700 text-brand-300 px-1.5 py-0.5 rounded text-xs font-mono">tenantDbName</code> so every API call is cryptographically bound to the correct database.
-                </div>
-              </li>
+            <ul class="space-y-3.5 mb-8 text-xs text-slate-600 dark:text-slate-300">
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i><strong>Dedicated MySQL DB Pool</strong></li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Up to 10 Team Members</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-400 w-4"></i>Standard Kanban Boards</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-400 w-4"></i>Basic Attendance Stamps</li>
             </ul>
           </div>
-
-          <!-- Right: diagram -->
-          <div class="bg-dark-800/70 border border-white/8 rounded-3xl p-8 shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
-            <div class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider mb-6">Control Plane vs. Isolated Tenant Planes</div>
-
-            <!-- Control plane -->
-            <div class="bg-brand-600/10 border border-brand-600/25 rounded-2xl p-5 text-center mb-3">
-              <div class="flex items-center justify-center gap-2 text-brand-300 font-bold text-sm mb-1">
-                <i class="fa-solid fa-tower-control"></i> saas_platform_db
-              </div>
-              <div class="text-slate-500 text-xs">tenants · subscription_plans · tenant_subscriptions</div>
-            </div>
-
-            <!-- Arrow -->
-            <div class="text-center text-cyan-400 text-xl my-4"><i class="fa-solid fa-arrows-split-up-and-left"></i></div>
-
-            <!-- Tenant DBs -->
-            <div class="grid grid-cols-3 gap-3 mb-6">
-              <div class="bg-brand-600/8 border border-brand-600/20 rounded-xl p-4 text-center">
-                <div class="text-brand-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Acme DB</div>
-                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_acme_corp<br/>21 tables · Full RBAC</div>
-              </div>
-              <div class="bg-violet-600/8 border border-violet-600/20 rounded-xl p-4 text-center">
-                <div class="text-violet-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Globex DB</div>
-                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_globex_inc<br/>21 tables · Full RBAC</div>
-              </div>
-              <div class="bg-cyan-600/8 border border-cyan-600/20 rounded-xl p-4 text-center">
-                <div class="text-cyan-300 font-bold text-xs mb-1"><i class="fa-solid fa-database mr-1"></i>Stark DB</div>
-                <div class="text-slate-600 text-[10px] leading-relaxed">tenant_stark_ind<br/>21 tables · Full RBAC</div>
-              </div>
-            </div>
-
-            <!-- Badges -->
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
-                <i class="fa-solid fa-circle-check text-brand-400"></i> Zero Cross-Tenant Bleed
-              </span>
-              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
-                <i class="fa-solid fa-circle-check text-brand-400"></i> AsyncLocalStorage
-              </span>
-              <span class="flex items-center gap-1.5 px-3 py-1.5 bg-white/4 border border-white/8 rounded-full text-xs text-slate-400">
-                <i class="fa-solid fa-circle-check text-brand-400"></i> JWT Scoped Tokens
-              </span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== PRICING ==================== -->
-    <section class="py-28" id="pricing">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
-            <i class="fa-solid fa-tags"></i> Pricing
-          </div>
-          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5">
-            Transparent. Scalable.<br/><span class="text-gradient">No Surprises.</span>
-          </h2>
-          <p class="text-slate-400 text-lg max-w-lg mx-auto">Every plan includes a dedicated isolated database. Choose the scale that fits your team.</p>
-        </div>
-
-        <!-- Toggle -->
-        <div class="flex items-center justify-center gap-4 mb-12">
-          <span class="text-sm font-semibold text-slate-400" id="lbl-monthly">Monthly</span>
-          <button onclick="toggleBilling()" id="billingToggle" class="relative w-14 h-7 rounded-full bg-brand-600/40 border border-brand-600/40 transition-all duration-300">
-            <span id="toggleThumb" class="absolute top-[3px] left-[27px] w-[22px] h-[22px] bg-white rounded-full shadow-md transition-all duration-300"></span>
+          <button onclick="openCheckoutModal(1, 'Free Starter Tier')" class="w-full py-3.5 rounded-xl font-bold text-sm bg-slate-100 dark:bg-dark-bg hover:bg-slate-200 dark:hover:bg-dark-hover text-slate-800 dark:text-white transition-all">
+            Start Free
           </button>
-          <span class="text-sm font-semibold text-white" id="lbl-annual">Annual</span>
-          <span class="px-2.5 py-1 bg-brand-600/15 border border-brand-600/25 rounded-full text-brand-300 text-xs font-bold uppercase tracking-wide">Save 20%</span>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-
-          <!-- Starter -->
-          <div class="bg-dark-800/60 border border-white/8 rounded-3xl p-8 card-hover">
-            <div class="text-sm font-black text-slate-500 uppercase tracking-widest mb-2">Starter</div>
-            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">For small teams getting started with structured task management.</div>
-            <div class="flex items-baseline gap-1 mb-1">
-              <span class="text-slate-400 text-xl font-bold">$</span>
-              <span class="font-display font-black text-5xl text-white tracking-tight" id="ps">24</span>
-              <span class="text-slate-500 text-sm self-center">/mo</span>
+        <!-- Pro Tier (Highlighted Encan style) -->
+        <div class="bg-white dark:bg-dark-card border-2 border-brand-500 rounded-3xl p-8 shadow-2xl text-left flex flex-col justify-between relative transform scale-105">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-500 text-white font-extrabold text-xs uppercase px-4 py-1 rounded-full shadow">
+            Most Popular
+          </div>
+          <div>
+            <div class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-2">Pro</div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mb-6 min-h-[36px]">Full HR attendance suite, 2FA, and Socket.IO sync.</p>
+            <div class="flex items-baseline gap-1 mb-6">
+              <span class="text-3xl font-bold text-brand-500">$</span>
+              <span class="font-display font-extrabold text-5xl text-slate-900 dark:text-white tracking-tight" id="price-pro">64</span>
+              <span class="text-xs text-slate-400 font-mono">/month</span>
             </div>
-            <div class="text-slate-600 text-xs mb-6" id="pn-s">Billed $288/year · save $60</div>
-            <div class="border-t border-white/6 mb-6"></div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Up to 25 Active Employees</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Unlimited Projects & Tasks</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Standard RBAC Roles</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Daily Database Backups</li>
+            <ul class="space-y-3.5 mb-8 text-xs text-slate-600 dark:text-slate-300">
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i><strong>Dedicated MySQL DB Pool</strong></li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Up to 150 Active Employees</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Full Attendance & Leave Suite</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>TOTP 2FA Authentication</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Socket.IO Live Synchronization</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Granular Custom RBAC Roles</li>
             </ul>
-            <button onclick="openCheckoutModal(1,'Starter')" class="w-full py-3 rounded-xl font-semibold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-all duration-200">
-              Get Started with Starter
-            </button>
+          </div>
+          <button onclick="openCheckoutModal(2, 'Professional Suite')" class="w-full py-4 rounded-xl font-bold text-sm bg-brand-500 hover:bg-brand-600 text-white transition-all shadow-orange-glow">
+            Get 14-Days Free
+          </button>
+        </div>
+
+        <!-- Enterprise Tier -->
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-8 shadow-soft dark:shadow-soft-dark text-left flex flex-col justify-between">
+          <div>
+            <div class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-2">Enterprise</div>
+            <p class="text-slate-500 dark:text-slate-400 text-xs mb-6 min-h-[36px]">Unlimited scale, audit logs, and dedicated SLA.</p>
+            <div class="flex items-baseline gap-1 mb-6">
+              <span class="text-3xl font-bold text-slate-900 dark:text-white">$</span>
+              <span class="font-display font-extrabold text-5xl text-slate-900 dark:text-white tracking-tight" id="price-enterprise">159</span>
+              <span class="text-xs text-slate-400 font-mono">/month</span>
+            </div>
+            <ul class="space-y-3.5 mb-8 text-xs text-slate-600 dark:text-slate-300">
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i><strong>Dedicated MySQL DB Pool</strong></li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Unlimited Team Members</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Cryptographic Audit Ledgers</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>99.99% Operational SLA</li>
+              <li class="flex items-center gap-3"><i class="fa-solid fa-check text-brand-500 w-4"></i>Dedicated Solutions Architect</li>
+            </ul>
+          </div>
+          <button onclick="openCheckoutModal(3, 'Enterprise Suite')" class="w-full py-3.5 rounded-xl font-bold text-sm bg-slate-100 dark:bg-dark-bg hover:bg-slate-200 dark:hover:bg-dark-hover text-slate-800 dark:text-white transition-all">
+            Contact Enterprise
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== WHAT OUR USERS SAY & FAQ ACCORDION ==================== -->
+    <section class="py-24 px-6 max-w-7xl mx-auto border-t border-light-border dark:border-dark-border" id="reviews">
+      
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-4">
+          What Our Users Say
+        </h2>
+        <p class="text-slate-600 dark:text-slate-400 text-base">
+          Read ratings and reviews from over 2,400+ remote engineers and HR leaders.
+        </p>
+      </div>
+
+      <!-- Testimonial Row -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto mb-24">
+        
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-soft dark:shadow-soft-dark text-left">
+          <div class="flex gap-1 text-amber-400 text-xs mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 text-xs leading-relaxed mb-6 italic">
+            "TaskFlow provisioned our dedicated 21-table MySQL database in 45 seconds. The Socket.IO Kanban sync and automated HR check-in verification saved our team over 15 hours every single week!"
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-brand-500 text-white font-bold flex items-center justify-center text-xs">SC</div>
+            <div>
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Sarah Chen</div>
+              <div class="text-[10px] text-slate-400">CTO @ Meridian Health Systems</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-soft dark:shadow-soft-dark text-left">
+          <div class="flex gap-1 text-amber-400 text-xs mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 text-xs leading-relaxed mb-6 italic">
+            "We migrated from Asana + BambooHR to TaskFlow's Pro plan. The granular RBAC permissions and 2FA authentication made our SOC 2 compliance audit painless. Best SaaS investment this year."
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-blue-500 text-white font-bold flex items-center justify-center text-xs">MT</div>
+            <div>
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Marcus Thompson</div>
+              <div class="text-[10px] text-slate-400">VP Engineering @ BuildFlow Inc</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl p-6 shadow-soft dark:shadow-soft-dark text-left">
+          <div class="flex gap-1 text-amber-400 text-xs mb-4">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p class="text-slate-600 dark:text-slate-300 text-xs leading-relaxed mb-6 italic">
+            "The physical database-per-tenant architecture (`tenant_slug.db`) gives us peace of mind that no shared row SQL bug could ever leak our client billing ledgers. Truly top-tier engineering."
+          </p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-purple-500 text-white font-bold flex items-center justify-center text-xs">AP</div>
+            <div>
+              <div class="font-bold text-xs text-slate-900 dark:text-white">Aisha Patel</div>
+              <div class="text-[10px] text-slate-400">Head of Security @ TrustVault</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FAQ Section -->
+      <div class="max-w-3xl mx-auto text-center" id="faq">
+        <h3 class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight mb-8">
+          Frequently Asked Questions
+        </h3>
+        
+        <div class="space-y-3.5 text-left">
+          
+          <div class="faq-item bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden cursor-pointer shadow-2xs" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-6 py-4.5">
+              <span class="font-bold text-sm text-slate-900 dark:text-white">How does the free trial work?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 dark:text-slate-300 text-xs transition-all">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-6 text-slate-500 dark:text-slate-400 text-xs leading-relaxed pb-0">
+              <div class="pb-5 border-t border-light-border dark:border-dark-border pt-3">
+                You get full access to our Professional Suite (`150 active employees`, `Socket.IO sync`, `HR attendance`, and `dedicated MySQL DB pool`) for 14 days without requiring any credit card up front.
+              </div>
+            </div>
           </div>
 
-          <!-- Professional (Popular) -->
-          <div class="pricing-popular relative bg-gradient-to-b from-dark-700 to-dark-800 border border-brand-600/40 rounded-3xl p-8 card-hover glow-green shadow-[0_0_60px_rgba(22,163,74,0.15)]">
-            <div class="absolute -top-px left-1/2 -translate-x-1/2 bg-gradient-to-r from-brand-600 to-brand-500 text-white text-xs font-black uppercase tracking-wider px-5 py-1.5 rounded-b-xl">
-              Most Popular
+          <div class="faq-item bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden cursor-pointer shadow-2xs" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-6 py-4.5">
+              <span class="font-bold text-sm text-slate-900 dark:text-white">Can I upgrade or downgrade my plan anytime?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 dark:text-slate-300 text-xs transition-all">
+                <i class="fa-solid fa-plus"></i>
+              </div>
             </div>
-            <div class="text-sm font-black text-brand-400 uppercase tracking-widest mb-2 mt-2">Professional</div>
-            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">Full HR suite, real-time sync, 2FA, and custom permission builder.</div>
-            <div class="flex items-baseline gap-1 mb-1">
-              <span class="text-brand-400 text-xl font-bold">$</span>
-              <span class="font-display font-black text-5xl text-white tracking-tight" id="pp">64</span>
-              <span class="text-slate-500 text-sm self-center">/mo</span>
+            <div class="faq-answer px-6 text-slate-500 dark:text-slate-400 text-xs leading-relaxed pb-0">
+              <div class="pb-5 border-t border-light-border dark:border-dark-border pt-3">
+                Yes! Because your data lives inside a standalone database schema, changing plans simply adjusts your employee seat limit (`25` → `150` → `Unlimited`) and activates advanced audit log tables instantly.
+              </div>
             </div>
-            <div class="text-slate-600 text-xs mb-6" id="pn-p">Billed $768/year · save $180</div>
-            <div class="border-t border-brand-600/20 mb-6"></div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Up to 150 Active Employees</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Complete Attendance & Leaves</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>TOTP 2FA (MS Authenticator)</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Real-time Socket.IO Sync</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Custom Roles & Permissions</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Priority Support (24h SLA)</li>
-            </ul>
-            <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative w-full py-3 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:from-brand-600 hover:to-brand-400 transition-all duration-200 glow-green-sm">
-              <i class="fa-solid fa-bolt mr-2"></i>Start Free Trial
-            </button>
           </div>
 
-          <!-- Enterprise -->
-          <div class="bg-dark-800/60 border border-white/8 rounded-3xl p-8 card-hover">
-            <div class="text-sm font-black text-slate-500 uppercase tracking-widest mb-2">Enterprise</div>
-            <div class="text-slate-400 text-sm mb-6 min-h-[48px]">Unlimited scale, compliance audit logs, and dedicated account manager.</div>
-            <div class="flex items-baseline gap-1 mb-1">
-              <span class="text-slate-400 text-xl font-bold">$</span>
-              <span class="font-display font-black text-5xl text-white tracking-tight" id="pe">159</span>
-              <span class="text-slate-500 text-sm self-center">/mo</span>
+          <div class="faq-item bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden cursor-pointer shadow-2xs" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-6 py-4.5">
+              <span class="font-bold text-sm text-slate-900 dark:text-white">Is my database isolated with Encap.io / TaskFlow?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 dark:text-slate-300 text-xs transition-all">
+                <i class="fa-solid fa-plus"></i>
+              </div>
             </div>
-            <div class="text-slate-600 text-xs mb-6" id="pn-e">Billed $1,908/year · save $480</div>
-            <div class="border-t border-white/6 mb-6"></div>
-            <ul class="space-y-3 mb-8">
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Isolated MySQL DB</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Unlimited Active Employees</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Full Audit Ledger & Compliance</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>99.99% Uptime SLA</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Custom API & Webhooks</li>
-              <li class="flex items-center gap-3 text-slate-300 text-sm"><i class="fa-solid fa-check text-brand-400 w-4"></i>Dedicated Account Manager</li>
-            </ul>
-            <button onclick="openCheckoutModal(3,'Enterprise')" class="w-full py-3 rounded-xl font-semibold text-sm text-white border border-white/15 bg-white/5 hover:bg-white/10 transition-all duration-200">
-              Contact Sales
-            </button>
+            <div class="faq-answer px-6 text-slate-500 dark:text-slate-400 text-xs leading-relaxed pb-0">
+              <div class="pb-5 border-t border-light-border dark:border-dark-border pt-3">
+                100% yes. Unlike shared-table competitors where all customers sit in one table with `WHERE tenant_id = X`, TaskFlow automatically provisions a separate database (`tenant_acme_corp`) at checkout.
+              </div>
+            </div>
+          </div>
+
+          <div class="faq-item bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-2xl overflow-hidden cursor-pointer shadow-2xs" onclick="this.classList.toggle('faq-open')">
+            <div class="flex items-center justify-between px-6 py-4.5">
+              <span class="font-bold text-sm text-slate-900 dark:text-white">Do you offer onboarding and support for enterprise teams?</span>
+              <div class="faq-icon w-7 h-7 rounded-full bg-slate-100 dark:bg-dark-bg flex items-center justify-center text-slate-500 dark:text-slate-300 text-xs transition-all">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+            </div>
+            <div class="faq-answer px-6 text-slate-500 dark:text-slate-400 text-xs leading-relaxed pb-0">
+              <div class="pb-5 border-t border-light-border dark:border-dark-border pt-3">
+                Yes, our Enterprise tier includes a dedicated Solutions Architect to assist with migrating legacy Asana/Jira task histories, configuring custom RBAC role matrices, and setting up TOTP 2FA across your organization.
+              </div>
+            </div>
           </div>
 
         </div>
       </div>
+
     </section>
 
-    <!-- ==================== TESTIMONIALS ==================== -->
-    <section class="py-24">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-14">
-          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
-            <i class="fa-solid fa-heart"></i> Customer Stories
-          </div>
-          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight">
-            Trusted by Teams Who Can't <span class="text-gradient">Afford Downtime</span>
+    <!-- ==================== BOTTOM GREEN CTA BANNER (ENCAN REFERENCE STYLE) ==================== -->
+    <section class="pb-24 px-6 max-w-7xl mx-auto">
+      
+      <!-- Top Rated Badge -->
+      <div class="text-center mb-8">
+        <div class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Top Rated by Teams Like Yours</div>
+        <div class="flex items-center justify-center gap-2 text-sm font-bold text-slate-800 dark:text-white">
+          <span class="text-amber-400"><i class="fa-solid fa-star"></i> 4.9</span>
+          <span>Average Rating across 1,000+ team reviews</span>
+        </div>
+      </div>
+
+      <!-- Rounded Soft Green Banner Card (`rounded-3xl`) -->
+      <div class="bg-green-100 dark:bg-emerald-950/80 border border-green-200 dark:border-emerald-800 rounded-[32px] p-10 sm:p-14 text-center relative overflow-hidden shadow-xl">
+        
+        <!-- Decorative subtle pattern inside banner -->
+        <div class="absolute -top-16 -left-16 w-48 h-48 rounded-full bg-green-200/50 dark:bg-emerald-900/40 blur-2xl pointer-events-none"></div>
+        <div class="absolute -bottom-16 -right-16 w-48 h-48 rounded-full bg-brand-500/15 blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 max-w-xl mx-auto">
+          <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight mb-2">
+            Start Your Free Trial
           </h2>
+          <p class="text-slate-600 dark:text-emerald-200/80 text-sm mb-8">
+            14-day free trial. No credit card required.
+          </p>
+          <button onclick="openCheckoutModal(2, 'Professional Suite')" class="px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base transition-all shadow-orange-glow hover:-translate-y-0.5">
+            Start Your Free Trial
+          </button>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
-            <div class="flex gap-1 mb-5">
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"We evaluated ClickUp, Asana, and Jira. None offered true database isolation. TaskFlow was provisioned in 45 seconds and our compliance team was immediately satisfied."</p>
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold">S</div>
-              <div>
-                <div class="font-bold text-sm text-white">Sarah Chen</div>
-                <div class="text-xs text-slate-500">CTO @ Meridian Health Systems</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
-            <div class="flex gap-1 mb-5">
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"The real-time Socket.IO sync means our 80-person remote team sees task updates instantly. The attendance module alone replaced two legacy tools we were paying for."</p>
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-600 to-blue-600 flex items-center justify-center text-white font-bold">M</div>
-              <div>
-                <div class="font-bold text-sm text-white">Marcus Thompson</div>
-                <div class="text-xs text-slate-500">VP Engineering @ BuildFlow Inc</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card-hover bg-dark-800/60 border border-white/7 rounded-2xl p-8">
-            <div class="flex gap-1 mb-5">
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-              <i class="fa-solid fa-star text-amber-400 text-sm"></i>
-            </div>
-            <p class="text-slate-300 text-sm leading-relaxed mb-6 italic">"Setting up custom roles for 12 departments took 20 minutes. The RBAC builder is intuitive and audit logs give our legal team everything they need for SOC 2 compliance."</p>
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-emerald-600 flex items-center justify-center text-white font-bold">A</div>
-              <div>
-                <div class="font-bold text-sm text-white">Aisha Patel</div>
-                <div class="text-xs text-slate-500">Head of Operations @ TrustVault</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-    </section>
 
-    <!-- ==================== FAQ ==================== -->
-    <section class="py-24" id="faq">
-      <div class="max-w-3xl mx-auto px-6">
-        <div class="text-center mb-14">
-          <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-4">
-            <i class="fa-solid fa-circle-question"></i> FAQ
-          </div>
-          <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight">
-            Questions? <span class="text-gradient">We've Got Answers.</span>
-          </h2>
-        </div>
-
-        <div class="space-y-3">
-          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
-            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
-              <span class="font-semibold text-base text-white">How fast is database provisioning after checkout?</span>
-              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
-                <i class="fa-solid fa-plus"></i>
-              </div>
-            </div>
-            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
-              <div class="pb-5">Our automated TenantProvisioningService creates your dedicated database, executes all 21 system tables, and initializes your Super Admin account in under one second — right at checkout completion. No waiting, no setup emails.</div>
-            </div>
-          </div>
-
-          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
-            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
-              <span class="font-semibold text-base text-white">Is my company's data physically separate from other companies?</span>
-              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
-                <i class="fa-solid fa-plus"></i>
-              </div>
-            </div>
-            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
-              <div class="pb-5">Yes, completely. We don't co-mingle your records into a shared table. Every workspace gets its own MySQL database instance (e.g., tenant_your_company). A SQL query from Workspace A cannot ever access data from Workspace B — it's physically impossible by design.</div>
-            </div>
-          </div>
-
-          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
-            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
-              <span class="font-semibold text-base text-white">Can I upgrade or downgrade my subscription later?</span>
-              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
-                <i class="fa-solid fa-plus"></i>
-              </div>
-            </div>
-            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
-              <div class="pb-5">Absolutely. Upgrading modifies your platform tier without any database migration — immediately unlocking advanced attendance, 2FA enforcement, and the custom RBAC builder. Downgrading takes effect at the next billing cycle.</div>
-            </div>
-          </div>
-
-          <div class="faq-item bg-dark-800/60 border border-white/7 rounded-2xl overflow-hidden" onclick="this.classList.toggle('faq-open')">
-            <div class="flex items-center justify-between px-7 py-5 cursor-pointer">
-              <span class="font-semibold text-base text-white">What happens to my data if I cancel?</span>
-              <div class="faq-icon w-7 h-7 rounded-full bg-brand-600/15 border border-brand-600/25 flex items-center justify-center text-brand-400 flex-shrink-0 text-xs">
-                <i class="fa-solid fa-plus"></i>
-              </div>
-            </div>
-            <div class="faq-answer px-7 text-slate-400 text-sm leading-relaxed pb-0">
-              <div class="pb-5">We retain your complete database backup for 90 days after cancellation. You can export a full MySQL dump at any time through the Super Admin panel. Your data is always yours — we never hold it hostage.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ==================== CTA ==================== -->
-    <section class="py-20">
-      <div class="max-w-5xl mx-auto px-6">
-        <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-brand-900/40 via-dark-800/60 to-dark-800/80 border border-brand-600/25 p-16 text-center">
-          <!-- Glow -->
-          <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-32 bg-brand-600/20 blur-3xl rounded-full pointer-events-none"></div>
-
-          <div class="relative">
-            <div class="inline-flex items-center gap-2 text-brand-400 text-xs font-black uppercase tracking-widest mb-5">
-              <i class="fa-solid fa-rocket"></i> Get Started Today
-            </div>
-            <h2 class="font-display font-black text-4xl md:text-5xl tracking-tight mb-5 leading-tight">
-              Your Isolated Workspace.<br/><span class="text-gradient">Ready in Under a Second.</span>
-            </h2>
-            <p class="text-slate-400 text-lg max-w-lg mx-auto mb-10">
-              Provision your dedicated 21-table database right now. No credit card required for the trial.
-            </p>
-            <div class="flex items-center justify-center gap-4 flex-wrap">
-              <button onclick="openCheckoutModal(2,'Professional')" class="btn-shimmer relative flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-base text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:-translate-y-1 transition-all duration-300 glow-green shadow-xl">
-                <i class="fa-solid fa-bolt"></i> Provision Free Workspace
-              </button>
-              <button onclick="openLoginModal()" class="flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-base text-white bg-white/5 border border-white/15 hover:bg-white/10 hover:-translate-y-1 transition-all duration-300">
-                <i class="fa-solid fa-right-to-bracket"></i> Sign In to Workspace
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
 
   </main>
 
   <!-- ==================== FOOTER ==================== -->
-  <footer class="border-t border-white/6 py-16">
+  <footer class="bg-white dark:bg-dark-bg border-t border-light-border dark:border-dark-border py-14">
     <div class="max-w-7xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-        <div class="col-span-1 md:col-span-1">
-          <a href="#" class="flex items-center gap-2.5 mb-4">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center text-white glow-green-sm">
-              <i class="fa-solid fa-layer-group text-sm"></i>
-            </div>
-            <span class="font-display font-800 text-lg text-white">Task<span class="text-brand-400">Flow</span></span>
-          </a>
-          <p class="text-slate-500 text-sm leading-relaxed">Enterprise multi-tenant SaaS for task management, HR, and real-time collaboration with 100% database isolation.</p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pb-10 border-b border-light-border dark:border-dark-border">
+        
+        <a href="#" class="flex items-center gap-3 no-underline">
+          <div class="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold text-lg shadow-sm">
+            <i class="fa-solid fa-layer-group"></i>
+          </div>
+          <span class="font-display font-bold text-xl text-slate-900 dark:text-white">Task<span class="text-brand-500">Flow</span></span>
+        </a>
+
+        <div class="flex flex-wrap justify-center gap-8 text-xs font-semibold text-slate-600 dark:text-slate-400">
+          <a href="#hero" class="hover:text-brand-500 transition-colors">Products</a>
+          <a href="#pricing" class="hover:text-brand-500 transition-colors">Pricing</a>
+          <a href="#features" class="hover:text-brand-500 transition-colors">Use Cases</a>
+          <a href="#solutions" class="hover:text-brand-500 transition-colors">Company</a>
+          <a href="#faq" class="hover:text-brand-500 transition-colors">FAQ</a>
+          <a href="http://localhost:8000/api-docs" target="_blank" class="hover:text-brand-500 transition-colors">API Docs</a>
         </div>
-        <div>
-          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Product</h4>
-          <ul class="space-y-3">
-            <li><a href="#features" class="text-slate-400 text-sm hover:text-white transition-colors">Features</a></li>
-            <li><a href="#pricing" class="text-slate-400 text-sm hover:text-white transition-colors">Pricing</a></li>
-            <li><a href="#showcase" class="text-slate-400 text-sm hover:text-white transition-colors">Screenshots</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Changelog</a></li>
-          </ul>
+
+        <div class="flex items-center gap-4 text-slate-400 dark:text-slate-500 text-base">
+          <a href="#" class="hover:text-brand-500 transition-colors"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#" class="hover:text-brand-500 transition-colors"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#" class="hover:text-brand-500 transition-colors"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="#" class="hover:text-brand-500 transition-colors"><i class="fa-brands fa-github"></i></a>
         </div>
-        <div>
-          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Platform</h4>
-          <ul class="space-y-3">
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">API Docs</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Status Page</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Integrations</a></li>
-            <li><a href="#architecture" class="text-slate-400 text-sm hover:text-white transition-colors">Security</a></li>
-          </ul>
-        </div>
-        <div>
-          <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">Legal</h4>
-          <ul class="space-y-3">
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">Terms of Service</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">GDPR</a></li>
-            <li><a href="#" class="text-slate-400 text-sm hover:text-white transition-colors">SOC 2</a></li>
-          </ul>
+
+      </div>
+
+      <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400 font-mono">
+        <span>&copy; 2026 TaskFlow / Encan.io. Engineered with multi-tenant database isolation.</span>
+        <div class="flex items-center gap-6">
+          <span>Terms of Service</span>
+          <span>Privacy Policy</span>
+          <span>Security & SOC 2</span>
         </div>
       </div>
-      <div class="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <span class="text-slate-600 text-sm">&copy; 2026 TaskFlow. All rights reserved. Built with enterprise-grade isolation engineering.</span>
-        <div class="flex items-center gap-5">
-          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
-          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-twitter text-lg"></i></a>
-          <a href="#" class="text-slate-600 hover:text-white transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
-        </div>
-      </div>
+
     </div>
   </footer>
 
   <!-- ==================== LOGIN MODAL ==================== -->
-  <div class="fixed inset-0 z-[100] bg-dark-base/80 backdrop-blur-xl flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="loginModal">
-    <div class="modal-box bg-dark-800 border border-white/10 rounded-3xl w-full max-w-md p-10 relative shadow-[0_40px_100px_rgba(0,0,0,0.7)] max-h-[90vh] overflow-y-auto">
-      <button onclick="closeLoginModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center">
+  <div class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="loginModal">
+    <div class="modal-box bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl w-full max-w-md p-8 relative shadow-2xl max-h-[92vh] overflow-y-auto">
+      <button onclick="closeLoginModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all flex items-center justify-center">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <div class="mb-7">
-        <h3 class="font-display font-black text-2xl mb-2">Sign In to Workspace</h3>
-        <p class="text-slate-400 text-sm">Enter your company slug and credentials to access your isolated database.</p>
+      <div class="mb-6">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/15 text-brand-500 font-mono text-xs font-bold mb-3">
+          <i class="fa-solid fa-lock"></i> Isolated Authentication
+        </div>
+        <h3 class="font-display font-extrabold text-2xl text-slate-900 dark:text-white">Sign In to Workspace</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mt-1">Connect directly to your dedicated MySQL database pool.</p>
       </div>
-      <form onsubmit="handleWorkspaceLogin(event)" class="space-y-4">
+      <form onsubmit="handleWorkspaceLogin(event)" class="space-y-4 text-left">
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Company Workspace Slug</label>
-          <input id="loginSlug" type="text" placeholder="e.g. acme-corp" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Tenant Slug</label>
+          <div class="relative">
+            <span class="absolute left-3.5 top-3.5 text-slate-400 text-xs font-mono">app.taskflow.io/</span>
+            <input id="loginSlug" type="text" placeholder="acme-corp" class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl pl-36 pr-4 py-3 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-brand-500 transition-all" required />
+          </div>
         </div>
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Email Address</label>
-          <input id="loginEmail" type="email" placeholder="you@company.com" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Work Email</label>
+          <input id="loginEmail" type="email" placeholder="you@company.com" class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" required />
         </div>
         <div class="space-y-1.5">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Password</label>
-          <input id="loginPassword" type="password" placeholder="••••••••" class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" required />
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" required />
         </div>
-        <div id="loginError" class="hidden bg-red-600/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm"></div>
-        <button type="submit" id="loginBtn" class="btn-shimmer relative w-full py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 hover:from-brand-600 hover:to-brand-400 transition-all duration-200 mt-2">
-          <i class="fa-solid fa-right-to-bracket mr-2"></i>Connect & Enter Workspace
+        <div id="loginError" class="hidden bg-red-500/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-500 text-xs"></div>
+        <button type="submit" id="loginBtn" class="w-full py-3.5 rounded-xl font-bold text-sm text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-orange-glow mt-2">
+          Connect to Tenant Database
         </button>
       </form>
     </div>
   </div>
 
   <!-- ==================== CHECKOUT MODAL ==================== -->
-  <div class="fixed inset-0 z-[100] bg-dark-base/80 backdrop-blur-xl flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="checkoutModal">
-    <div class="modal-box bg-dark-800 border border-white/10 rounded-3xl w-full max-w-lg p-10 relative shadow-[0_40px_100px_rgba(0,0,0,0.7)] max-h-[92vh] overflow-y-auto">
-      <button onclick="closeCheckoutModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center">
+  <div class="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md flex items-center justify-center p-6 opacity-0 pointer-events-none transition-opacity duration-300" id="checkoutModal">
+    <div class="modal-box bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-3xl w-full max-w-lg p-8 relative shadow-2xl max-h-[92vh] overflow-y-auto text-left">
+      <button onclick="closeCheckoutModal()" class="absolute top-5 right-5 w-8 h-8 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-400 hover:text-slate-700 dark:hover:text-white transition-all flex items-center justify-center">
         <i class="fa-solid fa-xmark"></i>
       </button>
 
-      <!-- Step Indicators -->
-      <div class="flex items-center gap-2 mb-8" id="wizardHeader">
+      <!-- Wizard Step Header -->
+      <div class="flex items-center gap-2.5 mb-8" id="wizardHeader">
         <div class="flex items-center gap-2">
-          <div id="dot1" class="step-active w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all">1</div>
-          <span class="text-xs font-semibold text-white hidden sm:block">Plan</span>
+          <div id="dot1" class="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold transition-all">1</div>
+          <span class="text-xs font-bold text-slate-900 dark:text-white hidden sm:block">Plan</span>
         </div>
-        <div class="flex-1 h-0.5 bg-white/10" id="line1"></div>
+        <div class="flex-1 h-0.5 bg-slate-200 dark:bg-dark-border" id="line1"></div>
         <div class="flex items-center gap-2">
-          <div id="dot2" class="w-8 h-8 rounded-full border-2 border-white/15 flex items-center justify-center text-xs font-bold text-slate-500 transition-all">2</div>
-          <span class="text-xs font-semibold text-slate-500 hidden sm:block">Details</span>
+          <div id="dot2" class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-dark-border flex items-center justify-center text-xs font-bold text-slate-400 transition-all">2</div>
+          <span class="text-xs font-medium text-slate-400 hidden sm:block">Setup</span>
         </div>
-        <div class="flex-1 h-0.5 bg-white/10" id="line2"></div>
+        <div class="flex-1 h-0.5 bg-slate-200 dark:bg-dark-border" id="line2"></div>
         <div class="flex items-center gap-2">
-          <div id="dot3" class="w-8 h-8 rounded-full border-2 border-white/15 flex items-center justify-center text-xs font-bold text-slate-500 transition-all">3</div>
-          <span class="text-xs font-semibold text-slate-500 hidden sm:block">Payment</span>
+          <div id="dot3" class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-dark-border flex items-center justify-center text-xs font-bold text-slate-400 transition-all">3</div>
+          <span class="text-xs font-medium text-slate-400 hidden sm:block">Payment</span>
         </div>
       </div>
 
-      <!-- Step 1 -->
+      <!-- Step 1: Plan Summary -->
       <div id="ws1">
-        <h3 class="font-display font-black text-2xl mb-2">Selected Plan</h3>
-        <p class="text-slate-400 text-sm mb-6">You're provisioning a dedicated 21-table isolated database.</p>
-        <div class="bg-brand-600/10 border border-brand-600/25 rounded-2xl p-5 mb-7 flex justify-between items-center">
+        <h3 class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-1">Selected Plan</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mb-6">You are provisioning an isolated 21-table MySQL database pool.</p>
+        <div class="bg-brand-500/10 border border-brand-500/30 rounded-2xl p-5 mb-7 flex justify-between items-center">
           <div>
-            <div class="font-display font-black text-xl text-white mb-0.5" id="selPlanName">Professional</div>
-            <div class="text-brand-400 text-sm" id="selPlanBilling">Annual Billing · 2 Months Free</div>
+            <div class="font-display font-extrabold text-xl text-slate-900 dark:text-white mb-0.5" id="selPlanName">Professional Suite</div>
+            <div class="text-brand-500 font-mono text-xs" id="selPlanBilling">Annual Billing · Save $180/yr</div>
           </div>
-          <div class="font-display font-black text-3xl text-brand-300" id="selPlanPrice">$64/mo</div>
+          <div class="font-display font-extrabold text-3xl text-brand-500" id="selPlanPrice">$64/mo</div>
         </div>
-        <button onclick="goStep(2)" class="btn-shimmer relative w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all">
+        <button onclick="goStep(2)" class="w-full py-4 rounded-xl font-bold text-sm text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-orange-glow">
           Continue to Setup <i class="fa-solid fa-arrow-right ml-2"></i>
         </button>
       </div>
 
-      <!-- Step 2 -->
+      <!-- Step 2: Workspace Setup -->
       <div id="ws2" class="hidden">
-        <h3 class="font-display font-black text-2xl mb-2">Workspace Setup</h3>
-        <p class="text-slate-400 text-sm mb-6">Configure your company workspace and Super Admin credentials.</p>
+        <h3 class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-1">Workspace Setup</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mb-6">Create your company workspace slug and Super Admin credentials.</p>
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Company Name</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="co" type="text" placeholder="Stark Industries" oninput="autoSlug()" required />
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Company Name</label>
+            <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" id="co" type="text" placeholder="Stark Industries" oninput="autoSlug()" required />
           </div>
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Workspace Slug</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="slug" type="text" placeholder="stark-industries" required />
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Tenant Slug</label>
+            <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-brand-500 transition-all" id="slug" type="text" placeholder="stark-ind" required />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4 mb-4">
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Admin Name</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aName" type="text" placeholder="Tony Stark" required />
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Admin Name</label>
+            <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" id="aName" type="text" placeholder="Tony Stark" required />
           </div>
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Admin Email</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aEmail" type="email" placeholder="admin@stark.com" required />
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Admin Email</label>
+            <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" id="aEmail" type="email" placeholder="admin@stark.com" required />
           </div>
         </div>
         <div class="space-y-1.5 mb-6">
-          <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Master Password</label>
-          <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" id="aPass" type="password" placeholder="Min 6 characters" required />
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Super Admin Password</label>
+          <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs focus:outline-none focus:border-brand-500 transition-all" id="aPass" type="password" placeholder="Min 6 characters" required />
         </div>
         <div class="flex gap-3">
-          <button onclick="goStep(1)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-400 border border-white/10 hover:bg-white/5 transition-all text-sm">← Back</button>
-          <button onclick="validateStep2()" class="flex-[2] py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all text-sm">Continue to Payment →</button>
+          <button onclick="goStep(1)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-500 border border-light-border dark:border-dark-border hover:bg-slate-50 dark:hover:bg-dark-bg transition-all text-xs">← Back</button>
+          <button onclick="validateStep2()" class="flex-[2] py-3.5 rounded-xl font-bold text-white bg-brand-500 hover:bg-brand-600 transition-all text-xs shadow-orange-glow">Continue to Payment →</button>
         </div>
       </div>
 
-      <!-- Step 3 -->
+      <!-- Step 3: Payment -->
       <div id="ws3" class="hidden">
-        <h3 class="font-display font-black text-2xl mb-2">Complete Payment</h3>
-        <p class="text-slate-400 text-sm mb-6">Your 21-table database is provisioned instantly upon payment.</p>
+        <h3 class="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-1">Complete Checkout</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mb-6">Your dedicated 21-table MySQL database activates instantaneously.</p>
         <div class="space-y-4 mb-6">
           <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Name on Card</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="Enterprise Corporate Card" />
-          </div>
-          <div class="space-y-1.5">
-            <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Card Number</label>
-            <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="4242 •••• •••• 4242" />
+            <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Card Number</label>
+            <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-brand-500 transition-all" type="text" value="4242 •••• •••• 4242" />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">Expiry</label>
-              <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="text" value="12/28" />
+              <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Expiry Date</label>
+              <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-brand-500 transition-all" type="text" value="12/28" />
             </div>
             <div class="space-y-1.5">
-              <label class="text-xs font-bold text-slate-400 uppercase tracking-wide">CVC</label>
-              <input class="w-full bg-dark-900/60 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-600/20 transition-all" type="password" value="888" />
+              <label class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">CVC</label>
+              <input class="w-full bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-xl px-4 py-3 text-slate-900 dark:text-white text-xs font-mono focus:outline-none focus:border-brand-500 transition-all" type="password" value="888" />
             </div>
           </div>
         </div>
-        <div id="checkoutError" class="hidden bg-red-600/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-300 text-sm mb-4"></div>
+        <div id="checkoutError" class="hidden bg-red-500/15 border border-red-500/30 rounded-xl px-4 py-3 text-red-500 text-xs mb-4"></div>
         <div class="flex gap-3">
-          <button onclick="goStep(2)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-400 border border-white/10 hover:bg-white/5 transition-all text-sm">← Back</button>
-          <button onclick="executeProvision()" id="provBtn" class="btn-shimmer relative flex-[2] py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all text-sm">
-            <i class="fa-solid fa-server mr-2"></i>Pay & Provision Database
+          <button onclick="goStep(2)" class="flex-1 py-3.5 rounded-xl font-semibold text-slate-500 border border-light-border dark:border-dark-border hover:bg-slate-50 dark:hover:bg-dark-bg transition-all text-xs">← Back</button>
+          <button onclick="executeProvision()" id="provBtn" class="flex-[2] py-3.5 rounded-xl font-bold text-white bg-brand-500 hover:bg-brand-600 transition-all text-xs shadow-orange-glow">
+            Pay & Provision Database
           </button>
         </div>
       </div>
 
-      <!-- Success -->
+      <!-- Step Success -->
       <div id="wsSuccess" class="hidden text-center py-4">
-        <div class="w-20 h-20 rounded-full bg-brand-600/15 border-2 border-brand-500/30 flex items-center justify-center text-brand-400 text-3xl mx-auto mb-6">
+        <div class="w-16 h-16 rounded-full bg-brand-500/20 border-2 border-brand-500 text-brand-500 flex items-center justify-center text-3xl mx-auto mb-5 shadow-orange-glow">
           <i class="fa-solid fa-check"></i>
         </div>
-        <h3 class="font-display font-black text-3xl mb-3">🎉 Workspace Live!</h3>
-        <p class="text-slate-400 text-sm mb-7 max-w-sm mx-auto">Your isolated tenant database is provisioned with all 21 tables and your Super Admin account is active.</p>
-        <div class="bg-dark-900/60 border border-white/8 rounded-2xl p-5 text-left space-y-3 mb-7">
-          <div class="flex justify-between text-sm"><span class="text-slate-500">Company</span><span class="font-semibold text-white" id="succCo">—</span></div>
-          <div class="flex justify-between text-sm"><span class="text-slate-500">Slug</span><span class="font-semibold text-brand-300" id="succSlug">—</span></div>
-          <div class="flex justify-between text-sm"><span class="text-slate-500">Database</span><span class="font-semibold text-brand-400" id="succDb">—</span></div>
-          <div class="flex justify-between text-sm"><span class="text-slate-500">Admin Email</span><span class="font-semibold text-white" id="succEmail">—</span></div>
+        <h3 class="font-display font-extrabold text-3xl text-slate-900 dark:text-white mb-2">🎉 Workspace Live!</h3>
+        <p class="text-slate-500 dark:text-slate-400 text-xs mb-6 max-w-sm mx-auto">Your isolated tenant database (`21 tables`) is provisioned and your Super Admin account is ready.</p>
+        <div class="bg-slate-50 dark:bg-dark-bg border border-light-border dark:border-dark-border rounded-2xl p-4 text-left space-y-2.5 mb-6 font-mono text-xs">
+          <div class="flex justify-between"><span class="text-slate-400">Company Name:</span><span class="font-bold text-slate-900 dark:text-white" id="succCo">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Tenant Slug:</span><span class="font-bold text-brand-500" id="succSlug">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Database Schema:</span><span class="font-bold text-accent-green" id="succDb">—</span></div>
+          <div class="flex justify-between"><span class="text-slate-400">Super Admin Email:</span><span class="font-bold text-slate-900 dark:text-white" id="succEmail">—</span></div>
         </div>
-        <button onclick="launchWorkspace()" class="btn-shimmer relative w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-700 to-brand-500 transition-all">
-          <i class="fa-solid fa-plane-up mr-2"></i>Launch Dashboard
+        <button onclick="launchWorkspace()" class="w-full py-4 rounded-xl font-bold text-sm text-white bg-brand-500 hover:bg-brand-600 transition-all shadow-orange-glow">
+          Launch Enterprise Dashboard →
         </button>
       </div>
 
     </div>
   </div>
 
+  <!-- Load Checkout & Tenant Logic -->
   <script src="js/checkout.js"></script>
+
   <script>
-    // Modal helpers (Tailwind class based)
+    // =============================================================
+    // 1. THEME SWITCHER (Light Mode / Dark Mode Toggle)
+    // =============================================================
+    function toggleTheme() {
+      const html = document.getElementById('html-root');
+      if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Load persisted theme on boot
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light') {
+        document.getElementById('html-root').classList.remove('dark');
+      } else if (saved === 'dark') {
+        document.getElementById('html-root').classList.add('dark');
+      }
+    });
+
+    // =============================================================
+    // 2. GSAP ENTRANCE ANIMATIONS
+    // =============================================================
+    window.addEventListener('load', () => {
+      gsap.registerPlugin(ScrollTrigger, TextPlugin);
+
+      gsap.from(".gsap-hero", {
+        opacity: 0, y: 35, duration: 0.8, stagger: 0.15, ease: "power3.out"
+      });
+
+      gsap.from(".gsap-hero-showcase", {
+        opacity: 0, scale: 0.95, y: 40, duration: 1, delay: 0.45, ease: "power3.out"
+      });
+    });
+
+    // =============================================================
+    // 3. MODAL CONTROLLERS
+    // =============================================================
     function openLoginModal() {
       const m = document.getElementById('loginModal');
       m.classList.remove('opacity-0', 'pointer-events-none');
@@ -1162,11 +1279,12 @@
       const m = document.getElementById('loginModal');
       m.classList.add('opacity-0', 'pointer-events-none');
       m.classList.remove('modal-open');
-      document.getElementById('loginError').classList.add('hidden');
+      const err = document.getElementById('loginError');
+      if (err) err.classList.add('hidden');
     }
     function openCheckoutModal(planId, planName) {
-      currentPlan = { id: planId, name: planName };
-      updateStep1Summary();
+      if (typeof currentPlan !== 'undefined') currentPlan = { id: planId, name: planName };
+      if (typeof updateStep1Summary === 'function') updateStep1Summary();
       goStep(1);
       const m = document.getElementById('checkoutModal');
       m.classList.remove('opacity-0', 'pointer-events-none');
@@ -1176,61 +1294,65 @@
       const m = document.getElementById('checkoutModal');
       m.classList.add('opacity-0', 'pointer-events-none');
       m.classList.remove('modal-open');
+      const err = document.getElementById('checkoutError');
+      if (err) err.classList.add('hidden');
     }
 
-    // Close on overlay click
-    ['loginModal','checkoutModal'].forEach(id => {
+    ['loginModal', 'checkoutModal'].forEach(id => {
       document.getElementById(id).addEventListener('click', function(e) {
-        if (e.target === this) { this.classList.add('opacity-0','pointer-events-none'); this.classList.remove('modal-open'); }
+        if (e.target === this) {
+          this.classList.add('opacity-0', 'pointer-events-none');
+          this.classList.remove('modal-open');
+        }
       });
     });
 
-    // Billing toggle
+    // =============================================================
+    // 4. PRICING & WIZARD HELPER
+    // =============================================================
     let isAnnual = true;
-    const PRICES = { monthly: { 1:29, 2:79, 3:199 }, annual: { 1:24, 2:64, 3:159 } };
-    const NOTES_A = { 1:"Billed $288/year · save $60", 2:"Billed $768/year · save $180", 3:"Billed $1,908/year · save $480" };
+    const NOTES_A = { 1: "Billed $288/year — save $60", 2: "Billed $768/year — save $180", 3: "Billed $1,908/year — save $480" };
 
     function toggleBilling() {
       isAnnual = !isAnnual;
-      const t = document.getElementById('billingToggle');
+      const toggle = document.getElementById('billingToggle');
       const thumb = document.getElementById('toggleThumb');
-      t.classList.toggle('bg-brand-600/40', true);
       thumb.style.left = isAnnual ? '27px' : '3px';
-      document.getElementById('lbl-monthly').classList.toggle('text-white', !isAnnual);
-      document.getElementById('lbl-monthly').classList.toggle('text-slate-400', isAnnual);
-      document.getElementById('lbl-annual').classList.toggle('text-white', isAnnual);
-      document.getElementById('lbl-annual').classList.toggle('text-slate-400', !isAnnual);
-      document.getElementById('ps').textContent = isAnnual ? 24 : 29;
-      document.getElementById('pp').textContent = isAnnual ? 64 : 79;
-      document.getElementById('pe').textContent = isAnnual ? 159 : 199;
-      document.getElementById('pn-s').textContent = isAnnual ? NOTES_A[1] : "Billed monthly, cancel anytime";
-      document.getElementById('pn-p').textContent = isAnnual ? NOTES_A[2] : "Billed monthly, cancel anytime";
-      document.getElementById('pn-e').textContent = isAnnual ? NOTES_A[3] : "Billed monthly, cancel anytime";
+      
+      document.getElementById('label-monthly').classList.toggle('text-slate-900', !isAnnual);
+      document.getElementById('label-monthly').classList.toggle('dark:text-white', !isAnnual);
+      document.getElementById('label-monthly').classList.toggle('text-slate-400', isAnnual);
+      
+      document.getElementById('label-annual').classList.toggle('text-slate-900', isAnnual);
+      document.getElementById('label-annual').classList.toggle('dark:text-white', isAnnual);
+      document.getElementById('label-annual').classList.toggle('text-slate-400', !isAnnual);
+
+      document.getElementById('price-starter').textContent = isAnnual ? 0 : 0;
+      document.getElementById('price-pro').textContent = isAnnual ? 64 : 79;
+      document.getElementById('price-enterprise').textContent = isAnnual ? 159 : 199;
+
       if (typeof updateStep1Summary === 'function') updateStep1Summary();
     }
 
-    // Wizard dot updater
     function updateWizardDots(step) {
       for (let i = 1; i <= 3; i++) {
         const dot = document.getElementById(`dot${i}`);
-        dot.className = "w-8 h-8 rounded-full border-2 flex items-center justify-center text-xs font-bold transition-all";
+        if (!dot) continue;
         if (i < step) {
-          dot.classList.add('step-done');
+          dot.className = "w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold transition-all";
           dot.innerHTML = '<i class="fa-solid fa-check text-[10px]"></i>';
         } else if (i === step) {
-          dot.classList.add('step-active');
+          dot.className = "w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center text-xs font-bold transition-all shadow-orange-glow";
           dot.textContent = i;
         } else {
-          dot.classList.add('border-white/15', 'text-slate-500');
+          dot.className = "w-8 h-8 rounded-full border-2 border-slate-300 dark:border-dark-border text-slate-400 flex items-center justify-center text-xs font-bold transition-all";
           dot.textContent = i;
         }
       }
     }
 
-    // Override goStep to also update Tailwind dots
-    const _origGoStep = typeof goStep !== 'undefined' ? goStep : null;
     function goStep(s) {
-      ['ws1','ws2','ws3','wsSuccess'].forEach(id => {
+      ['ws1', 'ws2', 'ws3', 'wsSuccess'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.add('hidden');
       });
