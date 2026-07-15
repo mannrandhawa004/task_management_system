@@ -1,0 +1,108 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Enable class-based dark mode (`<html class="dark">`) in Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f5f7fb;
+  --card: rgba(255, 255, 255, 0.7);
+  --profile: rgb(255, 255, 255);
+  --text: #111827;
+  --muted: #6b7280;
+  --border: rgba(0, 0, 0, 0.06);
+  --primary: #0b573a;
+  --primary-hover: #083f2a;
+  --input: rgba(255, 255, 255, 0.8);
+  --blob-1: rgba(99, 102, 241, 0.2);
+  --blob-2: rgba(14, 165, 233, 0.15);
+  --shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+  --selection-text: #ffffff;
+  --hover: rgba(0, 0, 0, 0.04);
+  --glass: rgba(255, 255, 255, 0.45);
+  --ring: rgba(250, 103, 129, 0.25);
+
+  /* Chart Monochromatic Shades (Green theme for Light) */
+  --chart-s1: #0b573a;
+  --chart-s2: #16a34a;
+  --chart-s3: #4ade80;
+  --chart-grad-top: #15803d;
+  --chart-grad-bot: rgba(11, 87, 58, 0.1);
+}
+
+.dark {
+  --bg: #09090b;
+  --card: rgba(0, 0, 0, 0.437);
+  --profile: rgb(0, 0, 0);
+  --text: #ffffff;
+  --muted: #a1a1aa;
+  --border: rgba(255, 255, 255, 0.06);
+  --primary: #F69D39;
+  --primary-hover: #e69232;
+  --input: rgba(255, 255, 255, 0.04);
+  --blob-1: rgba(99, 102, 241, 0.18);
+  --blob-2: rgba(6, 182, 212, 0.12);
+  --shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  --selection-text: #000000;
+  --hover: rgba(255, 255, 255, 0.06);
+  --glass: rgba(255, 255, 255, 0.04);
+  --ring: rgba(246, 157, 57, 0.25);
+
+  /* Chart Monochromatic Shades (Light Orange Gradient & Shades for Dark) */
+  --chart-s1: #fed7aa;
+  --chart-s2: #fb923c;
+  --chart-s3: #ea580c;
+  --chart-grad-top: #fed7aa;
+  --chart-grad-bot: rgba(249, 115, 22, 0.1);
+}
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+}
+
+/* Custom modal open/close animations */
+.modal-overlay {
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-box {
+  transform: translateY(24px) scale(0.96);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+.modal-overlay.open {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+}
+.modal-overlay.open .modal-box {
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
+}
+
+/* FAQ transitions */
+.faq-answer {
+  transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleUp {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}
+.animate-scaleUp {
+  animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
