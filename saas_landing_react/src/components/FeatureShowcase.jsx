@@ -9,10 +9,10 @@ export default function FeatureShowcase() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulatedLog, setSimulatedLog] = useState({
     event: "SOCKET_IO_CONNECT",
-    tenant: "tenant_acmecorp",
-    table: "tasks",
+    tenant: "department_scoped_pool",
+    table: "project",
     status: "SYNC_COMPLETE",
-    latency: "4.2ms",
+    latency: "3.8ms",
     timestamp: new Date().toLocaleTimeString()
   });
 
@@ -28,39 +28,39 @@ export default function FeatureShowcase() {
   }, [activeTab]);
 
   const categories = [
-    { id: 'all', label: 'Full Platform Suite', icon: 'fa-layer-group', count: '6 Previews' },
-    { id: 'analytics', label: 'Executive Analytics', icon: 'fa-chart-pie', count: 'Dashboards' },
-    { id: 'workflow', label: 'Kanban & Tasks', icon: 'fa-kanban', count: 'Workflows' },
-    { id: 'team', label: 'HR & Attendance', icon: 'fa-users-viewfinder', count: 'Team & Security' },
+    { id: 'all', label: 'Full Platform Suite', icon: 'fa-layer-group', count: '6 Modules' },
+    { id: 'analytics', label: 'Dual-View Dashboard', icon: 'fa-table-columns', count: 'Projects' },
+    { id: 'workflow', label: 'Department Scoping & Tasks', icon: 'fa-kanban', count: 'Workflows' },
+    { id: 'team', label: 'HR Attendance & MFA', icon: 'fa-user-shield', count: 'Security & HR' },
   ];
 
   const dashboardFeatures = [
     {
-      title: "Real-Time Project Velocity",
-      desc: "Track sprint burn-down rates and completion velocity in real time. Aggregates data across all 21 tenant tables (`tenant_acmecorp`) to forecast delivery accuracy within ±3%.",
-      metric: "+34% Delivery Speed",
-      icon: "fa-gauge-high",
+      title: "Dual-View Grid & Table Dashboard",
+      desc: "Switch effortlessly between sleek Grid Card View and density-optimized Table View. Features live department badges, RLS visibility rules, and instant status indicators.",
+      metric: "Grid + Table Sync",
+      icon: "fa-table-cells-large",
       color: "brand",
-      apiQuery: "SELECT AVG(velocity) FROM tenant_acmecorp.sprints WHERE status = 'ACTIVE'",
-      socketEvent: "sprint:velocity_updated { delta: '+34%' }"
+      apiQuery: "SELECT * FROM project WHERE department_id = req.user.departmentId AND is_active = 1",
+      socketEvent: "project:list_updated { departmentId: 4, action: 'REFRESH' }"
     },
     {
-      title: "Critical Deadlines Radar",
-      desc: "AI-powered risk detection highlights overdue tasks, bottlenecked dependencies, and team member overload before milestones are impacted.",
-      metric: "Zero Missed SLAs",
-      icon: "fa-bullseye",
+      title: "Granular Task Lifecycle Governance",
+      desc: "Tasks support explicit priority levels (`Low`, `Medium`, `High`, `Urgent`), workflow statuses (`To Do`, `In Progress`, `Review`, `Completed`), and due dates via raw parameterized MySQL 8 queries.",
+      metric: "100% RLS Scoped",
+      icon: "fa-list-check",
       color: "green",
-      apiQuery: "SELECT * FROM tenant_acmecorp.tasks WHERE due_date <= NOW() AND status != 'DONE'",
-      socketEvent: "radar:risk_alert { priority: 'HIGH', count: 0 }"
+      apiQuery: "UPDATE tasks SET status = 'in_progress' WHERE id = ? AND department_id = ?",
+      socketEvent: "task:status_changed { taskId: 1042, newStatus: 'in_progress' }"
     },
     {
-      title: "Daily Task Progress Gauge",
-      desc: "Live visual breakdown of In-Progress vs. Completed vs. Upcoming tasks across every departmental sub-squad (`Engineering`, `Design`, `HR`).",
-      metric: "Instant Telemetry",
-      icon: "fa-chart-column",
+      title: "Real-Time Socket.IO Collaboration",
+      desc: "Powered by Socket.IO 4 for instantaneous task updates, assignment notifications, and live room broadcasting without requiring browser page reloads.",
+      metric: "Zero Latency",
+      icon: "fa-tower-broadcast",
       color: "blue",
-      apiQuery: "SELECT status, COUNT(*) FROM tenant_acmecorp.tasks GROUP BY status",
-      socketEvent: "task:status_summary { in_progress: 42, completed: 189 }"
+      apiQuery: "SELECT u.id, u.name, u.role FROM users u JOIN department d ON u.department_id = d.id",
+      socketEvent: "socket:room_broadcast { room: 'project_88', event: 'MEMBER_ASSIGNED' }"
     }
   ];
 
@@ -70,10 +70,10 @@ export default function FeatureShowcase() {
     const feat = dashboardFeatures[idx];
     setSimulatedLog({
       event: feat.socketEvent.split(' ')[0],
-      tenant: "tenant_acmecorp",
-      table: idx === 0 ? "sprints" : "tasks",
+      tenant: "department_scoped_pool",
+      table: idx === 0 ? "project" : "tasks",
       status: "LIVE_BROADCAST",
-      latency: Math.floor(Math.random() * 6 + 2) + ".1ms",
+      latency: Math.floor(Math.random() * 5 + 2) + ".2ms",
       timestamp: new Date().toLocaleTimeString()
     });
 
@@ -92,13 +92,13 @@ export default function FeatureShowcase() {
       {/* Header with GSAP Scroll Class */}
       <div className="max-w-4xl mx-auto text-center mb-16 gsap-scroll-header">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/15 text-brand-500 font-mono text-xs font-bold mb-4 shadow-sm border border-brand-500/20">
-          <i className="fa-solid fa-bolt animate-bounce"></i> Interactive Product Telemetry &amp; Live API Inspector
+          <i className="fa-solid fa-bolt animate-bounce"></i> Next.js 15 App Router &amp; Express 5 Live API Inspector
         </div>
         <h2 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-900 dark:text-white tracking-tight mb-5 leading-tight">
-          See Exactly How TaskFlow Works
+          See TaskFlow's Exact Architecture in Action
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed max-w-3xl mx-auto">
-          We don’t just show static screenshots. Every preview below is paired with live feature explanations, WebSocket telemetry logs, and the exact MySQL queries running inside your isolated tenant pool (`tenant_slug`).
+          Every screenshot below is paired with live feature explanations from our project documentation, Socket.IO telemetry logs, and the exact MySQL 8 queries executing inside your department-scoped connection pool.
         </p>
 
         {/* Category Filter Tabs */}
@@ -137,7 +137,7 @@ export default function FeatureShowcase() {
                 <span className="w-3.5 h-3.5 rounded-full bg-amber-400/90 hover:bg-amber-500 transition-colors cursor-pointer"></span>
                 <span className="w-3.5 h-3.5 rounded-full bg-green-400/90 hover:bg-green-500 transition-colors cursor-pointer"></span>
                 <span className="ml-2 text-xs font-mono font-bold text-slate-700 dark:text-slate-200">
-                  Master Analytics (`tenant_acmecorp`)
+                  Dual-View Project Dashboard (`/v1/project?departmentId=engineering`)
                 </span>
               </div>
 
@@ -145,7 +145,7 @@ export default function FeatureShowcase() {
               <div className="flex items-center gap-3 bg-white dark:bg-[#181d29] px-4 py-1.5 rounded-full border border-light-border dark:border-dark-border text-xs font-mono text-slate-600 dark:text-slate-300 shadow-sm">
                 <span className={`w-2.5 h-2.5 rounded-full ${isSimulating ? 'bg-brand-500 animate-ping' : 'bg-accent-green animate-pulse'}`}></span>
                 <span className="text-[11px]">
-                  <strong className="text-brand-500">WS Log:</strong> {simulatedLog.event} (`{simulatedLog.latency}`)
+                  <strong className="text-brand-500">Socket.IO:</strong> {simulatedLog.event} (`{simulatedLog.latency}`)
                 </span>
               </div>
 
@@ -154,7 +154,7 @@ export default function FeatureShowcase() {
                 className="px-4 py-1.5 rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs shadow-orange-glow transition-all flex items-center gap-2 cursor-pointer scale-100 active:scale-95"
               >
                 <i className={`fa-solid fa-rotate ${isSimulating ? 'animate-spin' : ''}`}></i>
-                <span>Simulate Live Telemetry</span>
+                <span>Simulate Socket.IO Stream</span>
               </button>
             </div>
 
@@ -175,10 +175,10 @@ export default function FeatureShowcase() {
                     <div className="text-left font-sans">
                       <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <span>{dashboardFeatures[dashboardSpotlight].title}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-500/15 text-brand-500 font-mono font-bold">Live Stream</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-brand-500/15 text-brand-500 font-mono font-bold">RLS Scoped</span>
                       </div>
                       <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 leading-tight mt-1">
-                        Socket.IO: <code className="text-accent-green">{dashboardFeatures[dashboardSpotlight].socketEvent}</code>
+                        Socket Event: <code className="text-accent-green">{dashboardFeatures[dashboardSpotlight].socketEvent}</code>
                       </div>
                     </div>
                   </div>
@@ -187,10 +187,10 @@ export default function FeatureShowcase() {
                 {/* Bottom Query Code Bar */}
                 <div className="bg-[#0f131d] px-5 py-3 text-[11px] font-mono text-slate-300 flex items-center justify-between border-t border-light-border dark:border-dark-border">
                   <div className="flex items-center gap-2 overflow-hidden truncate">
-                    <span className="text-brand-500 font-bold">MySQL Query:</span>
+                    <span className="text-brand-500 font-bold">Raw MySQL 8:</span>
                     <span className="text-slate-400 truncate">{dashboardFeatures[dashboardSpotlight].apiQuery}</span>
                   </div>
-                  <span className="text-accent-green flex-shrink-0 font-bold ml-2">⚡ 3.4ms</span>
+                  <span className="text-accent-green flex-shrink-0 font-bold ml-2">⚡ Parameterized</span>
                 </div>
               </div>
 
@@ -198,13 +198,13 @@ export default function FeatureShowcase() {
               <div className="lg:col-span-5 p-6 sm:p-8 flex flex-col justify-between bg-white dark:bg-dark-card">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-700 dark:text-slate-300 font-mono text-[11px] font-bold mb-5 border border-light-border dark:border-dark-border">
-                    <i className="fa-solid fa-layer-group text-brand-500"></i> Click Any Feature Below To Inspect
+                    <i className="fa-solid fa-microchip text-brand-500"></i> Project &amp; Task Lifecycle Engine
                   </div>
                   <h3 className="font-display font-extrabold text-2xl text-slate-900 dark:text-white mb-3">
-                    Executive Analytics Suite
+                    Dual-View Project Dashboard
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                    Our master dashboard aggregates real-time metrics across all 21 isolated tenant tables (`users`, `projects`, `tasks`, `attendance`) to give leadership instant answers without database latency.
+                    Our Next.js 15 App Router frontend connects directly to Express 5 REST endpoints (`/v1/project`) with Row-Level Security (RLS). Users only view projects and tasks within their authorized department boundary.
                   </p>
 
                   {/* Interactive Feature Accordions / Spots */}
@@ -243,9 +243,9 @@ export default function FeatureShowcase() {
 
                 {/* Bottom Highlight */}
                 <div className="mt-8 pt-4 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-bold text-brand-500">
-                  <span className="flex items-center gap-1.5"><i className="fa-solid fa-circle-check text-accent-green"></i> 100% Isolated tenant data</span>
+                  <span className="flex items-center gap-1.5"><i className="fa-solid fa-circle-check text-accent-green"></i> Redux Toolkit State (`projectSlice`)</span>
                   <a href="#pricing" className="hover:underline flex items-center gap-1">
-                    <span>Deploy Analytics Pool</span> <i className="fa-solid fa-arrow-right"></i>
+                    <span>Deploy Dashboard Pool</span> <i className="fa-solid fa-arrow-right"></i>
                   </a>
                 </div>
               </div>
@@ -267,10 +267,10 @@ export default function FeatureShowcase() {
                     <span className="w-3 h-3 rounded-full bg-red-400"></span>
                     <span className="w-3 h-3 rounded-full bg-amber-400"></span>
                     <span className="w-3 h-3 rounded-full bg-green-400"></span>
-                    <span className="ml-1 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Kanban Board &amp; Sprint Management</span>
+                    <span className="ml-1 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">Kanban Task Board (`/v1/task`)</span>
                   </div>
                   <span className="text-[10px] bg-brand-500/15 text-brand-500 font-bold px-3 py-1 rounded-full border border-brand-500/20">
-                    ⚡ Socket.IO Sync
+                    ⚡ Socket.IO 4 Sync
                   </span>
                 </div>
 
@@ -284,45 +284,45 @@ export default function FeatureShowcase() {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-brand-500 uppercase tracking-wider">Workflow Engine</span>
+                      <span className="text-xs font-mono font-bold text-brand-500 uppercase tracking-wider">Workflow &amp; Scoping Engine</span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
-                      <span className="text-xs text-slate-500 font-semibold">Zero-Latency Drag &amp; Drop</span>
+                      <span className="text-xs text-slate-500 font-semibold">Department-Scoped Boards</span>
                     </div>
                     <span className="text-[10px] font-mono bg-slate-100 dark:bg-dark-bg text-slate-500 px-2 py-0.5 rounded border border-light-border dark:border-dark-border">
-                      `/v1/tasks/kanban`
+                      `PATCH /v1/task/update/{11}/status`
                     </span>
                   </div>
                   <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white mb-2 group-hover:text-brand-500 transition-colors">
-                    Real-Time Kanban Task Boards
+                    Interactive Kanban Task Lifecycle
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-5">
-                    Empower your developers to drag and drop sprint tickets (`To Do`, `In Progress`, `Code Review`, `Completed`) with zero latency. Every card movement broadcasts instantly to all connected teammates via Socket.IO WebSockets.
+                    Drag and drop tickets across custom statuses (`To Do`, `In Progress`, `Review`, `Completed`) with priorities (`Low` to `Urgent`). Features our <strong>Add Member Drawer</strong> with instant client-side memory search and department filtering.
                   </p>
 
                   {/* Key Feature Bullets */}
                   <div className="grid grid-cols-2 gap-2.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-dark-bg p-4 rounded-2xl border border-light-border dark:border-dark-border">
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-brand-500"></i>
-                      <span>Automated Assignee Routing</span>
+                      <span>4 Priority Tiers (`Urgent`)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-brand-500"></i>
-                      <span>Priority &amp; Due Date Tags</span>
+                      <span>Add Member Memory Search</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-brand-500"></i>
-                      <span>Sub-task Dependency Linking</span>
+                      <span>Department Scoping Toggle</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-brand-500"></i>
-                      <span>GitHub Commit Auto-Attach</span>
+                      <span>Socket.IO Live Room Broadcast</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="px-6 py-4 bg-slate-50 dark:bg-[#121620]/60 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-                <span className="font-mono text-[11px] text-slate-400">Query: `SELECT * FROM tenant_slug.tasks`</span>
+                <span className="font-mono text-[11px] text-slate-400">Middleware: `taskAccessMiddleware`</span>
                 <span className="text-brand-500 flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
                   <span>Inspect Workflow Rules</span> <i className="fa-solid fa-arrow-right"></i>
                 </span>
@@ -340,10 +340,10 @@ export default function FeatureShowcase() {
                     <span className="w-3 h-3 rounded-full bg-red-400"></span>
                     <span className="w-3 h-3 rounded-full bg-amber-400"></span>
                     <span className="w-3 h-3 rounded-full bg-green-400"></span>
-                    <span className="ml-1 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">HR Attendance &amp; Leave Calendar</span>
+                    <span className="ml-1 text-xs font-mono font-bold text-slate-700 dark:text-slate-300">HR Attendance &amp; Leave Ledger</span>
                   </div>
                   <span className="text-[10px] bg-green-500/15 text-accent-green font-bold px-3 py-1 rounded-full border border-green-500/20">
-                    🛰️ GPS &amp; IP Validated
+                    🛰️ Office &bull; Remote &bull; Hybrid
                   </span>
                 </div>
 
@@ -357,45 +357,45 @@ export default function FeatureShowcase() {
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold text-accent-green uppercase tracking-wider">Security &amp; HR Engine</span>
+                      <span className="text-xs font-mono font-bold text-accent-green uppercase tracking-wider">HR &amp; Leave Quota Engine</span>
                       <span className="text-slate-300 dark:text-slate-600">•</span>
                       <span className="text-xs text-slate-500 font-semibold">Automated Check-In / Out</span>
                     </div>
                     <span className="text-[10px] font-mono bg-slate-100 dark:bg-dark-bg text-slate-500 px-2 py-0.5 rounded border border-light-border dark:border-dark-border">
-                      `/v1/attendance/check-in`
+                      `POST /v1/attendance/check-in`
                     </span>
                   </div>
                   <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white mb-2 group-hover:text-accent-green transition-colors">
-                    Cryptographic HR Attendance Ledgers
+                    HR Attendance &amp; Leave Management
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-5">
-                    Eliminate timesheet fraud and manual logging errors. Employees check in via browser with automatic verification against office GPS coordinate boundaries (`lat, long`) and corporate IP whitelists.
+                    One-click employee check-in/check-out with explicit work location tagging (`Office`, `Remote`, `Hybrid`) and break duration logging. Configurable leave quotas (`Annual`, `Sick`, `Casual`, `Maternity/Paternity`).
                   </p>
 
                   {/* Key Feature Bullets */}
                   <div className="grid grid-cols-2 gap-2.5 text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-dark-bg p-4 rounded-2xl border border-light-border dark:border-dark-border">
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-accent-green"></i>
-                      <span>GPS Geofenced Check-In</span>
+                      <span>Location Tagging (`Office/Hybrid`)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-accent-green"></i>
-                      <span>Corporate IP Whitelist Checks</span>
+                      <span>4 Leave Quota Types (`Sick/PTO`)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-accent-green"></i>
-                      <span>One-Click PTO Approvals</span>
+                      <span>Hierarchical Leave Approval</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <i className="fa-solid fa-check text-accent-green"></i>
-                      <span>Monthly Payroll Export Ledger</span>
+                      <span>Salary Deduction &amp; HR Logs</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="px-6 py-4 bg-slate-50 dark:bg-[#121620]/60 border-t border-light-border dark:border-dark-border flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-                <span className="font-mono text-[11px] text-slate-400">Query: `INSERT INTO attendance_logs`</span>
+                <span className="font-mono text-[11px] text-slate-400">Endpoint: `/v1/leaves/apply`</span>
                 <span className="text-accent-green flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
                   <span>Explore HR Suite</span> <i className="fa-solid fa-arrow-right"></i>
                 </span>
@@ -418,25 +418,25 @@ export default function FeatureShowcase() {
                       <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">Master Tasks List</span>
+                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">Master Tasks Pool</span>
                     </div>
-                    <span className="text-[10px] bg-blue-500/15 text-blue-500 font-bold px-2.5 py-0.5 rounded">SQL Filtered</span>
+                    <span className="text-[10px] bg-blue-500/15 text-blue-500 font-bold px-2.5 py-0.5 rounded">RLS Scoped</span>
                   </div>
                   <div className="relative bg-slate-50 dark:bg-dark-bg overflow-hidden border-b border-light-border dark:border-dark-border max-h-[250px]">
                     <img src="/assets/light_all_task.png" alt="All Tasks Light" className="block dark:hidden w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                     <img src="/assets/dark_all_task.png" alt="All Tasks Dark" className="hidden dark:block w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-6">
-                    <div className="text-[10px] font-mono font-bold text-blue-500 uppercase tracking-wider mb-1.5">Centralized Ticket Pool</div>
+                    <div className="text-[10px] font-mono font-bold text-blue-500 uppercase tracking-wider mb-1.5">Global Command Search</div>
                     <h4 className="font-display font-bold text-lg text-slate-900 dark:text-white mb-2.5 group-hover:text-blue-500 transition-colors">
-                      Granular Task Search &amp; Filtering
+                      Unified Task &amp; Project Search
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                      Search across thousands of tasks instantly with multi-parameter SQL filters (`Assignee`, `Priority`, `Milestone`). Export structured reports to CSV or PDF with one click.
+                      Fast, unified global search across projects, tasks, and employee directories. Filter by priority (`Urgent`), department, assignee, or deadline with instant client-side Redux store caching.
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-2 border-t border-light-border dark:border-dark-border">
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Multi-Select Bulk Edit</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">CSV/PDF Export</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Global Search Bar</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Redux Toolkit (`taskSlice`)</span>
                     </div>
                   </div>
                 </div>
@@ -456,29 +456,29 @@ export default function FeatureShowcase() {
                       <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">Projects Workspace</span>
+                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">Department Scoping</span>
                     </div>
-                    <span className="text-[10px] bg-purple-500/15 text-purple-500 font-bold px-2.5 py-0.5 rounded">Milestones</span>
+                    <span className="text-[10px] bg-purple-500/15 text-purple-500 font-bold px-2.5 py-0.5 rounded">`/v1/project`</span>
                   </div>
                   <div className="relative bg-slate-50 dark:bg-dark-bg overflow-hidden border-b border-light-border dark:border-dark-border max-h-[250px]">
                     <img src="/assets/dark_all_projects.png" alt="All Projects" className="w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-6">
-                    <div className="text-[10px] font-mono font-bold text-purple-500 uppercase tracking-wider mb-1.5">Portfolio Management</div>
+                    <div className="text-[10px] font-mono font-bold text-purple-500 uppercase tracking-wider mb-1.5">Departmental Boundaries</div>
                     <h4 className="font-display font-bold text-lg text-slate-900 dark:text-white mb-2.5 group-hover:text-purple-500 transition-colors">
-                      Multi-Project Milestone Tracking
+                      Department &amp; Team Scoping
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                      Monitor budget burn rates, sprint completion percentages, and client deliverables side-by-side. Give external stakeholders secure, read-only portal access to verify real-time status.
+                      Assign projects to specific departments (`Engineering`, `Marketing`, `Project Management`). Create specialized sub-teams with dedicated Team Leads and assign entire squads in a single click.
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-2 border-t border-light-border dark:border-dark-border">
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Budget Burn Rate</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Client Portal CNAME</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Add Member Drawer</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Team Leads Hierarchy</span>
                     </div>
                   </div>
                 </div>
                 <div className="px-6 py-3.5 bg-slate-50 dark:bg-[#121620]/60 border-t border-light-border dark:border-dark-border flex items-center justify-between text-[11px] font-bold text-purple-500">
-                  <span>Explore Projects Suite</span>
+                  <span>Explore Department Scopes</span>
                   <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </div>
               </div>
@@ -493,30 +493,30 @@ export default function FeatureShowcase() {
                       <span className="w-2.5 h-2.5 rounded-full bg-red-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                       <span className="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">Team Directory</span>
+                      <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300 ml-1">RBAC &amp; MFA MFA</span>
                     </div>
-                    <span className="text-[10px] bg-amber-500/15 text-amber-500 font-bold px-2.5 py-0.5 rounded">RBAC Security</span>
+                    <span className="text-[10px] bg-amber-500/15 text-amber-500 font-bold px-2.5 py-0.5 rounded">Microsoft Auth</span>
                   </div>
                   <div className="relative bg-slate-50 dark:bg-dark-bg overflow-hidden border-b border-light-border dark:border-dark-border max-h-[250px]">
                     <img src="/assets/light_employees.png" alt="Employees Light" className="block dark:hidden w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                     <img src="/assets/dark_all_user.png" alt="Users Dark" className="hidden dark:block w-full h-full object-cover object-top transition-transform duration-500 group-hover:scale-105" />
                   </div>
                   <div className="p-6">
-                    <div className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-wider mb-1.5">Identity &amp; Access Control</div>
+                    <div className="text-[10px] font-mono font-bold text-amber-500 uppercase tracking-wider mb-1.5">Microsoft Authenticator &bull; 10 Roles</div>
                     <h4 className="font-display font-bold text-lg text-slate-900 dark:text-white mb-2.5 group-hover:text-amber-500 transition-colors">
-                      Granular Role-Based Security
+                      MFA &amp; 10-Tier RBAC Hierarchy
                     </h4>
                     <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4">
-                      Enforce Principle of Least Privilege across your organization. Assign strict permissions (`Super Admin`, `Project Manager`, `Developer`, `HR Auditor`) and mandate 2FA TOTP authentication.
+                      Seamless QR code setup using standard RFC 6238 TOTP. Two-step verification tokens (`requires2FA: true`). Strict 10-tier governance (`Super Admin`, `Admin`, `HR`, `Department Head`, `Team Lead`... `Intern`).
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-2 border-t border-light-border dark:border-dark-border">
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">2FA / TOTP Required</span>
-                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">Custom RBAC Silos</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">QR Code Scan (No Typing)</span>
+                      <span className="text-[10px] bg-slate-100 dark:bg-dark-bg text-slate-600 dark:text-slate-300 px-2 py-1 rounded border border-light-border dark:border-dark-border">10 Hierarchical Roles</span>
                     </div>
                   </div>
                 </div>
                 <div className="px-6 py-3.5 bg-slate-50 dark:bg-[#121620]/60 border-t border-light-border dark:border-dark-border flex items-center justify-between text-[11px] font-bold text-amber-500">
-                  <span>Inspect RBAC Roles</span>
+                  <span>Inspect Security Specs</span>
                   <i className="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
                 </div>
               </div>

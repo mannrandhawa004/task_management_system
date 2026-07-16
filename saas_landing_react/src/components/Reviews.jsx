@@ -3,7 +3,7 @@ import React from 'react';
 export default function Reviews() {
   const reviews = [
     {
-      quote: "The per-tenant MySQL isolation is a complete game changer for our enterprise clients. Knowing our data (`tenant_cloudscale`) has zero row overlap gives our compliance team complete peace of mind.",
+      quote: "The Row-Level Security (`department_id = ?`) and Add Member Drawer with instant client-side memory search completely eliminated task clutter between our Engineering and Marketing squads. It's brilliant.",
       author: "Marcus Sterling",
       role: "VP of Engineering at CloudScale",
       avatar: "MS",
@@ -11,7 +11,7 @@ export default function Reviews() {
       rating: 5
     },
     {
-      quote: "We migrated 45 developers from Jira over a single weekend using the REST API. The Socket.IO real-time Kanban updates are instantaneous even across global time zones.",
+      quote: "Rolling out Microsoft Authenticator TOTP QR setup (`requires2FA: true`) across 120 employees took less than 10 minutes. The two-step temporary JWT token verification flow is flawless and SOC 2 ready.",
       author: "Elena Rostova",
       role: "Principal Product Manager at FinPulse",
       avatar: "ER",
@@ -19,7 +19,7 @@ export default function Reviews() {
       rating: 5
     },
     {
-      quote: "The automated check-in/out attendance tracker saves our HR department 12 hours every week. Office GPS validation with IP geofencing completely eliminated timesheet discrepancies.",
+      quote: "The Next.js 15 App Router frontend paired with raw parameterized MySQL 8 queries over Express 5 is lightning fast. And our HR department loves the location-tagged daily attendance (`Office vs Hybrid`)!",
       author: "David K. Thorne",
       role: "Chief Operations Officer at Apex Labs",
       avatar: "DT",
@@ -36,13 +36,13 @@ export default function Reviews() {
 
       <div className="max-w-3xl mx-auto mb-16 gsap-scroll-header">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/15 text-brand-500 font-mono text-xs font-bold mb-4 shadow-sm border border-brand-500/20">
-          <i className="fa-solid fa-quote-left"></i> Verified Customer Success
+          <i className="fa-solid fa-quote-left"></i> Verified Technical Success
         </div>
         <h2 className="font-display font-extrabold text-4xl sm:text-5xl text-slate-900 dark:text-white tracking-tight mb-5 leading-tight">
-          Loved by Engineering &amp; Operations Leaders
+          Loved by Engineering, PMO &amp; HR Leaders
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed">
-          See how teams across distributed engineering, healthcare, and finance scale their operations with dedicated MySQL pools and real-time sprint boards.
+          See how distributed engineering squads, PMO directors, and HR leaders scale their operations using our Next.js 15 / Express 5 architecture.
         </p>
       </div>
 
@@ -58,17 +58,22 @@ export default function Reviews() {
                   <i key={i} className="fa-solid fa-star"></i>
                 ))}
               </div>
-              <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-8 italic">
+              <p className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm leading-relaxed mb-8 font-normal italic">
                 "{rev.quote}"
               </p>
             </div>
-            <div className="flex items-center gap-3.5 pt-5 border-t border-light-border dark:border-dark-border">
-              <div className={`w-11 h-11 rounded-2xl ${rev.color} text-white font-bold flex items-center justify-center text-sm shadow-md group-hover:scale-105 transition-transform flex-shrink-0`}>
+
+            <div className="flex items-center gap-4 pt-4 border-t border-light-border dark:border-dark-border">
+              <div className={`w-11 h-11 rounded-2xl ${rev.color} text-white font-extrabold flex items-center justify-center text-sm shadow-md flex-shrink-0 group-hover:scale-105 transition-transform`}>
                 {rev.avatar}
               </div>
               <div>
-                <div className="font-bold text-sm text-slate-900 dark:text-white">{rev.author}</div>
-                <div className="text-xs text-slate-400 font-medium">{rev.role}</div>
+                <div className="font-display font-bold text-sm text-slate-900 dark:text-white group-hover:text-brand-500 transition-colors">
+                  {rev.author}
+                </div>
+                <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+                  {rev.role}
+                </div>
               </div>
             </div>
           </div>

@@ -84,9 +84,9 @@ export default function Hero({ onOpenCheckout }) {
           {/* Theme-adaptive dashboard screenshot */}
           <div className="relative overflow-hidden">
             <img 
-              src="/assets/light_dashboard.png" 
+              src="/assets/image.png" 
               alt="TaskFlow Dashboard Light Mode" 
-              className="block dark:hidden w-full h-auto object-cover object-top max-h-[600px]"
+              className="block dark:hidden w-full  object-cover"
             />
             <img 
               src="/assets/dark_dashboard.png" 
