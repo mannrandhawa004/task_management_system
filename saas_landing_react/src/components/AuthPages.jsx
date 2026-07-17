@@ -8,7 +8,7 @@ const PRICES = { monthly: { 1: 29, 2: 79, 3: 199 }, annual: { 1: 24, 2: 64, 3: 1
 function LogoMark() {
   return (
     <span className="auth-logo-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none"><path d="m12 3 8 4.5-8 4.5-8-4.5L12 3Z" /><path d="m4 12 8 4.5 8-4.5M4 16.5 12 21l8-4.5" /></svg>
+      <img src="/assets/taskflow-logo.png" alt="" />
     </span>
   );
 }
