@@ -137,38 +137,84 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
       }
 
       const media = gsap.matchMedia();
+      media.add('(pointer: fine) and (prefers-reduced-motion: no-preference)', () => {
+        const cursor = root.current?.querySelector('.cursor-follower');
+        if (!cursor) return undefined;
+
+        const moveX = gsap.quickTo(cursor, 'x', { duration: 0.5, ease: 'power3.out' });
+        const moveY = gsap.quickTo(cursor, 'y', { duration: 0.5, ease: 'power3.out' });
+        const interactiveElements = root.current.querySelectorAll('a, button, .feature-card, .price-card, .story-copy');
+        const showCursor = ({ clientX, clientY }) => {
+          moveX(clientX);
+          moveY(clientY);
+          gsap.to(cursor, { autoAlpha: 1, duration: 0.2, overwrite: 'auto' });
+        };
+        const hideCursor = () => gsap.to(cursor, { autoAlpha: 0, duration: 0.25, overwrite: 'auto' });
+        const activateCursor = () => cursor.classList.add('is-active');
+        const deactivateCursor = () => cursor.classList.remove('is-active');
+        const pressCursor = () => cursor.classList.add('is-pressed');
+        const releaseCursor = () => cursor.classList.remove('is-pressed');
+
+        gsap.set(cursor, { xPercent: -50, yPercent: -50, autoAlpha: 0 });
+        window.addEventListener('pointermove', showCursor);
+        document.documentElement.addEventListener('mouseleave', hideCursor);
+        window.addEventListener('pointerdown', pressCursor);
+        window.addEventListener('pointerup', releaseCursor);
+        interactiveElements.forEach((element) => {
+          element.addEventListener('pointerenter', activateCursor);
+          element.addEventListener('pointerleave', deactivateCursor);
+        });
+
+        return () => {
+          window.removeEventListener('pointermove', showCursor);
+          document.documentElement.removeEventListener('mouseleave', hideCursor);
+          window.removeEventListener('pointerdown', pressCursor);
+          window.removeEventListener('pointerup', releaseCursor);
+          interactiveElements.forEach((element) => {
+            element.removeEventListener('pointerenter', activateCursor);
+            element.removeEventListener('pointerleave', deactivateCursor);
+          });
+        };
+      });
+
       media.add('(min-width: 960px) and (prefers-reduced-motion: no-preference)', () => {
         const panels = gsap.utils.toArray('.story-panel');
         const copies = gsap.utils.toArray('.story-copy');
         const details = copies.map((copy) => copy.querySelector('div > span'));
-        gsap.set(panels, { willChange: 'clip-path' });
-        gsap.set(panels.slice(1), { autoAlpha: 1, clipPath: 'inset(0 0 100% 0)' });
+        const progress = document.querySelector('.story-progress i');
+        gsap.set(panels, { autoAlpha: 1, willChange: 'clip-path' });
+        gsap.set(panels.slice(1), { clipPath: 'inset(100% 0% 0% 0%)' });
+        panels.forEach((panel, index) => gsap.set(panel, { zIndex: index + 2 }));
+        if (progress) gsap.set(progress, { scaleY: 0, transformOrigin: 'top center' });
 
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: '.story-pin',
             start: 'top top',
-            end: '+=2800',
+            end: () => `+=${Math.max(window.innerHeight * 3.15, 2500)}`,
             pin: true,
             pinSpacing: true,
-            scrub: 0.9,
+            scrub: 1.25,
             anticipatePin: 1,
             invalidateOnRefresh: true,
           },
         });
 
-        timeline.to({}, { duration: 0.55 });
+        timeline.to({}, { duration: 0.75 });
         storySteps.slice(1).forEach((_, index) => {
           const from = index;
           const to = index + 1;
+          const label = `step-${to}`;
           timeline
-            .to(copies[from], { opacity: 0.28, duration: 0.35 }, `step-${to}`)
-            .to(copies[to], { opacity: 1, duration: 0.35 }, `step-${to}`)
-            .to(details[from], { maxHeight: 0, marginTop: 0, opacity: 0, duration: 0.35 }, `step-${to}`)
-            .to(details[to], { maxHeight: 100, marginTop: 8, opacity: 1, duration: 0.35 }, `step-${to}`)
-            .to(panels[to], { clipPath: 'inset(0 0 0% 0)', duration: 0.72, ease: 'power2.inOut' }, `step-${to}+=0.06`)
-            .to({}, { duration: 0.78 });
+            .addLabel(label)
+            .to(panels[to], { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.88, ease: 'power2.inOut' }, label)
+            .to(copies[from], { opacity: 0.28, duration: 0.42, ease: 'power1.inOut' }, `${label}+=0.12`)
+            .to(copies[to], { opacity: 1, duration: 0.48, ease: 'power1.inOut' }, `${label}+=0.16`)
+            .to(details[from], { maxHeight: 0, marginTop: 0, opacity: 0, duration: 0.4, ease: 'power1.inOut' }, `${label}+=0.12`)
+            .to(details[to], { maxHeight: 100, marginTop: 8, opacity: 1, duration: 0.48, ease: 'power1.out' }, `${label}+=0.16`)
+            .to({}, { duration: 0.9 });
         });
+        if (progress) timeline.to(progress, { scaleY: 1, duration: timeline.duration(), ease: 'none' }, 0);
       });
 
       const refresh = () => ScrollTrigger.refresh();
@@ -186,6 +232,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
 
   return (
     <div ref={root} className="premium-site">
+      <div className="cursor-follower" aria-hidden="true"><span /></div>
       <a className="skip-link" href="#main">Skip to content</a>
       <header className="site-nav">
         <div className="nav-inner">
@@ -282,6 +329,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
                 <span className="section-kicker">One connected workspace</span>
                 <h2>Follow the work.<br />Not the busywork.</h2>
                 <div className="story-copy-list">
+                  <span className="story-progress" aria-hidden="true"><i /></span>
                   {storySteps.map((step) => (
                     <article className="story-copy" key={step.number}>
                       <span className="story-number">{step.number}</span>
