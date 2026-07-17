@@ -13,6 +13,27 @@
 
 <br />
 
+## Premium Marketing Site
+
+This repository also includes a standalone React/Vite marketing site in [`saas_landing_react/`](saas_landing_react/). It presents TaskFlow with a responsive premium landing-page experience and keeps the existing workspace sign-in and provisioning flows available from its calls to action.
+
+- Uses the real TaskFlow dashboard, task-board, and attendance product screenshots.
+- Includes a GSAP ScrollTrigger-driven pinned product story on desktop, plus lightweight reveal and stagger animations throughout the page.
+- Respects `prefers-reduced-motion` and falls back to a readable, non-pinned mobile story.
+- Supports the same dark and light theme preference used across the product.
+
+### Run the Marketing Site
+
+```bash
+cd saas_landing_react
+npm install
+npm run dev
+```
+
+The Vite preview runs at `http://localhost:5173` by default. For a production check, run `npm run build`.
+
+---
+
 > **A modern, multi-tenant, enterprise-grade Task Management & Workflow Automation platform.** Built with a high-performance **Next.js 15 (App Router)** frontend and an **Express 5 / MySQL** backend, featuring advanced **Role-Based Access Control (RBAC)**, **Multi-Factor Authentication (MFA)** via **Microsoft Authenticator**, real-time **Socket.IO** collaboration, **Department & Team Scoping**, and comprehensive **HR Attendance & Leave Management**.
 
 ---

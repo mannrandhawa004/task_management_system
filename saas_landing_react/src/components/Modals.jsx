@@ -177,11 +177,9 @@ export function CheckoutModal({ isOpen, onClose, initialPlan }) {
   const [adminPassword, setAdminPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [successData, setSuccessData] = useState(null);
 
   if (!isOpen) return null;
 
-  const price = isAnnual ? PRICES.annual[selectedPlanId] : PRICES.monthly[selectedPlanId];
   const planNames = { 1: "Starter Workspace", 2: "Professional Suite", 3: "Enterprise Cloud" };
   const currentPlanName = planNames[selectedPlanId] || "Professional Suite";
 
@@ -214,7 +212,6 @@ export function CheckoutModal({ isOpen, onClose, initialPlan }) {
       if (!res.ok) {
         throw new Error(data.message || data.error || data.detail || 'Provisioning failed. Subdomain or email might already exist.');
       }
-      setSuccessData(data);
       setStep('Success');
     } catch (err) {
       setError(err.message || 'Error communicating with provisioning server.');
