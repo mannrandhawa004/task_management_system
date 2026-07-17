@@ -107,8 +107,12 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
       });
 
       if (!reduceMotion) {
-        gsap.from('.hero-product', { opacity: 0, y: 50, rotateX: 4, scale: 0.97, duration: 1.2, delay: 0.35, ease: 'power3.out' });
-        gsap.to('.hero-product', { yPercent: -5, ease: 'none', scrollTrigger: { trigger: '.hero-product', start: 'top 75%', end: 'bottom top', scrub: 1 } });
+        gsap.from('.hero-line > span', { yPercent: 115, rotate: 2, duration: 1, stagger: 0.12, ease: 'power4.out' });
+        gsap.from('.hero-product', { opacity: 0, y: 46, rotateX: 4, scale: 0.96, duration: 1.25, delay: 0.3, ease: 'power3.out' });
+        gsap.to('.hero-product', { yPercent: -4, ease: 'none', scrollTrigger: { trigger: '.hero-section', start: 'top top', end: 'bottom top', scrub: 0.9 } });
+        gsap.to('.hero-laptop-frame', { y: -9, duration: 3.6, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+        gsap.to('.hero-cube', { rotationX: '+=360', rotationY: '+=360', duration: 16, repeat: -1, ease: 'none' });
+        gsap.to('.hero-orbit-dot', { rotation: 360, transformOrigin: '50% 50%', duration: 10, repeat: -1, ease: 'none' });
 
         gsap.utils.toArray('.reveal').forEach((element) => {
           gsap.from(element, {
@@ -137,19 +141,23 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
         const panels = gsap.utils.toArray('.story-panel');
         const copies = gsap.utils.toArray('.story-copy');
         const details = copies.map((copy) => copy.querySelector('div > span'));
-        gsap.set(panels.slice(1), { opacity: 0 });
+        gsap.set(panels, { willChange: 'clip-path' });
+        gsap.set(panels.slice(1), { autoAlpha: 1, clipPath: 'inset(0 0 100% 0)' });
 
         const timeline = gsap.timeline({
           scrollTrigger: {
             trigger: '.story-pin',
             start: 'top top',
-            end: '+=2400',
+            end: '+=2800',
             pin: true,
-            scrub: 0.8,
+            pinSpacing: true,
+            scrub: 0.9,
             anticipatePin: 1,
+            invalidateOnRefresh: true,
           },
         });
 
+        timeline.to({}, { duration: 0.55 });
         storySteps.slice(1).forEach((_, index) => {
           const from = index;
           const to = index + 1;
@@ -158,8 +166,8 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
             .to(copies[to], { opacity: 1, duration: 0.35 }, `step-${to}`)
             .to(details[from], { maxHeight: 0, marginTop: 0, opacity: 0, duration: 0.35 }, `step-${to}`)
             .to(details[to], { maxHeight: 100, marginTop: 8, opacity: 1, duration: 0.35 }, `step-${to}`)
-            .to(panels[from], { opacity: 0, duration: 0.5 }, `step-${to}`)
-            .to(panels[to], { opacity: 1, duration: 0.5 }, `step-${to}`);
+            .to(panels[to], { clipPath: 'inset(0 0 0% 0)', duration: 0.72, ease: 'power2.inOut' }, `step-${to}+=0.06`)
+            .to({}, { duration: 0.78 });
         });
       });
 
@@ -209,37 +217,52 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
         <section className="hero-section" id="top">
           <div className="hero-glow hero-glow-one" />
           <div className="hero-glow hero-glow-two" />
-          <div className="section-shell hero-copy">
-            <div className="eyebrow hero-reveal"><span className="eyebrow-dot" /> The calmer way to move work forward</div>
-            <h1 className="hero-reveal">Projects, people, progress—<em>in one flow.</em></h1>
-            <p className="hero-reveal">TaskFlow gives growing teams one beautifully clear place to plan work, balance people, and see progress without chasing updates.</p>
-            <div className="hero-actions hero-reveal">
-              <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start your free workspace <Icon name="arrow" /></button>
-              <a className="button-secondary button-large" href="#workflow"><span className="play-icon"><Icon name="play" size={15} /></span> See how it works</a>
-            </div>
-            <div className="hero-proof hero-reveal">
-              <span><Icon name="check" size={15} /> 14 days free</span>
-              <span><Icon name="check" size={15} /> No credit card</span>
-              <span><Icon name="check" size={15} /> Setup in minutes</span>
-            </div>
-          </div>
-
-          <div className="section-shell hero-product-wrap">
-            <div className="hero-product">
-              <div className="product-aura" />
-              <ProductFrame label="Live and synced">
-                <picture>
-                  <img className="product-image light-product" src="/assets/light_dashboard.png" alt="TaskFlow project dashboard with progress, projects, and upcoming tasks" />
-                  <img className="product-image dark-product" src="/assets/dark_dashboard.png" alt="TaskFlow project dashboard in dark mode" />
-                </picture>
-              </ProductFrame>
-              <div className="float-card float-card-left">
-                <span className="float-icon green"><Icon name="check" size={18} /></span>
-                <span><b>Sprint on track</b><small>19 tasks completed</small></span>
+          <div className="hero-glow hero-glow-three" />
+          <div className="section-shell hero-layout">
+            <div className="hero-copy">
+              <div className="eyebrow hero-reveal"><span className="eyebrow-dot" /> The calmer way to move work forward</div>
+              <h1 className="hero-heading">
+                <span className="hero-line"><span>Projects, people,</span></span>
+                <span className="hero-line"><span>progress—<em className="hero-word-accent">in one flow.</em></span></span>
+              </h1>
+              <p className="hero-reveal">TaskFlow gives growing teams one beautifully clear place to plan work, balance people, and see progress without chasing updates.</p>
+              <div className="hero-actions hero-reveal">
+                <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start your free workspace <Icon name="arrow" /></button>
+                <a className="button-secondary button-large" href="#workflow"><span className="play-icon"><Icon name="play" size={15} /></span> See how it works</a>
               </div>
-              <div className="float-card float-card-right">
-                <span className="avatars"><i>MK</i><i>RA</i><i>+8</i></span>
-                <span><b>Team is moving</b><small>12 updates today</small></span>
+              <div className="hero-proof hero-reveal">
+                <span><Icon name="check" size={15} /> 14 days free</span>
+                <span><Icon name="check" size={15} /> No credit card</span>
+                <span><Icon name="check" size={15} /> Setup in minutes</span>
+              </div>
+            </div>
+
+            <div className="hero-product-wrap">
+              <div className="hero-product">
+                <div className="product-aura" />
+                <div className="hero-orbit" aria-hidden="true"><span className="hero-orbit-dot"><i /></span></div>
+                <div className="hero-laptop-frame">
+                  <img
+                    className="hero-laptop-image"
+                    src="/assets/taskflow-laptop-hero.png"
+                    alt="TaskFlow dashboard displayed on a laptop in a modern workspace"
+                    loading="eager"
+                    fetchPriority="high"
+                  />
+                </div>
+                <div className="float-card float-card-left">
+                  <span className="float-icon green"><Icon name="check" size={18} /></span>
+                  <span><b>Sprint on track</b><small>19 tasks completed</small></span>
+                </div>
+                <div className="float-card float-card-right">
+                  <span className="avatars"><i>MK</i><i>RA</i><i>+8</i></span>
+                  <span><b>Team is moving</b><small>12 updates today</small></span>
+                </div>
+                <div className="hero-cube" aria-hidden="true">
+                  <span className="cube-face cube-front" /><span className="cube-face cube-back" />
+                  <span className="cube-face cube-right" /><span className="cube-face cube-left" />
+                  <span className="cube-face cube-top" /><span className="cube-face cube-bottom" />
+                </div>
               </div>
             </div>
           </div>
@@ -288,8 +311,8 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
               <p>Thoughtful details remove friction from everyday operations, while serious controls are ready when your organization needs them.</p>
             </div>
             <div className="feature-grid stagger-group">
-              {featureCards.map((feature) => (
-                <article className="feature-card" key={feature.title}>
+              {featureCards.map((feature, index) => (
+                <article className={`feature-card feature-tone-${index + 1}`} key={feature.title}>
                   <div className="feature-icon"><Icon name={feature.icon} size={24} /></div>
                   <span className="feature-eyebrow">{feature.eyebrow}</span>
                   <h3>{feature.title}</h3>
