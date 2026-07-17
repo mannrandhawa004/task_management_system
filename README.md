@@ -19,7 +19,8 @@ This repository also includes a standalone React/Vite marketing site in [`saas_l
 
 - Uses the real TaskFlow dashboard inside a responsive laptop hero composition, plus task-board and attendance product screenshots throughout the story.
 - Combines a multi-color premium visual system with lightweight CSS 3D accents, animated headline reveals, and responsive floating status cards.
-- Includes a GSAP ScrollTrigger-driven pinned product story on desktop with clean clipped transitions, plus reveal and stagger animations throughout the page.
+- Includes a GSAP ScrollTrigger-driven pinned product story with smooth masked transitions, plus a responsive cursor follower and reveal/stagger motion throughout the page.
+- Provides compact, dark/light `/login` and `/signup` pages with tenant-aware authentication and a guided three-step workspace provisioning flow.
 - Respects `prefers-reduced-motion` and falls back to a readable, non-pinned mobile story.
 - Supports the same dark and light theme preference used across the product.
 
