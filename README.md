@@ -214,14 +214,16 @@ task_management_system/
 The `/signup` flow creates a checkout first and provisions the tenant database and Super Admin only after the backend verifies a successful payment.
 
 - **Stripe:** add a test or live `STRIPE_SECRET_KEY`. Customers are redirected to Stripe-hosted Checkout, then the backend retrieves the Checkout Session and confirms the expected paid amount.
+- **Stripe publishable key:** the current integration redirects to the server-created hosted Checkout Session URL, so Stripe.js is not initialized in the browser and no `pk_test_...` key is needed. A publishable key becomes necessary if checkout is changed to Stripe Elements, embedded Checkout, or another browser-side Stripe.js flow.
 - **Razorpay:** add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. The backend creates the Order, verifies the returned HMAC signature, and confirms/captures the payment before provisioning.
 - **Webhooks:** register `POST /v1/saas/webhooks/stripe` for Stripe Checkout completion events and `POST /v1/saas/webhooks/razorpay` for Razorpay `payment.captured`/`order.paid` events. Set the matching `STRIPE_WEBHOOK_SECRET` and a separate `RAZORPAY_WEBHOOK_SECRET`; both endpoints verify the untouched raw request body and are idempotent.
+- **Local Stripe webhook testing:** install and authenticate the Stripe CLI, then run `stripe listen --events checkout.session.completed,checkout.session.async_payment_succeeded --forward-to localhost:8000/v1/saas/webhooks/stripe`. Copy the `whsec_...` signing secret printed by the CLI to `STRIPE_WEBHOOK_SECRET` and restart the server. Sandbox webhooks do not require an activated live business account.
+- **Why checkout can succeed without a webhook:** after Stripe redirects back to `/signup`, the frontend calls `/v1/saas/checkout/stripe/verify`; the backend retrieves the Checkout Session with `STRIPE_SECRET_KEY` and provisions only when Stripe reports the expected payment as paid. The webhook is the asynchronous recovery path when the customer closes the tab, a redirect fails, or payment confirmation arrives later.
+- **Razorpay test keys:** switch the Razorpay Dashboard to Test Mode, then open **Account & Settings → API Keys → Generate Key**. Put the returned Key ID and Key Secret in the server environment; only the public Key ID is returned to Razorpay Checkout in the browser.
 - **Razorpay currency:** plan prices are stored in USD. `RAZORPAY_USD_TO_INR` controls the server-side conversion used to create INR Orders; update it to your production pricing policy.
 - **Landing site:** optionally set `VITE_API_URL=http://localhost:8000` and `VITE_APP_URL=http://localhost:3000` in `saas_landing_react/.env.local`.
 
-Use gateway test keys while developing. Replace them with live keys only after completing each provider's go-live checklist, configuring the webhook endpoints on a public HTTPS deployment, and reviewing capture settings in the provider dashboard.
-
----
+Use gateway test keys while developing. Replace them with live keys only after completing each provider's go-live checklist, configuring the webhook endpoints on a public HTTPS deployment, and reviewing capture settings in the provider dashboard
 
 ## 📚 API Documentation (OpenAPI / Swagger)
 

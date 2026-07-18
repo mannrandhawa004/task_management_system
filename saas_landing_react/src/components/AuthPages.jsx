@@ -28,7 +28,7 @@ const loadRazorpayScript = () => new Promise((resolve, reject) => {
 function LogoMark() {
   return (
     <span className="auth-logo-mark" aria-hidden="true">
-      <img src="/assets/taskflow-logo.png" alt="" />
+      <img src="/assets/taskflow-logo-modern.png" alt="" />
     </span>
   );
 }
@@ -72,7 +72,7 @@ function AuthLayout({ mode, currentStep = 1, children, isDark, onToggleTheme, on
   return (
     <div className="auth-page">
       <button className="auth-brand-home" type="button" onClick={() => onNavigate('/')} aria-label="Back to TaskFlow home">
-        <LogoMark /><span>TaskFlow</span>
+        <LogoMark />
       </button>
       <button className="auth-theme-toggle" type="button" onClick={onToggleTheme} aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}>
         <ThemeIcon isDark={isDark} /><span>{isDark ? 'Light' : 'Dark'} theme</span>
