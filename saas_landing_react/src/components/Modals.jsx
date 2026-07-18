@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const PRICES = {
   monthly: { 1: 29, 2: 79, 3: 199 },
-  annual:  { 1: 24, 2: 64, 3: 159 },
+  annual:  { 1: 24, 2: 66, 3: 166 },
 };
 
 export function LoginModal({ isOpen, onClose }) {
@@ -194,25 +194,28 @@ export function CheckoutModal({ isOpen, onClose, initialPlan }) {
     setError('');
     try {
       const payload = {
-        tenant_name: tenantName || `${tenantSlug}-workspace`,
-        subdomain: tenantSlug,
-        admin_email: adminEmail,
-        admin_password: adminPassword,
-        admin_name: adminName,
-        plan_id: selectedPlanId,
-        billing_cycle: isAnnual ? "yearly" : "monthly"
+        companyName: tenantName || `${tenantSlug}-workspace`,
+        slug: tenantSlug,
+        contactName: adminName,
+        contactEmail: adminEmail,
+        adminPassword,
+        planId: selectedPlanId,
+        billingCycle: isAnnual ? "yearly" : "monthly",
+        gateway: "stripe",
       };
 
-      const res = await fetch('http://localhost:8000/v1/auth/register-tenant', {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/v1/saas/checkout/session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.message || data.error || data.detail || 'Provisioning failed. Subdomain or email might already exist.');
+        throw new Error(data.message || 'Checkout could not be created. The workspace URL or email might already exist.');
       }
-      setStep('Success');
+      if (!data.data?.redirectUrl) throw new Error('Stripe did not return a checkout URL.');
+      window.location.assign(data.data.redirectUrl);
     } catch (err) {
       setError(err.message || 'Error communicating with provisioning server.');
     } finally {
@@ -435,11 +438,11 @@ export function CheckoutModal({ isOpen, onClose, initialPlan }) {
               >
                 {loading ? (
                   <>
-                    <i className="fa-solid fa-spinner animate-spin"></i> Provisioning Schema...
+                    <i className="fa-solid fa-spinner animate-spin"></i> Creating Checkout...
                   </>
                 ) : (
                   <>
-                    <span>Deploy {currentPlanName}</span> <i className="fa-solid fa-bolt"></i>
+                    <span>Continue to Stripe for {currentPlanName}</span> <i className="fa-solid fa-arrow-right"></i>
                   </>
                 )}
               </button>

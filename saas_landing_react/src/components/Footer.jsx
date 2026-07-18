@@ -28,7 +28,7 @@ export default function Footer({ onOpenCheckout }) {
               onClick={() => onOpenCheckout(2, 'Professional Suite')} 
               className="w-full sm:w-auto px-9 py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 text-white font-bold text-base transition-all shadow-orange-glow hover:-translate-y-1 scale-100 active:scale-95 cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>Start Your 14-Day Free Trial</span>
+              <span>Choose Professional</span>
               <i className="fa-solid fa-arrow-right text-sm"></i>
             </button>
             <a

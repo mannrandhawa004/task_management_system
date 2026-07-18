@@ -43,8 +43,8 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'auto' });
   };
 
-  const openSignup = (id = 2, name = 'Professional Suite') => {
-    navigate(`/signup?plan=${id}&name=${encodeURIComponent(name)}`);
+  const openSignup = (id = 2, name = 'Professional Suite', billing = 'yearly') => {
+    navigate(`/signup?plan=${id}&name=${encodeURIComponent(name)}&billing=${billing}`);
   };
 
   if (route === '/login') return <LoginPage isDark={isDark} onToggleTheme={toggleTheme} onNavigate={navigate} />;

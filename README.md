@@ -20,7 +20,7 @@ This repository also includes a standalone React/Vite marketing site in [`saas_l
 - Uses the real TaskFlow dashboard inside a responsive laptop hero composition, plus task-board and attendance product screenshots throughout the story.
 - Combines a multi-color premium visual system with lightweight CSS 3D accents, animated headline reveals, and responsive floating status cards.
 - Includes a GSAP ScrollTrigger-driven pinned product story with smooth masked transitions, plus a responsive cursor follower and reveal/stagger motion throughout the page.
-- Provides compact, dark/light `/login` and `/signup` pages with tenant-aware authentication and a guided three-step workspace provisioning flow.
+- Provides compact, dark/light `/login` and `/signup` pages with tenant-aware authentication and a payment-gated provisioning flow using Stripe Checkout or Razorpay Checkout.
 - Respects `prefers-reduced-motion` and falls back to a readable, non-pinned mobile story.
 - Supports the same dark and light theme preference used across the product.
 
@@ -170,8 +170,22 @@ task_management_system/
    
    # Frontend CORS Origin
    CLIENT_URL=http://localhost:3000
+
+   # Payment-gated SaaS signup
+   STRIPE_SECRET_KEY=sk_test_replace_me
+   STRIPE_WEBHOOK_SECRET=whsec_replace_me
+   RAZORPAY_KEY_ID=rzp_test_replace_me
+   RAZORPAY_KEY_SECRET=replace_me
+   RAZORPAY_WEBHOOK_SECRET=replace_with_a_separate_webhook_secret
+   RAZORPAY_USD_TO_INR=83
+   SAAS_LANDING_URL=http://localhost:5173
+   CLIENT_APP_URL=http://localhost:3000
    ```
-3. Start the backend development server:
+3. Initialize the SaaS control-plane database and subscription plans:
+   ```bash
+   node ../saas_platform/database/init_platform_db.js
+   ```
+4. Start the backend development server:
    ```bash
    npm run start
    # Server running on http://localhost:8000
@@ -187,12 +201,25 @@ task_management_system/
    ```env
    NEXT_PUBLIC_API_URL=http://localhost:8000/v1
    NEXT_PUBLIC_SOCKET_URL=http://localhost:8000
+   NEXT_PUBLIC_LANDING_URL=http://localhost:5173
    ```
 3. Start the Next.js frontend development server:
    ```bash
    npm run dev
    # Application running on http://localhost:3000
    ```
+
+### 5. Subscription Checkout Setup
+
+The `/signup` flow creates a checkout first and provisions the tenant database and Super Admin only after the backend verifies a successful payment.
+
+- **Stripe:** add a test or live `STRIPE_SECRET_KEY`. Customers are redirected to Stripe-hosted Checkout, then the backend retrieves the Checkout Session and confirms the expected paid amount.
+- **Razorpay:** add `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET`. The backend creates the Order, verifies the returned HMAC signature, and confirms/captures the payment before provisioning.
+- **Webhooks:** register `POST /v1/saas/webhooks/stripe` for Stripe Checkout completion events and `POST /v1/saas/webhooks/razorpay` for Razorpay `payment.captured`/`order.paid` events. Set the matching `STRIPE_WEBHOOK_SECRET` and a separate `RAZORPAY_WEBHOOK_SECRET`; both endpoints verify the untouched raw request body and are idempotent.
+- **Razorpay currency:** plan prices are stored in USD. `RAZORPAY_USD_TO_INR` controls the server-side conversion used to create INR Orders; update it to your production pricing policy.
+- **Landing site:** optionally set `VITE_API_URL=http://localhost:8000` and `VITE_APP_URL=http://localhost:3000` in `saas_landing_react/.env.local`.
+
+Use gateway test keys while developing. Replace them with live keys only after completing each provider's go-live checklist, configuring the webhook endpoints on a public HTTPS deployment, and reviewing capture settings in the provider dashboard.
 
 ---
 

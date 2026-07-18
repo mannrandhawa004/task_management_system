@@ -42,10 +42,15 @@ class TenantProvisioningService {
     contactPhone = "",
     planId = 1,
     billingCycle = "monthly",
-    adminPassword,
+    adminPassword = null,
+    adminPasswordHash = null,
+    paymentMethod = "stripe",
+    transactionReference = null,
+    amountPaid = null,
+    paymentCurrency = "USD",
   }) {
-    if (!companyName || !slug || !contactEmail || !adminPassword) {
-      throw new Error("Company name, slug, contact email, and admin password are required.");
+    if (!companyName || !slug || !contactEmail || (!adminPassword && !adminPasswordHash)) {
+      throw new Error("Company name, slug, contact email, and administrator credentials are required.");
     }
 
     const cleanSlug = slug
@@ -92,10 +97,9 @@ class TenantProvisioningService {
 
       // 4. Provision dedicated Super Admin (`role_id = 1`) inside the tenant database
       console.log(`[Provisioning] Creating Super Admin account inside ${dbName}...`);
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(adminPassword, salt);
+      const hashedPassword = adminPasswordHash || await bcrypt.hash(adminPassword, 12);
 
-      const [adminRes] = await rootConn.execute(
+      await rootConn.execute(
         `INSERT INTO users (name, first_name, last_name, email, password, role_id, status, employee_id, two_factor_enabled) 
          VALUES (?, ?, ?, ?, ?, 1, 'active', 'EMP-0001', 0)`,
         [
@@ -107,7 +111,6 @@ class TenantProvisioningService {
         ]
       );
 
-      await rootConn.end();
     } catch (dbError) {
       console.error(`[Provisioning] Database creation failed for ${dbName}:`, dbError.message);
       await rootConn.query(`DROP DATABASE IF EXISTS \`${dbName}\`;`).catch(() => {});
@@ -115,46 +118,86 @@ class TenantProvisioningService {
       throw dbError;
     }
 
-    // 5. Record tenant metadata in `saas_platform_db`
+    // 5. Record tenant and subscription atomically in the control plane. If
+    // this transaction fails, remove the tenant database so a paid checkout
+    // can be safely retried instead of leaving a half-provisioned account.
     console.log(`[Provisioning] Recording tenant and subscription in saas_platform_db...`);
-    const [tenantRes] = await platformPool.execute(
-      `INSERT INTO tenants (company_name, slug, contact_name, contact_email, contact_phone, db_name, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'active')`,
-      [companyName, cleanSlug, contactName, contactEmail, contactPhone, dbName]
-    );
-
-    const tenantId = tenantRes.insertId;
-
-    // Calculate subscription end date (1 month or 1 year)
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    if (billingCycle === "yearly") {
-      endDate.setFullYear(endDate.getFullYear() + 1);
-    } else {
-      endDate.setMonth(endDate.getMonth() + 1);
+    let platformConnection;
+    try {
+      platformConnection = await platformPool.getConnection();
+    } catch (connectionError) {
+      await rootConn.query(`DROP DATABASE IF EXISTS \`${dbName}\`;`).catch(() => {});
+      await rootConn.end().catch(() => {});
+      throw connectionError;
     }
+    let tenantId;
+    let planName;
+    let recordedAmount;
+    try {
+      await platformConnection.beginTransaction();
 
-    // Fetch plan price
-    const [planRows] = await platformPool.execute(
-      `SELECT price_monthly, price_yearly FROM subscription_plans WHERE id = ? LIMIT 1`,
-      [planId]
-    );
-    const amountPaid = planRows.length > 0
-      ? billingCycle === "yearly" ? planRows[0].price_yearly : planRows[0].price_monthly
-      : 29.00;
+      const [planRows] = await platformConnection.execute(
+        `SELECT name, price_monthly, price_yearly
+         FROM subscription_plans
+         WHERE id = ? AND is_active = true
+         LIMIT 1
+         FOR UPDATE`,
+        [planId],
+      );
+      if (planRows.length === 0) {
+        throw new Error("The selected subscription plan is no longer available.");
+      }
+      planName = planRows[0].name;
 
-    await platformPool.execute(
-      `INSERT INTO tenant_subscriptions (tenant_id, plan_id, billing_cycle, status, start_date, end_date, amount_paid)
-       VALUES (?, ?, ?, 'active', ?, ?, ?)`,
-      [
-        tenantId,
-        planId,
-        billingCycle,
-        startDate.toISOString().split("T")[0],
-        endDate.toISOString().split("T")[0],
-        amountPaid,
-      ]
-    );
+      const [tenantRes] = await platformConnection.execute(
+        `INSERT INTO tenants
+         (company_name, slug, contact_name, contact_email, contact_phone, db_name, status)
+         VALUES (?, ?, ?, ?, ?, ?, 'active')`,
+        [companyName, cleanSlug, contactName, contactEmail, contactPhone, dbName],
+      );
+      tenantId = tenantRes.insertId;
+
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      if (billingCycle === "yearly") {
+        endDate.setFullYear(endDate.getFullYear() + 1);
+      } else {
+        endDate.setMonth(endDate.getMonth() + 1);
+      }
+
+      recordedAmount = amountPaid ?? (
+        billingCycle === "yearly"
+          ? planRows[0].price_yearly
+          : planRows[0].price_monthly
+      );
+
+      await platformConnection.execute(
+        `INSERT INTO tenant_subscriptions
+         (tenant_id, plan_id, billing_cycle, status, start_date, end_date,
+          amount_paid, currency, payment_method, transaction_reference)
+         VALUES (?, ?, ?, 'active', ?, ?, ?, ?, ?, ?)`,
+        [
+          tenantId,
+          planId,
+          billingCycle,
+          startDate.toISOString().split("T")[0],
+          endDate.toISOString().split("T")[0],
+          recordedAmount,
+          paymentCurrency,
+          paymentMethod,
+          transactionReference,
+        ],
+      );
+
+      await platformConnection.commit();
+    } catch (platformError) {
+      await platformConnection.rollback().catch(() => {});
+      await rootConn.query(`DROP DATABASE IF EXISTS \`${dbName}\`;`).catch(() => {});
+      throw platformError;
+    } finally {
+      platformConnection.release();
+      await rootConn.end().catch(() => {});
+    }
 
     console.log(`[Provisioning] 🎉 Tenant '${companyName}' (${cleanSlug}) provisioned successfully!`);
 
@@ -171,7 +214,16 @@ class TenantProvisioningService {
       superAdmin: {
         email: contactEmail,
         role: "super_admin",
-        loginUrl: `http://localhost:8000/v1/auth/login`,
+        loginUrl: process.env.CLIENT_APP_URL || "http://localhost:3000",
+      },
+      subscription: {
+        planId,
+        planName,
+        billingCycle,
+        amountPaid: recordedAmount,
+        currency: paymentCurrency,
+        gateway: paymentMethod,
+        transactionReference,
       },
     };
   }

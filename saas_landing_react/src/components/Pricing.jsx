@@ -17,7 +17,7 @@ export default function Pricing({ onOpenCheckout }) {
           Simple, Predictable Pricing
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed">
-          Start for free, scale with dedicated MySQL pools (`tenant_yourcompany`), and pay only for active developers in your workspace.
+          Choose a paid workspace tier, check out securely, and provision your isolated MySQL workspace only after payment is verified.
         </p>
 
         {/* Billing Toggle Switch */}
@@ -51,13 +51,13 @@ export default function Pricing({ onOpenCheckout }) {
           <div>
             <div className="flex items-center justify-between mb-2">
               <span className="font-display font-bold text-xl text-slate-900 dark:text-white">Starter Workspace</span>
-              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-500">Free Tier</span>
+              <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-slate-100 dark:bg-dark-bg text-slate-500">Paid Plan</span>
             </div>
             <p className="text-slate-500 dark:text-slate-400 text-xs mb-6">For small dev squads &amp; side projects</p>
             
             <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-light-border dark:border-dark-border">
-              <span className="font-display font-extrabold text-5xl text-slate-900 dark:text-white">$0</span>
-              <span className="text-slate-400 text-xs font-medium">/ month forever</span>
+              <span className="font-display font-extrabold text-5xl text-slate-900 dark:text-white">${isAnnual ? '24' : '29'}</span>
+              <span className="text-slate-400 text-xs font-medium">/ month {isAnnual && '(billed annually)'}</span>
             </div>
             
             <ul className="space-y-3.5 text-xs text-slate-600 dark:text-slate-300 mb-8 font-medium">
@@ -69,10 +69,10 @@ export default function Pricing({ onOpenCheckout }) {
           </div>
 
           <button
-            onClick={() => onOpenCheckout(1, "Starter Workspace")}
+            onClick={() => onOpenCheckout(1, "Starter Workspace", isAnnual ? 'yearly' : 'monthly')}
             className="w-full py-3.5 rounded-2xl border border-light-border dark:border-dark-border bg-slate-50 dark:bg-dark-bg hover:bg-slate-100 dark:hover:bg-dark-hover font-bold text-xs text-slate-900 dark:text-white transition-colors cursor-pointer text-center"
           >
-            Deploy Free Workspace
+            Choose Starter Workspace
           </button>
         </div>
 
@@ -91,7 +91,7 @@ export default function Pricing({ onOpenCheckout }) {
             
             <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-light-border dark:border-dark-border">
               <span className="font-display font-extrabold text-5xl text-slate-900 dark:text-white">
-                ${isAnnual ? '64' : '79'}
+                ${isAnnual ? '66' : '79'}
               </span>
               <span className="text-slate-400 text-xs font-medium">/ month {isAnnual && '(billed annually)'}</span>
             </div>
@@ -106,10 +106,10 @@ export default function Pricing({ onOpenCheckout }) {
           </div>
 
           <button
-            onClick={() => onOpenCheckout(2, "Professional Suite")}
+            onClick={() => onOpenCheckout(2, "Professional Suite", isAnnual ? 'yearly' : 'monthly')}
             className="w-full py-4 rounded-2xl bg-brand-500 hover:bg-brand-600 font-bold text-xs text-white transition-all shadow-orange-glow cursor-pointer text-center flex items-center justify-center gap-2"
           >
-            <span>Start 14-Day Free Trial</span> <i className="fa-solid fa-arrow-right"></i>
+            <span>Choose Professional</span> <i className="fa-solid fa-arrow-right"></i>
           </button>
         </div>
 
@@ -124,7 +124,7 @@ export default function Pricing({ onOpenCheckout }) {
             
             <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-light-border dark:border-dark-border">
               <span className="font-display font-extrabold text-5xl text-slate-900 dark:text-white">
-                ${isAnnual ? '159' : '199'}
+                ${isAnnual ? '166' : '199'}
               </span>
               <span className="text-slate-400 text-xs font-medium">/ month {isAnnual && '(billed annually)'}</span>
             </div>
@@ -139,10 +139,10 @@ export default function Pricing({ onOpenCheckout }) {
           </div>
 
           <button
-            onClick={() => onOpenCheckout(3, "Enterprise Cloud")}
+            onClick={() => onOpenCheckout(3, "Enterprise Cloud", isAnnual ? 'yearly' : 'monthly')}
             className="w-full py-3.5 rounded-2xl border border-light-border dark:border-dark-border bg-slate-50 dark:bg-dark-bg hover:bg-slate-100 dark:hover:bg-dark-hover font-bold text-xs text-slate-900 dark:text-white transition-colors cursor-pointer text-center"
           >
-            Contact Enterprise Sales
+            Choose Enterprise Cloud
           </button>
         </div>
 
