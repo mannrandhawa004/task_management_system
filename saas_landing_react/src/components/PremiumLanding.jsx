@@ -69,7 +69,7 @@ const featureCards = [
 ];
 
 const faqs = [
-  ['Can we try TaskFlow before paying?', 'Yes. Every workspace starts with a 14-day Professional trial, with no credit card required. Your projects and team setup stay intact if you move to a paid plan.'],
+  ['When is my workspace created?', 'Your workspace and Super Admin account are created only after Stripe or Razorpay confirms a successful payment. Failed or cancelled checkouts never provision an account.'],
   ['Will TaskFlow work for non-technical teams?', 'Absolutely. Teams use the same simple building blocks—projects, tasks, owners, and timelines—while each department can choose the view that fits its work.'],
   ['Can we migrate from our current tool?', 'Yes. CSV import is available on every plan, and guided migration support is included for Professional and Enterprise workspaces.'],
   ['How is workspace data protected?', 'TaskFlow uses role-based access, workspace-level isolation, audit history, and optional two-factor authentication. Enterprise plans add custom security controls and support.'],
@@ -251,7 +251,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
               <Icon name={isDark ? 'sun' : 'moon'} size={18} />
             </button>
             <button className="text-button nav-signin" onClick={onOpenLogin}>Sign in</button>
-            <button className="button button-small" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start free <Icon name="arrow" size={16} /></button>
+            <button className="button button-small" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Choose a plan <Icon name="arrow" size={16} /></button>
             <button className="menu-button" onClick={() => setMenuOpen((value) => !value)} aria-label="Toggle navigation" aria-expanded={menuOpen}>
               <Icon name={menuOpen ? 'close' : 'menu'} />
             </button>
@@ -273,13 +273,13 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
               </h1>
               <p className="hero-reveal">TaskFlow gives growing teams one beautifully clear place to plan work, balance people, and see progress without chasing updates.</p>
               <div className="hero-actions hero-reveal">
-                <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start your free workspace <Icon name="arrow" /></button>
+                <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start your workspace <Icon name="arrow" /></button>
                 <a className="button-secondary button-large" href="#workflow"><span className="play-icon"><Icon name="play" size={15} /></span> See how it works</a>
               </div>
               <div className="hero-proof hero-reveal">
-                <span><Icon name="check" size={15} /> 14 days free</span>
-                <span><Icon name="check" size={15} /> No credit card</span>
-                <span><Icon name="check" size={15} /> Setup in minutes</span>
+                <span><Icon name="check" size={15} /> Secure checkout</span>
+                <span><Icon name="check" size={15} /> Stripe or Razorpay</span>
+                <span><Icon name="check" size={15} /> Setup after payment</span>
               </div>
             </div>
 
@@ -420,22 +420,22 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
             <div className="pricing-grid stagger-group">
               <article className="price-card">
                 <span className="plan-label">Starter</span><h3>For small teams finding their rhythm.</h3>
-                <div className="price"><strong>$0</strong><span>forever</span></div>
+                <div className="price"><strong>${annual ? 24 : 29}</strong><span>{annual ? 'per month, billed annually' : 'per month'}</span></div>
                 <ul><li><Icon name="check" size={16} /> Up to 5 people</li><li><Icon name="check" size={16} /> Projects and task boards</li><li><Icon name="check" size={16} /> Core reports</li></ul>
-                <button className="button-secondary" onClick={() => onOpenCheckout(1, 'Starter Workspace')}>Start free</button>
+                <button className="button-secondary" onClick={() => onOpenCheckout(1, 'Starter Workspace', annual ? 'yearly' : 'monthly')}>Choose Starter</button>
               </article>
               <article className="price-card price-featured">
                 <div className="popular-label">Most popular</div>
                 <span className="plan-label">Professional</span><h3>For growing teams ready to move faster.</h3>
-                <div className="price"><strong>${annual ? 64 : 79}</strong><span>per month</span></div>
+                <div className="price"><strong>${annual ? 66 : 79}</strong><span>{annual ? 'per month, billed annually' : 'per month'}</span></div>
                 <ul><li><Icon name="check" size={16} /> Up to 50 people</li><li><Icon name="check" size={16} /> Automations and workload</li><li><Icon name="check" size={16} /> Attendance and leave</li><li><Icon name="check" size={16} /> Advanced roles and reports</li></ul>
-                <button className="button" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start 14-day trial <Icon name="arrow" size={17} /></button>
+                <button className="button" onClick={() => onOpenCheckout(2, 'Professional Suite', annual ? 'yearly' : 'monthly')}>Choose Professional <Icon name="arrow" size={17} /></button>
               </article>
               <article className="price-card">
                 <span className="plan-label">Enterprise</span><h3>For organizations that need more control.</h3>
-                <div className="price"><strong>Custom</strong><span>tailored to you</span></div>
+                <div className="price"><strong>${annual ? 166 : 199}</strong><span>{annual ? 'per month, billed annually' : 'per month'}</span></div>
                 <ul><li><Icon name="check" size={16} /> Unlimited people</li><li><Icon name="check" size={16} /> SSO and custom policies</li><li><Icon name="check" size={16} /> Migration and priority support</li></ul>
-                <button className="button-secondary" onClick={() => onOpenCheckout(3, 'Enterprise Cloud')}>Talk to sales</button>
+                <button className="button-secondary" onClick={() => onOpenCheckout(3, 'Enterprise Cloud', annual ? 'yearly' : 'monthly')}>Choose Enterprise</button>
               </article>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
             <div className="cta-orb" /><span className="section-kicker">Ready when you are</span>
             <h2>Give your team a clearer way forward.</h2>
             <p>Start in minutes. Bring your projects. Invite your team. Feel the difference by Friday.</p>
-            <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Start your free workspace <Icon name="arrow" /></button>
+            <button className="button button-large" onClick={() => onOpenCheckout(2, 'Professional Suite')}>Choose your workspace plan <Icon name="arrow" /></button>
           </div>
         </section>
       </main>

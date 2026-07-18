@@ -1,15 +1,12 @@
 import { Router } from "express";
-import rateLimit from "express-rate-limit";
 import AuthController from "../controllers/auth.controller.js";
 import {
   changePasswordValidator,
   loginValidator,
-  registerValidator,
 } from "../validators/auth.validator.js";
 import { validate } from "../middlewares/validate.js";
-import { authMiddleware } from "../middlewares/auth.middleware.js";;
+import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { authorizeRoles } from "../middlewares/authorizeRoles.js";
-import { uploadProfilePic } from "../middlewares/upload.middleware.js";
 const router = Router();
 
 // const authIpLimiter = rateLimit({
@@ -35,10 +32,10 @@ const router = Router();
 // });
 router.post(
   "/register",
-  uploadProfilePic.single("avatar"),
-  registerValidator,
-  validate,
-  AuthController.register
+  (req, res) => res.status(403).json({
+    success: false,
+    message: "New workspace accounts are created only after a verified subscription payment.",
+  }),
 );
 router.post("/login", loginValidator, validate, AuthController.login);
 router.post("/login/2fa-verify", AuthController.verify2FALogin);

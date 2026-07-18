@@ -14,6 +14,7 @@ import {
     LockKeyhole,
     Mail,
     ShieldCheck,
+    UserPlus,
 } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
@@ -43,6 +44,7 @@ export default function LoginForm() {
     const dispatch = useDispatch();
     const router = useRouter();
     const { loading } = useSelector((state) => state.auth);
+    const signupUrl = `${process.env.NEXT_PUBLIC_LANDING_URL || "http://localhost:5173"}/signup`;
 
     const {
         register,
@@ -314,6 +316,19 @@ export default function LoginForm() {
                     )}
                 </button>
             </form>
+
+            <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--input)] px-3.5 py-3">
+                <span className="flex min-w-0 items-center gap-2 text-[10px] font-semibold text-[var(--muted)]">
+                    <UserPlus className="shrink-0 text-[var(--primary)]" size={15} />
+                    New workspace?
+                </span>
+                <a
+                    href={signupUrl}
+                    className="shrink-0 text-[10px] font-extrabold text-[var(--primary)] transition-opacity hover:opacity-70"
+                >
+                    Choose a plan and sign up
+                </a>
+            </div>
 
         </div>
     );

@@ -167,10 +167,10 @@ export default function Hero({ onOpenCheckout }) {
       {/* 3 Sub-hero pill highlights */}
       <div className="flex flex-wrap items-center justify-center gap-8 text-xs font-bold text-slate-600 dark:text-slate-400">
         <span className="flex items-center gap-2">
-          <i className="fa-solid fa-circle-check text-accent-green text-sm"></i> No credit card required
+          <i className="fa-solid fa-circle-check text-accent-green text-sm"></i> Payment-verified activation
         </span>
         <span className="flex items-center gap-2">
-          <i className="fa-solid fa-circle-check text-accent-green text-sm"></i> 14-day free enterprise trial
+          <i className="fa-solid fa-circle-check text-accent-green text-sm"></i> Stripe and Razorpay secure checkout
         </span>
         <span className="flex items-center gap-2">
           <i className="fa-solid fa-circle-check text-accent-green text-sm"></i> Instant MySQL schema provisioning
