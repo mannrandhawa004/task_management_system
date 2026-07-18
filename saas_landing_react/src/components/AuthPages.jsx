@@ -49,6 +49,21 @@ function ArrowIcon() {
   return <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m-4-4 4 4-4 4" /></svg>;
 }
 
+function FieldIcon({ type }) {
+  const paths = {
+    user: <><circle cx="10" cy="7" r="3" /><path d="M4.5 17c.5-3 2.4-4.6 5.5-4.6s5 1.6 5.5 4.6" /></>,
+    email: <><rect x="3" y="4.5" width="14" height="11" rx="2" /><path d="m4 6 6 4.5L16 6" /></>,
+    phone: <path d="M6.1 3.2 8 7.1 6.5 8.5c1.1 2.3 2.8 4 5.1 5.1l1.4-1.5 3.8 1.9-.8 3c-.2.7-.9 1.1-1.6 1C7.8 16.9 3.1 12.2 2 5.6c-.1-.7.3-1.4 1-1.6l3.1-.8Z" />,
+    password: <><circle cx="7.5" cy="10" r="3.5" /><path d="M11 10h6m-2 0v2m-2-2v2" /></>,
+    building: <><path d="M4 17V5l6-2 6 2v12M2.5 17h15" /><path d="M7 7h1m4 0h1M7 10h1m4 0h1M7 13h1m4 0h1" /></>,
+  };
+  return <svg className="auth-input-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">{paths[type] || paths.user}</svg>;
+}
+
+function ShieldMiniIcon() {
+  return <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.5 16 5v4.4c0 3.7-2.4 6.4-6 8.1-3.6-1.7-6-4.4-6-8.1V5l6-2.5Z" /><path d="m7.5 10 1.7 1.7 3.4-3.6" /></svg>;
+}
+
 function EyeIcon({ hidden }) {
   return hidden ? (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 3l14 14M8.6 5.2A8.7 8.7 0 0 1 10 5c4.6 0 7 5 7 5a12 12 0 0 1-2.2 2.8M11.7 11.7A2.4 2.4 0 0 1 8.3 8.3M6 6A12.2 12.2 0 0 0 3 10s2.4 5 7 5c.8 0 1.6-.2 2.2-.4" /></svg>
@@ -62,15 +77,6 @@ function ThemeIcon({ isDark }) {
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3" /><path d="M10 2v2m0 12v2M2 10h2m12 0h2M4.3 4.3l1.4 1.4m8.6 8.6 1.4 1.4m0-11.4-1.4 1.4m-8.6 8.6-1.4 1.4" /></svg>
   ) : (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 12.7A7 7 0 0 1 7.3 3.5 7 7 0 1 0 16.5 12.7Z" /></svg>
-  );
-}
-
-function SocialIcon({ provider }) {
-  if (provider === 'google') return <span className="google-g" aria-hidden="true">G</span>;
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.1-1.1-1.4-1.1-1.4-.9-.6.1-.6.1-.6 1 0 1.5 1 1.5 1 .9 1.5 2.3 1.1 2.9.9.1-.6.4-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5A3.9 3.9 0 0 1 6.6 8.8c-.1-.3-.5-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c2-1.3 2.8-1 2.8-1 .6 1.4.2 2.4.1 2.7a3.9 3.9 0 0 1 1.1 2.8c0 3.8-2.3 4.6-4.6 4.9.4.3.7.9.7 1.8V21c0 .3.2.6.7.5A10 10 0 0 0 12 2Z" />
-    </svg>
   );
 }
 
@@ -128,7 +134,7 @@ function AuthLayout({ mode, currentStep = 1, children, isDark, onToggleTheme, on
           </div>
         </section>
 
-        <section className="auth-form-panel">
+        <section className={`auth-form-panel auth-form-panel-${mode}`}>
           <div className="auth-form-wrap">{children}</div>
         </section>
       </main>
@@ -152,21 +158,13 @@ function Alert({ error, notice }) {
   return <div className={`auth-alert ${error ? 'error' : 'notice'}`} role="status">{error || notice}</div>;
 }
 
-function SocialButtons({ onUnavailable }) {
-  return (
-    <div className="auth-social-row">
-      <button type="button" onClick={() => onUnavailable('Google')}><SocialIcon provider="google" /> Continue with Google</button>
-      <button type="button" onClick={() => onUnavailable('GitHub')}><SocialIcon provider="github" /> Continue with GitHub</button>
-    </div>
-  );
-}
-
 function PasswordField({ label = 'Password', value, onChange, placeholder = 'Enter your password', autoComplete = 'current-password' }) {
   const [showPassword, setShowPassword] = useState(false);
   return (
     <label className="auth-field">
       <span>{label}</span>
       <span className="auth-password-wrap">
+        <FieldIcon type="password" />
         <input type={showPassword ? 'text' : 'password'} required minLength={8} value={value} onChange={onChange} placeholder={placeholder} autoComplete={autoComplete} />
         <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? 'Hide password' : 'Show password'}><EyeIcon hidden={!showPassword} /></button>
       </span>
@@ -181,11 +179,6 @@ export function LoginPage({ isDark, onToggleTheme, onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-
-  const showProviderNotice = (provider) => {
-    setError('');
-    setNotice(`${provider} sign-in is ready for an OAuth connection, but is not configured in this local environment.`);
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -218,8 +211,6 @@ export function LoginPage({ isDark, onToggleTheme, onNavigate }) {
   return (
     <AuthLayout mode="login" isDark={isDark} onToggleTheme={onToggleTheme} onNavigate={onNavigate}>
       <AuthHeader eyebrow="Welcome back" title="Sign in to TaskFlow" text="Enter your workspace and account details to continue." />
-      <SocialButtons onUnavailable={showProviderNotice} />
-      <div className="auth-divider"><span>or continue with email</span></div>
       <Alert error={error} notice={notice} />
 
       <form className="auth-form" onSubmit={handleSubmit}>
@@ -253,9 +244,14 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
   const [tenantName, setTenantName] = useState('');
   const [tenantSlug, setTenantSlug] = useState('');
+  const [slugEdited, setSlugEdited] = useState(false);
+  const [slugStatus, setSlugStatus] = useState({ state: 'idle', suggestions: [] });
   const [selectedPlanId, setSelectedPlanId] = useState([1, 2, 3].includes(queryPlan) ? queryPlan : 2);
   const [isAnnual, setIsAnnual] = useState(queryBilling === 'yearly');
   const [gateway, setGateway] = useState('stripe');
@@ -266,10 +262,7 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
 
   const currentPlanName = provisionedWorkspace?.subscription?.planName || PLAN_NAMES[selectedPlanId];
   const clearMessages = () => { setError(''); setNotice(''); };
-  const showProviderNotice = (provider) => {
-    setError('');
-    setNotice(`${provider} sign-up is ready for an OAuth connection, but is not configured in this local environment.`);
-  };
+  const normalizeSlug = (value) => value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -351,10 +344,45 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
     setStep(2);
   };
 
-  const submitWorkspace = (event) => {
+  const submitWorkspace = async (event) => {
     event.preventDefault();
     clearMessages();
-    setStep(3);
+    setLoading(true);
+    setSlugStatus({ state: 'checking', suggestions: [] });
+    try {
+      const response = await fetch(`${API_URL}/v1/saas/tenants/availability/${encodeURIComponent(tenantSlug)}`);
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || 'Workspace availability could not be checked.');
+      if (!data.data?.available) {
+        setSlugStatus({ state: 'unavailable', suggestions: data.data?.suggestions || [] });
+        setError('That workspace URL is already in use. Choose one of the available suggestions below.');
+        return;
+      }
+      setSlugStatus({ state: 'available', suggestions: [] });
+      setStep(3);
+    } catch (availabilityError) {
+      setSlugStatus({ state: 'idle', suggestions: [] });
+      setError(availabilityError.message || 'Workspace availability could not be checked.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setAvatarFile(null);
+      setAvatarPreview('');
+      setError('Profile photo must be a JPG, PNG, or WebP image under 2 MB.');
+      event.target.value = '';
+      return;
+    }
+    clearMessages();
+    setAvatarFile(file);
+    const reader = new FileReader();
+    reader.onload = () => setAvatarPreview(String(reader.result || ''));
+    reader.readAsDataURL(file);
   };
 
   const checkoutPayload = () => ({
@@ -362,6 +390,7 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
     slug: tenantSlug,
     contactName: `${firstName} ${lastName}`.trim(),
     contactEmail: adminEmail,
+    contactPhone,
     adminPassword,
     planId: selectedPlanId,
     billingCycle: isAnnual ? 'yearly' : 'monthly',
@@ -402,10 +431,12 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
     setLoading(true);
     clearMessages();
     try {
+      const formData = new FormData();
+      Object.entries(checkoutPayload()).forEach(([key, value]) => formData.append(key, String(value)));
+      if (avatarFile) formData.append('avatar', avatarFile);
       const response = await fetch(`${API_URL}/v1/saas/checkout/session`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(checkoutPayload()),
+        body: formData,
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.message || 'Secure checkout could not be created.');
@@ -480,7 +511,11 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
     const workspaceSlug = provisionedWorkspace?.tenant?.slug || tenantSlug;
     localStorage.setItem('active_tenant_slug', workspaceSlug);
     document.cookie = `active_tenant_slug=${workspaceSlug}; path=/; max-age=604800`;
-    window.location.href = `${DASHBOARD_URL}?workspace=${encodeURIComponent(workspaceSlug)}`;
+    if (provisionedWorkspace?.onboardingUrl) {
+      window.location.assign(provisionedWorkspace.onboardingUrl);
+      return;
+    }
+    window.location.assign(`${DASHBOARD_URL}?workspace=${encodeURIComponent(workspaceSlug)}`);
   };
 
   return (
@@ -488,17 +523,48 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
       {step === 1 && (
         <>
           <AuthHeader eyebrow="Step 1 of 3" title="Create your account" text="Start with the secure admin account for your new workspace." />
-          <SocialButtons onUnavailable={showProviderNotice} />
-          <div className="auth-divider"><span>or use your work email</span></div>
           <Alert error={error} notice={notice} />
           <form className="auth-form" onSubmit={submitAccount}>
-            <div className="auth-field-row">
-              <label className="auth-field"><span>First name</span><input required value={firstName} onChange={(event) => setFirstName(event.target.value)} placeholder="Jordan" autoComplete="given-name" /></label>
-              <label className="auth-field"><span>Last name</span><input required value={lastName} onChange={(event) => setLastName(event.target.value)} placeholder="Francisco" autoComplete="family-name" /></label>
+            <div className="auth-avatar-upload">
+              <span className="auth-avatar-preview">
+                {avatarPreview ? <img src={avatarPreview} alt="Administrator preview" /> : <b>{`${firstName?.[0] || ''}${lastName?.[0] || ''}` || 'AD'}</b>}
+              </span>
+              <span className="auth-avatar-copy">
+                <b>Administrator photo <i>Optional</i></b>
+                <small>Skip this now or add a JPG, PNG or WebP up to 2 MB.</small>
+              </span>
+              <span className="auth-avatar-actions">
+                <label className="auth-avatar-action">
+                  <input type="file" accept="image/jpeg,image/png,image/webp" onClick={(event) => { event.currentTarget.value = ''; }} onChange={handleAvatarChange} />
+                  {avatarFile ? 'Change' : 'Upload'}
+                </label>
+                {avatarFile && <button type="button" onClick={() => { setAvatarFile(null); setAvatarPreview(''); }}>Remove</button>}
+              </span>
             </div>
-            <label className="auth-field"><span>Work email</span><input type="email" required value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} placeholder="jordan@company.com" autoComplete="email" /></label>
+            <div className="auth-field-row">
+              <label className="auth-field">
+                <span>First name</span>
+                <span className="auth-input-shell"><FieldIcon type="user" /><input required value={firstName} onChange={(event) => setFirstName(event.target.value)} placeholder="Jordan" autoComplete="given-name" /></span>
+              </label>
+              <label className="auth-field">
+                <span>Last name</span>
+                <span className="auth-input-shell"><FieldIcon type="user" /><input required value={lastName} onChange={(event) => setLastName(event.target.value)} placeholder="Francisco" autoComplete="family-name" /></span>
+              </label>
+            </div>
+            <label className="auth-field">
+              <span>Work email</span>
+              <span className="auth-input-shell"><FieldIcon type="email" /><input type="email" required value={adminEmail} onChange={(event) => setAdminEmail(event.target.value)} placeholder="jordan@company.com" autoComplete="email" /></span>
+            </label>
+            <label className="auth-field">
+              <span>International contact number</span>
+              <span className="auth-input-shell"><FieldIcon type="phone" /><input type="tel" required minLength={8} maxLength={25} pattern="\+[0-9 ()-]{7,24}" value={contactPhone} onChange={(event) => setContactPhone(event.target.value.replace(/[^+0-9 ()-]/g, ''))} placeholder="Country code + phone number" autoComplete="tel" /></span>
+              <small>Include the international calling code, beginning with +.</small>
+            </label>
             <PasswordField value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} placeholder="At least 8 characters" autoComplete="new-password" />
-            <label className="auth-consent"><input type="checkbox" required /><span>I agree to the Terms of Service and Privacy Policy.</span></label>
+            <div className="auth-inline-trust">
+              <label className="auth-consent"><input type="checkbox" required /><span>I agree to the Terms of Service and Privacy Policy.</span></label>
+              <span className="auth-secure-meta"><ShieldMiniIcon /> Secure signup</span>
+            </div>
             <button className="auth-submit" type="submit">Continue to workspace <ArrowIcon /></button>
           </form>
         </>
@@ -509,14 +575,37 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
           <AuthHeader eyebrow="Step 2 of 3" title="Set up your workspace" text="Give your team a clear name and a secure tenant address." />
           <Alert error={error} notice={notice} />
           <form className="auth-form" onSubmit={submitWorkspace}>
-            <label className="auth-field"><span>Organization name</span><input required value={tenantName} onChange={(event) => setTenantName(event.target.value)} placeholder="Acme Corporation" autoComplete="organization" /></label>
+            <label className="auth-field"><span>Organization name</span><span className="auth-input-shell"><FieldIcon type="building" /><input required value={tenantName} onChange={(event) => {
+              const nextName = event.target.value;
+              setTenantName(nextName);
+              if (!slugEdited) setTenantSlug(normalizeSlug(nextName));
+              setSlugStatus({ state: 'idle', suggestions: [] });
+            }} placeholder="Acme Corporation" autoComplete="organization" /></span></label>
             <label className="auth-field">
               <span>Workspace URL</span>
-              <span className="auth-domain-wrap"><input required minLength={3} value={tenantSlug} onChange={(event) => setTenantSlug(event.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))} placeholder="acme-corp" /><i>.taskflow.io</i></span>
+              <span className={`auth-domain-wrap ${slugStatus.state}`}><input required minLength={3} value={tenantSlug} onChange={(event) => {
+                setTenantSlug(normalizeSlug(event.target.value));
+                setSlugEdited(true);
+                setSlugStatus({ state: 'idle', suggestions: [] });
+              }} placeholder="acme-corp" /><i>.taskflow.io</i></span>
               <small>Your isolated database will use <b>tenant_{tenantSlug || 'yourcompany'}</b>.</small>
             </label>
+            {slugStatus.state === 'available' && <p className="auth-slug-feedback available"><span>✓</span> This workspace URL is available.</p>}
+            {slugStatus.state === 'unavailable' && (
+              <div className="auth-slug-feedback unavailable">
+                <p><span>!</span> That URL is taken. Try an available option:</p>
+                <div className="auth-slug-suggestions">
+                  {slugStatus.suggestions.map((suggestion) => <button type="button" key={suggestion} onClick={() => {
+                    setTenantSlug(suggestion);
+                    setSlugEdited(true);
+                    setSlugStatus({ state: 'idle', suggestions: [] });
+                    clearMessages();
+                  }}>{suggestion}.taskflow.io</button>)}
+                </div>
+              </div>
+            )}
             <div className="auth-security-note"><span>✓</span><p><b>Tenant isolation included</b>Your workspace data stays separated in its own database pool.</p></div>
-            <div className="auth-form-actions"><button type="button" className="auth-secondary" onClick={() => { clearMessages(); setStep(1); }}>Back</button><button className="auth-submit compact" type="submit">Choose a plan <ArrowIcon /></button></div>
+            <div className="auth-form-actions"><button type="button" className="auth-secondary" onClick={() => { clearMessages(); setStep(1); }}>Back</button><button className="auth-submit compact" type="submit" disabled={loading}>{loading ? <><i className="auth-spinner" /> Checking URL...</> : <>Choose a plan <ArrowIcon /></>}</button></div>
           </form>
         </>
       )}
@@ -557,7 +646,8 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
           <h2>Your workspace is ready.</h2>
           <p>Your <b>{currentPlanName}</b> payment was verified and the isolated workspace was provisioned successfully.</p>
           <div className="auth-success-details"><span><small>Workspace</small><b>{provisionedWorkspace?.tenant?.slug || tenantSlug}.taskflow.io</b></span><span><small>Administrator</small><b>{provisionedWorkspace?.tenant?.contactEmail || adminEmail}</b></span></div>
-          <button className="auth-submit" type="button" onClick={handleGoToDashboard}>Sign in to TaskFlow <ArrowIcon /></button>
+          {provisionedWorkspace?.onboardingUrl && <p>Your secure one-time session is ready. You will not need to sign in again.</p>}
+          <button className="auth-submit" type="button" onClick={handleGoToDashboard}>{provisionedWorkspace?.onboardingUrl ? 'Open my workspace' : 'Continue to workspace sign in'} <ArrowIcon /></button>
         </div>
       )}
 

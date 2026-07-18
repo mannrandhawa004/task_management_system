@@ -7,6 +7,7 @@ import {
     AlertCircle,
     ArrowLeft,
     ArrowRight,
+    Building2,
     Eye,
     EyeOff,
     KeyRound,
@@ -34,7 +35,7 @@ function FieldError({ id, message }) {
     );
 }
 
-export default function LoginForm() {
+export default function LoginForm({ initialWorkspace = "" }) {
     const [showPassword, setShowPassword] = useState(false);
     const [step, setStep] = useState("login");
     const [tempToken, setTempToken] = useState(null);
@@ -49,15 +50,22 @@ export default function LoginForm() {
     const {
         register,
         handleSubmit,
+        getValues,
         formState: { errors },
     } = useForm({
         resolver: zodResolver(loginSchema),
+        defaultValues: {
+            tenantSlug: initialWorkspace,
+            email: "",
+            password: "",
+        },
     });
 
     const onSubmit = async (data) => {
         const response = await dispatch(loginThunk(data));
 
         if (loginThunk.fulfilled.match(response)) {
+            localStorage.setItem("active_tenant_slug", data.tenantSlug);
             if (response.payload?.requires2FA) {
                 setTempToken(response.payload.tempToken);
                 setStep("2fa");
@@ -84,6 +92,8 @@ export default function LoginForm() {
             const response = await dispatch(verify2FALoginThunk({ tempToken, otp }));
 
             if (verify2FALoginThunk.fulfilled.match(response)) {
+                const workspaceSlug = response.payload?.tenantSlug || getValues("tenantSlug");
+                if (workspaceSlug) localStorage.setItem("active_tenant_slug", workspaceSlug);
                 router.push("/dashboard");
                 showToast.success("Login Success", "Identity verified. Welcome back!");
             } else {
@@ -212,11 +222,48 @@ export default function LoginForm() {
                     Welcome back.
                 </h1>
                 <p className="mt-2 max-w-md text-[13px] font-medium leading-5" style={{ color: "var(--muted)" }}>
-                    Sign in with the work email connected to your TaskFlow workspace.
+                    Enter your workspace ID so TaskFlow can securely connect you to the correct tenant.
                 </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-[14px]" noValidate>
+                <div>
+                    <label htmlFor="login-workspace" className="mb-1.5 block text-[11px] font-bold" style={{ color: "var(--text)" }}>
+                        Workspace ID
+                    </label>
+
+                    <div className="group/input relative">
+                        <Building2
+                            size={17}
+                            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[var(--muted)] transition-colors group-focus-within/input:text-[var(--primary)]"
+                        />
+                        <input
+                            id="login-workspace"
+                            type="text"
+                            autoComplete="organization"
+                            spellCheck="false"
+                            placeholder="acme-team"
+                            aria-invalid={Boolean(errors.tenantSlug)}
+                            aria-describedby={errors.tenantSlug ? "login-workspace-error" : "login-workspace-hint"}
+                            {...register("tenantSlug", {
+                                onChange: (event) => {
+                                    event.target.value = event.target.value
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9-]/g, "");
+                                },
+                            })}
+                            className="h-[46px] w-full rounded-xl border bg-[var(--input)] pl-11 pr-4 text-[13px] font-semibold text-[var(--text)] outline-none placeholder:font-medium placeholder:text-[var(--muted)] placeholder:opacity-60"
+                            style={{ borderColor: errors.tenantSlug ? "rgb(244 63 94 / .7)" : "var(--border)" }}
+                        />
+                    </div>
+                    <FieldError id="login-workspace-error" message={errors.tenantSlug?.message} />
+                    {!errors.tenantSlug && (
+                        <p id="login-workspace-hint" className="mt-1.5 text-[10px] font-medium text-[var(--muted)]">
+                            The name before <b>.taskflow.io</b> in your workspace URL.
+                        </p>
+                    )}
+                </div>
+
                 <div>
                     <label htmlFor="login-email" className="mb-1.5 block text-[11px] font-bold" style={{ color: "var(--text)" }}>
                         Work email
