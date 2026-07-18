@@ -5,6 +5,18 @@ const DASHBOARD_URL = import.meta.env.VITE_APP_URL || 'http://localhost:3000';
 const PLAN_NAMES = { 1: 'Starter Workspace', 2: 'Professional Suite', 3: 'Enterprise Cloud' };
 const PRICES = { monthly: { 1: 29, 2: 79, 3: 199 }, yearly: { 1: 290, 2: 790, 3: 1990 } };
 
+const formatRazorpayFailure = (paymentError) => {
+  const failure = paymentError?.error || paymentError || {};
+
+  if (failure.reason === 'international_transaction_not_allowed') {
+    return 'This Razorpay account is not enabled for international cards. In Test Mode, use an Indian Razorpay test card, or activate International Cards in your Razorpay account.';
+  }
+
+  return failure.description
+    || failure.reason?.replaceAll('_', ' ')
+    || 'Razorpay could not complete the payment. Please try another payment method.';
+};
+
 const loadRazorpayScript = () => new Promise((resolve, reject) => {
   if (window.Razorpay) {
     resolve();
@@ -28,7 +40,7 @@ const loadRazorpayScript = () => new Promise((resolve, reject) => {
 function LogoMark() {
   return (
     <span className="auth-logo-mark" aria-hidden="true">
-      <img src="/assets/taskflow-logo.png" alt="" />
+      <img src="/assets/taskflow-logo-modern.png" alt="" />
     </span>
   );
 }
@@ -72,7 +84,7 @@ function AuthLayout({ mode, currentStep = 1, children, isDark, onToggleTheme, on
   return (
     <div className="auth-page">
       <button className="auth-brand-home" type="button" onClick={() => onNavigate('/')} aria-label="Back to TaskFlow home">
-        <LogoMark /><span>TaskFlow</span>
+        <LogoMark />
       </button>
       <button className="auth-theme-toggle" type="button" onClick={onToggleTheme} aria-label={`Switch to ${isDark ? 'light' : 'dark'} theme`}>
         <ThemeIcon isDark={isDark} /><span>{isDark ? 'Light' : 'Dark'} theme</span>
@@ -445,7 +457,17 @@ export function SignupPage({ isDark, onToggleTheme, onNavigate }) {
       });
       razorpay.on('payment.failed', (paymentError) => {
         setLoading(false);
-        setError(paymentError.error?.description || 'Razorpay could not complete the payment.');
+        const failure = paymentError?.error || paymentError || {};
+        console.error('[TaskFlow] Razorpay payment failed', {
+          code: failure.code,
+          description: failure.description,
+          source: failure.source,
+          step: failure.step,
+          reason: failure.reason,
+          field: failure.field,
+          metadata: failure.metadata,
+        });
+        setError(formatRazorpayFailure(paymentError));
       });
       razorpay.open();
     } catch (requestError) {

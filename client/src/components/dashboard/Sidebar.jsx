@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
@@ -25,7 +26,7 @@ import {
   CalendarDays,
 } from "lucide-react";
 
-import { isAdmin, isHR } from "@/lib/permissions";
+import { isAdmin } from "@/lib/permissions";
 
 export default function Sidebar() {
 
@@ -124,15 +125,17 @@ export default function Sidebar() {
       {/* HEADER SEGMENT */}
       <div className="h-16 px-4 border-b flex items-center justify-between border-[var(--border)]">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="relative w-8 h-8 rounded-xl overflow-hidden shrink-0 border border-[var(--border)]">
-            <div className="grid h-full w-full place-items-center bg-[var(--primary)] text-white">
-              <CheckSquare size={17} strokeWidth={2.6} />
-            </div>
-          </div>
+          <Image
+            src={collapsed ? "/assets/taskflow-logo-modern-icon.png" : "/assets/taskflow-logo-modern.png"}
+            alt="TaskFlow"
+            width={collapsed ? 36 : 118}
+            height={collapsed ? 36 : 23}
+            priority
+            className={`${collapsed ? "h-9 w-9" : "h-auto w-[112px]"} shrink-0 object-contain`}
+          />
 
           {!collapsed && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-w-0">
-              <h1 className="font-extrabold text-sm tracking-tight text-[var(--text)]">TaskFlow</h1>
               <p className="text-[9px] uppercase font-bold tracking-wider truncate text-[var(--muted)]">
                 {user?.role || "Employee"} Space
               </p>
