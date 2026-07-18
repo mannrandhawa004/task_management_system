@@ -1,5 +1,6 @@
 import { tenantManager } from "../services/TenantConnectionManager.js";
 import { paymentService } from "../services/PaymentService.js";
+import { deleteUploadedImage } from "../../server/src/middlewares/upload.middleware.js";
 import { asyncHandler } from "../../server/src/utils/asyncHandler.js";
 import { successResponse } from "../../server/src/utils/response.js";
 import { BadRequestError, NotFoundError } from "../../server/src/utils/errorHandler.js";
@@ -48,10 +49,31 @@ class SaasController {
     return successResponse(res, "Workspace found", rows[0]);
   });
 
+  /** Check a tenant slug before checkout and return verified alternatives. */
+  checkSlugAvailability = asyncHandler(async (req, res) => {
+    const result = await paymentService.getWorkspaceAvailability(req.params.slug);
+    return successResponse(
+      res,
+      result.available ? "Workspace URL is available" : "Workspace URL is already in use",
+      result,
+    );
+  });
+
   /** Create a server-priced Stripe Checkout Session or Razorpay Order. */
   createCheckout = asyncHandler(async (req, res) => {
-    const checkout = await paymentService.createCheckout(req.body);
-    return successResponse(res, "Secure checkout created", checkout, 201);
+    try {
+      const checkout = await paymentService.createCheckout({
+        ...req.body,
+        avatarUrl: req.file?.path || "",
+        avatarPublicId: req.file?.filename || "",
+      });
+      return successResponse(res, "Secure checkout created", checkout, 201);
+    } catch (error) {
+      if (req.file?.filename) {
+        await deleteUploadedImage(req.file.filename).catch(() => {});
+      }
+      throw error;
+    }
   });
 
   /** Verify Stripe server-side, then provision the paid workspace. */

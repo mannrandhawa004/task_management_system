@@ -92,7 +92,7 @@ export default function FeatureShowcase() {
       {/* Header with GSAP Scroll Class */}
       <div className="max-w-4xl mx-auto text-center mb-16 gsap-scroll-header">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-500/15 text-brand-500 font-mono text-xs font-bold mb-4 shadow-sm border border-brand-500/20">
-          <i className="fa-solid fa-bolt animate-bounce"></i> Next.js 15 App Router &amp; Express 5 Live API Inspector
+          <i className="fa-solid fa-bolt animate-bounce"></i> Next.js 16 App Router &amp; Express 5 Live API Inspector
         </div>
         <h2 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-900 dark:text-white tracking-tight mb-5 leading-tight">
           See TaskFlow's Exact Architecture in Action
@@ -204,7 +204,7 @@ export default function FeatureShowcase() {
                     Dual-View Project Dashboard
                   </h3>
                   <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
-                    Our Next.js 15 App Router frontend connects directly to Express 5 REST endpoints (`/v1/project`) with Row-Level Security (RLS). Users only view projects and tasks within their authorized department boundary.
+                    Our Next.js 16 App Router frontend connects directly to Express 5 REST endpoints (`/v1/project`) with Row-Level Security (RLS). Users only view projects and tasks within their authorized department boundary.
                   </p>
 
                   {/* Interactive Feature Accordions / Spots */}

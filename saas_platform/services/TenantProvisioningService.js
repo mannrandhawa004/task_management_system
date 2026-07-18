@@ -20,7 +20,7 @@ class TenantProvisioningService {
    * 1. Check uniqueness of slug/email in saas_platform_db
    * 2. Create isolated MySQL database `tenant_<slug>`
    * 3. Execute all 21 tables baseline schema (tenant_base_schema.sql)
-   * 4. Provision dedicated Super Admin (`role_id = 1`) inside the tenant database
+   * 4. Provision dedicated Super Admin (`role_id = 5`) inside the tenant database
    * 5. Record tenant & subscription metadata in `saas_platform_db`
    *
    * @param {object} params
@@ -29,6 +29,7 @@ class TenantProvisioningService {
    * @param {string} params.contactName
    * @param {string} params.contactEmail
    * @param {string} [params.contactPhone]
+   * @param {string} [params.avatarUrl]
    * @param {number} [params.planId=1]
    * @param {string} [params.billingCycle='monthly']
    * @param {string} params.adminPassword
@@ -40,6 +41,7 @@ class TenantProvisioningService {
     contactName,
     contactEmail,
     contactPhone = "",
+    avatarUrl = "",
     planId = 1,
     billingCycle = "monthly",
     adminPassword = null,
@@ -82,6 +84,7 @@ class TenantProvisioningService {
       password: process.env.DB_PASSWORD || "",
       multipleStatements: true,
     });
+    let superAdminId;
 
     try {
       await rootConn.query(
@@ -95,21 +98,23 @@ class TenantProvisioningService {
       const schemaSql = fs.readFileSync(schemaPath, "utf8");
       await rootConn.query(schemaSql);
 
-      // 4. Provision dedicated Super Admin (`role_id = 1`) inside the tenant database
+      // 4. Provision the paid workspace owner as Super Admin (`role_id = 5`).
       console.log(`[Provisioning] Creating Super Admin account inside ${dbName}...`);
       const hashedPassword = adminPasswordHash || await bcrypt.hash(adminPassword, 12);
 
-      await rootConn.execute(
-        `INSERT INTO users (name, first_name, last_name, email, password, role_id, status, employee_id, two_factor_enabled) 
-         VALUES (?, ?, ?, ?, ?, 1, 'active', 'EMP-0001', 0)`,
+      const [adminResult] = await rootConn.execute(
+        `INSERT INTO users (name, first_name, last_name, email, password, avatar, role_id, status, employee_id, two_factor_enabled)
+         VALUES (?, ?, ?, ?, ?, ?, 5, 'active', 'EMP-0001', 0)`,
         [
           contactName,
           contactName.split(" ")[0] || "Super",
           contactName.split(" ").slice(1).join(" ") || "Admin",
           contactEmail,
           hashedPassword,
+          avatarUrl || null,
         ]
       );
+      superAdminId = adminResult.insertId;
 
     } catch (dbError) {
       console.error(`[Provisioning] Database creation failed for ${dbName}:`, dbError.message);
@@ -212,6 +217,7 @@ class TenantProvisioningService {
         contactEmail,
       },
       superAdmin: {
+        id: superAdminId,
         email: contactEmail,
         role: "super_admin",
         loginUrl: process.env.CLIENT_APP_URL || "http://localhost:3000",

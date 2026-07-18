@@ -5,6 +5,8 @@ import { fileURLToPath } from "url";
 
 import { tenantManager } from "./TenantConnectionManager.js";
 import { provisioningService } from "./TenantProvisioningService.js";
+import { onboardingHandoffService } from "./OnboardingHandoffService.js";
+import { deleteUploadedImage } from "../../server/src/middlewares/upload.middleware.js";
 import {
   BadRequestError,
   ConflictError,
@@ -39,6 +41,8 @@ export const validateCheckoutPayload = (payload = {}) => {
   const contactName = cleanText(payload.contactName);
   const contactEmail = cleanText(payload.contactEmail).toLowerCase();
   const contactPhone = cleanText(payload.contactPhone);
+  const avatarUrl = cleanText(payload.avatarUrl);
+  const avatarPublicId = cleanText(payload.avatarPublicId);
   const adminPassword = String(payload.adminPassword || "");
   const gateway = cleanText(payload.gateway).toLowerCase();
   const billingCycle = cleanText(payload.billingCycle || "monthly").toLowerCase();
@@ -55,6 +59,13 @@ export const validateCheckoutPayload = (payload = {}) => {
   }
   if (!EMAIL_PATTERN.test(contactEmail) || contactEmail.length > 254) {
     throw new BadRequestError("Enter a valid administrator email address.");
+  }
+  const phoneDigits = contactPhone.replace(/\D/g, "");
+  if (phoneDigits.length < 7 || phoneDigits.length > 15 || !/^\+?[0-9 ()-]+$/.test(contactPhone)) {
+    throw new BadRequestError("Enter a valid contact number with 7 to 15 digits.");
+  }
+  if (avatarUrl.length > 500 || avatarPublicId.length > 255) {
+    throw new BadRequestError("Administrator profile photo metadata is invalid.");
   }
   if (adminPassword.length < 8 || adminPassword.length > 128) {
     throw new BadRequestError("Password must be between 8 and 128 characters.");
@@ -75,6 +86,8 @@ export const validateCheckoutPayload = (payload = {}) => {
     contactName,
     contactEmail,
     contactPhone,
+    avatarUrl,
+    avatarPublicId,
     adminPassword,
     gateway,
     billingCycle,
@@ -171,6 +184,8 @@ class PaymentService {
         contact_name varchar(120) NOT NULL,
         contact_email varchar(254) NOT NULL,
         contact_phone varchar(50) DEFAULT NULL,
+        avatar_url varchar(500) DEFAULT NULL,
+        avatar_public_id varchar(255) DEFAULT NULL,
         password_hash varchar(255) NOT NULL,
         status enum('pending','paid','provisioning','provisioned','failed','expired') NOT NULL DEFAULT 'pending',
         tenant_id int(11) DEFAULT NULL,
@@ -192,6 +207,23 @@ class PaymentService {
     if (currencyColumns.length === 0) {
       await pool.execute(
         "ALTER TABLE tenant_subscriptions ADD COLUMN currency char(3) NOT NULL DEFAULT 'USD' AFTER amount_paid",
+      );
+    }
+
+    const [avatarUrlColumns] = await pool.execute(
+      "SHOW COLUMNS FROM signup_checkouts LIKE 'avatar_url'",
+    );
+    if (avatarUrlColumns.length === 0) {
+      await pool.execute(
+        "ALTER TABLE signup_checkouts ADD COLUMN avatar_url varchar(500) DEFAULT NULL AFTER contact_phone",
+      );
+    }
+    const [avatarPublicIdColumns] = await pool.execute(
+      "SHOW COLUMNS FROM signup_checkouts LIKE 'avatar_public_id'",
+    );
+    if (avatarPublicIdColumns.length === 0) {
+      await pool.execute(
+        "ALTER TABLE signup_checkouts ADD COLUMN avatar_public_id varchar(255) DEFAULT NULL AFTER avatar_url",
       );
     }
   }
@@ -229,6 +261,37 @@ class PaymentService {
       throw new ServiceUnavailableError("RAZORPAY_USD_TO_INR must be a positive number.");
     }
     return { amountMinor: Math.round(amountMajor * usdToInr * 100), currency: "INR" };
+  }
+
+  async getWorkspaceAvailability(rawSlug) {
+    await this.ensureSchema();
+    const slug = normalizeWorkspaceSlug(rawSlug);
+    if (slug.length < 3 || slug.length > 50) {
+      throw new BadRequestError("Workspace URL must be between 3 and 50 characters.");
+    }
+
+    const [rows] = await tenantManager.getPlatformPool().execute(
+      `SELECT slug FROM tenants WHERE slug = ? OR slug LIKE ?
+       UNION
+       SELECT workspace_slug AS slug FROM signup_checkouts
+       WHERE (workspace_slug = ? OR workspace_slug LIKE ?)
+         AND status IN ('pending','paid','provisioning')
+         AND (status <> 'pending' OR expires_at > NOW())`,
+      [slug, `${slug}-%`, slug, `${slug}-%`],
+    );
+    const used = new Set(rows.map((row) => row.slug));
+    const available = !used.has(slug);
+    if (available) return { slug, available, suggestions: [] };
+
+    const suffixes = ["hq", "team", String(new Date().getFullYear()), "workspace", "2", "3", "4"];
+    const suggestions = [];
+    for (const suffix of suffixes) {
+      const root = slug.slice(0, 49 - suffix.length).replace(/-+$/, "");
+      const candidate = `${root}-${suffix}`;
+      if (!used.has(candidate) && !suggestions.includes(candidate)) suggestions.push(candidate);
+      if (suggestions.length === 3) break;
+    }
+    return { slug, available, suggestions };
   }
 
   async assertWorkspaceAvailable(slug, email) {
@@ -275,8 +338,9 @@ class PaymentService {
     await pool.execute(
       `INSERT INTO signup_checkouts
        (id, gateway, plan_id, billing_cycle, amount_minor, currency, company_name,
-        workspace_slug, contact_name, contact_email, contact_phone, password_hash, expires_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        workspace_slug, contact_name, contact_email, contact_phone, avatar_url,
+        avatar_public_id, password_hash, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         checkoutId,
         payload.gateway,
@@ -289,6 +353,8 @@ class PaymentService {
         payload.contactName,
         payload.contactEmail,
         payload.contactPhone || null,
+        payload.avatarUrl || null,
+        payload.avatarPublicId || null,
         passwordHash,
         expiresAt,
       ],
@@ -439,7 +505,7 @@ class PaymentService {
       throw new BadRequestError("Checkout ID and Stripe session ID are required.");
     }
     const checkout = await this.getCheckout(checkoutId, "stripe", true);
-    if (checkout.status === "provisioned") return this.getProvisionedResult(checkout);
+    if (checkout.status === "provisioned") return this.getProvisionedResult(checkout, true);
     if (checkout.gateway_session_id !== sessionId) {
       throw new BadRequestError("Stripe session does not belong to this signup checkout.");
     }
@@ -459,7 +525,7 @@ class PaymentService {
       typeof session.payment_intent === "string"
         ? session.payment_intent
         : session.payment_intent?.id || session.id;
-    return this.finalizePaidCheckout(checkout, transactionReference);
+    return this.finalizePaidCheckout(checkout, transactionReference, true);
   }
 
   async verifyRazorpayCheckout({
@@ -472,7 +538,7 @@ class PaymentService {
       throw new BadRequestError("Complete Razorpay payment verification details are required.");
     }
     const checkout = await this.getCheckout(checkoutId, "razorpay", true);
-    if (checkout.status === "provisioned") return this.getProvisionedResult(checkout);
+    if (checkout.status === "provisioned") return this.getProvisionedResult(checkout, true);
     if (checkout.gateway_session_id !== razorpayOrderId) {
       throw new BadRequestError("Razorpay order does not belong to this signup checkout.");
     }
@@ -507,7 +573,7 @@ class PaymentService {
       throw new BadRequestError("Razorpay has not confirmed a captured payment for this checkout.");
     }
 
-    return this.finalizePaidCheckout(checkout, razorpayPaymentId);
+    return this.finalizePaidCheckout(checkout, razorpayPaymentId, true);
   }
 
   async getCheckoutByGatewaySession(gateway, gatewaySessionId) {
@@ -609,7 +675,7 @@ class PaymentService {
     return this.finalizePaidCheckout(checkout, payment.id);
   }
 
-  async finalizePaidCheckout(checkout, transactionReference) {
+  async finalizePaidCheckout(checkout, transactionReference, issueOnboardingHandoff = false) {
     const pool = tenantManager.getPlatformPool();
     const [claim] = await pool.execute(
       `UPDATE signup_checkouts
@@ -620,8 +686,10 @@ class PaymentService {
 
     if (claim.affectedRows === 0) {
       const current = await this.getCheckout(checkout.id, checkout.gateway);
-      if (current.status === "provisioned") return this.getProvisionedResult(current);
-      const reconciled = await this.reconcileProvisionedCheckout(current);
+      if (current.status === "provisioned") {
+        return this.getProvisionedResult(current, issueOnboardingHandoff);
+      }
+      const reconciled = await this.reconcileProvisionedCheckout(current, issueOnboardingHandoff);
       if (reconciled) return reconciled;
       throw new ConflictError("Workspace provisioning is already in progress. Please try again shortly.");
     }
@@ -633,6 +701,7 @@ class PaymentService {
         contactName: checkout.contact_name,
         contactEmail: checkout.contact_email,
         contactPhone: checkout.contact_phone || "",
+        avatarUrl: checkout.avatar_url || "",
         planId: checkout.plan_id,
         billingCycle: checkout.billing_cycle,
         adminPasswordHash: checkout.password_hash,
@@ -649,14 +718,22 @@ class PaymentService {
         [result.tenant.id, checkout.id],
       );
 
-      return {
+      const response = {
         checkoutId: checkout.id,
         gateway: checkout.gateway,
         status: "provisioned",
         ...result,
       };
+      if (issueOnboardingHandoff) {
+        Object.assign(response, await onboardingHandoffService.issue({
+          checkoutId: checkout.id,
+          tenantId: result.tenant.id,
+          userId: result.superAdmin.id,
+        }));
+      }
+      return response;
     } catch (error) {
-      const reconciled = await this.reconcileProvisionedCheckout(checkout);
+      const reconciled = await this.reconcileProvisionedCheckout(checkout, issueOnboardingHandoff);
       if (reconciled) return reconciled;
       await pool.execute(
         `UPDATE signup_checkouts SET status = 'paid', failure_reason = ? WHERE id = ?`,
@@ -666,7 +743,7 @@ class PaymentService {
     }
   }
 
-  async reconcileProvisionedCheckout(checkout) {
+  async reconcileProvisionedCheckout(checkout, issueOnboardingHandoff = false) {
     const pool = tenantManager.getPlatformPool();
     const [rows] = await pool.execute(
       `SELECT id FROM tenants
@@ -682,10 +759,13 @@ class PaymentService {
        WHERE id = ?`,
       [rows[0].id, checkout.id],
     );
-    return this.getProvisionedResult({ ...checkout, tenant_id: rows[0].id });
+    return this.getProvisionedResult(
+      { ...checkout, tenant_id: rows[0].id },
+      issueOnboardingHandoff,
+    );
   }
 
-  async getProvisionedResult(checkout) {
+  async getProvisionedResult(checkout, issueOnboardingHandoff = false) {
     const [rows] = await tenantManager.getPlatformPool().execute(
       `SELECT t.id, t.company_name, t.slug, t.db_name, t.contact_name, t.contact_email,
               s.plan_id, s.billing_cycle, s.amount_paid, s.currency, s.payment_method,
@@ -701,7 +781,20 @@ class PaymentService {
       throw new ConflictError("Payment is complete, but the workspace record is unavailable.");
     }
     const tenant = rows[0];
-    return {
+    const { pool: tenantPool } = await tenantManager.getPoolByDbName(tenant.db_name);
+    await tenantPool.execute(
+      `UPDATE users SET role_id = 5 WHERE email = ? AND role_id <> 5`,
+      [tenant.contact_email],
+    );
+    const [adminRows] = await tenantPool.execute(
+      `SELECT id FROM users WHERE email = ? AND role_id = 5 LIMIT 1`,
+      [tenant.contact_email],
+    );
+    if (adminRows.length === 0) {
+      throw new ConflictError("The paid workspace administrator account is unavailable.");
+    }
+
+    const response = {
       checkoutId: checkout.id,
       gateway: checkout.gateway,
       status: "provisioned",
@@ -715,6 +808,7 @@ class PaymentService {
         contactEmail: tenant.contact_email,
       },
       superAdmin: {
+        id: adminRows[0].id,
         email: tenant.contact_email,
         role: "super_admin",
         loginUrl: process.env.CLIENT_APP_URL || "http://localhost:3000",
@@ -729,6 +823,14 @@ class PaymentService {
         transactionReference: tenant.transaction_reference,
       },
     };
+    if (issueOnboardingHandoff) {
+      Object.assign(response, await onboardingHandoffService.issue({
+        checkoutId: checkout.id,
+        tenantId: tenant.id,
+        userId: adminRows[0].id,
+      }));
+    }
+    return response;
   }
 
   async getCheckoutStatus(checkoutId) {
@@ -769,8 +871,13 @@ class PaymentService {
       }
     }
 
+    if (checkout.avatar_public_id) {
+      await deleteUploadedImage(checkout.avatar_public_id).catch(() => {});
+    }
     await pool.execute(
-      `UPDATE signup_checkouts SET status = 'expired' WHERE id = ?`,
+      `UPDATE signup_checkouts
+       SET status = 'expired', avatar_url = NULL, avatar_public_id = NULL
+       WHERE id = ?`,
       [checkoutId],
     );
     return { checkoutId, status: "expired" };

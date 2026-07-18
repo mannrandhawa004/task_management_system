@@ -25,6 +25,7 @@ describe("payment checkout utilities", () => {
       slug: "Acme-Team",
       contactName: "Jordan Lee",
       contactEmail: "JORDAN@EXAMPLE.COM",
+      contactPhone: "+1 202 555 0148",
       adminPassword: "a-secure-password",
       planId: 2,
       billingCycle: "yearly",
@@ -43,12 +44,30 @@ describe("payment checkout utilities", () => {
         slug: "acme-team",
         contactName: "Jordan Lee",
         contactEmail: "jordan@example.com",
+        contactPhone: "+1 202 555 0148",
         adminPassword: "a-secure-password",
         planId: 2,
         billingCycle: "monthly",
         gateway: "mock-card",
       }),
       /Stripe or Razorpay/,
+    );
+  });
+
+  it("requires a usable international contact number", () => {
+    assert.throws(
+      () => validateCheckoutPayload({
+        companyName: "Acme Corporation",
+        slug: "acme-team",
+        contactName: "Jordan Lee",
+        contactEmail: "jordan@example.com",
+        contactPhone: "123",
+        adminPassword: "a-secure-password",
+        planId: 2,
+        billingCycle: "monthly",
+        gateway: "stripe",
+      }),
+      /contact number/i,
     );
   });
 

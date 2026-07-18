@@ -1,4 +1,5 @@
 import {
+  cookieOptionsForClear,
   cookieOptionsForAccessToken,
   cookieOptionsForRefreshToken,
 } from "../config/cookieOptions.js";
@@ -112,6 +113,28 @@ class AuthController {
     return successResponse(res, "Login successful", result?.user);
   });
 
+  onboardingExchange = asyncHandler(async (req, res) => {
+    const ip =
+      req.headers["x-forwarded-for"]?.split(",")[0] ||
+      req.socket?.remoteAddress;
+    const device = req.headers["user-agent"];
+    const result = await AuthService.exchangeOnboardingToken({
+      token: req.body?.token,
+      device,
+      ip,
+    });
+
+    res.cookie("accessToken", result.accessToken, cookieOptionsForAccessToken);
+    res.cookie("refreshToken", result.refreshToken, cookieOptionsForRefreshToken);
+
+    return successResponse(
+      res,
+      "Paid workspace session created",
+      result.user,
+      201,
+    );
+  });
+
   refresh = asyncHandler(async (req, res) => {
     const refreshToken = req?.cookies?.refreshToken;
     const tokens = await AuthService.refresh(refreshToken);
@@ -153,8 +176,8 @@ class AuthController {
       console.error("Audit log failed for user logout:", error.message);
     }
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", cookieOptionsForClear);
+    res.clearCookie("refreshToken", cookieOptionsForClear);
 
     return successResponse(res, "Logged out successfully");
   });
@@ -228,8 +251,8 @@ class AuthController {
       console.error("Audit log failed for change password:", error.message);
     }
 
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", cookieOptionsForClear);
+    res.clearCookie("refreshToken", cookieOptionsForClear);
 
     return successResponse(res, "Password changed successfully. Please login again.", null, 200);
   });
