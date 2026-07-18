@@ -1,9 +1,5 @@
-import LoginForm from "@/features/auth/components/LoginForm";
+import LoginExperience from "@/features/auth/components/LoginExperience";
 
 export default function LoginPage() {
-    return (
-        <div>
-            <LoginForm />
-        </div>
-    );
+    return <LoginExperience />;
 }
