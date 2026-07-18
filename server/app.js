@@ -28,6 +28,7 @@ import leaveRoutes from "./src/routes/leave.routes.js";
 import usersRoutes from "./src/routes/users.routes.js";
 import searchRoutes from "./src/routes/search.routes.js";
 import saasRoutes from "../saas_platform/routes/saas.routes.js";
+import SaasController from "../saas_platform/controllers/saas.controller.js";
 import { clientIpMiddleware } from "./src/middlewares/clientIp.middleware.js";
 import { registerUserSocket, removeUserSocket, setSocketIO } from "./src/socket/socket.js";
 import { setAuditServiceIO } from "./src/services/audit.service.js";
@@ -66,6 +67,19 @@ const limiter = rateLimit({
 
 
 // app.use(limiter);
+
+// Payment providers require the exact raw request bytes for webhook signature
+// verification. These routes must stay before express.json().
+app.post(
+  "/v1/saas/webhooks/stripe",
+  express.raw({ type: "application/json", limit: "100kb" }),
+  SaasController.stripeWebhook,
+);
+app.post(
+  "/v1/saas/webhooks/razorpay",
+  express.raw({ type: "application/json", limit: "100kb" }),
+  SaasController.razorpayWebhook,
+);
 
 app.use(express.json({ limit: "50kb" }));
 app.use(express.urlencoded({ extended: true }));

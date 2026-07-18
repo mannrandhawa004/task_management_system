@@ -233,8 +233,8 @@ a {
 }
 
 .brand-mark img {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   max-width: none;
   object-fit: contain;
   filter: drop-shadow(0 6px 12px rgba(18, 107, 79, .2));
@@ -1882,8 +1882,8 @@ body.auth-page-open {
 }
 
 .auth-logo-mark img {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   max-width: none;
   object-fit: contain;
   filter: drop-shadow(0 7px 14px rgba(0, 0, 0, .18));
@@ -2712,6 +2712,134 @@ body.auth-page-open {
   font: 8px 'Inter', sans-serif;
 }
 
+.auth-gateway-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.auth-gateway-picker legend {
+  grid-column: 1 / -1;
+  margin-bottom: 2px;
+  color: #8a928c;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.auth-gateway-picker>button {
+  min-width: 0;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-radius: 12px;
+  background: #0e110f;
+  color: #e1e5e2;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
+}
+
+.auth-gateway-picker>button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255, 255, 255, .22);
+}
+
+.auth-gateway-picker>button.selected {
+  border-color: rgba(91, 202, 160, .58);
+  background: rgba(64, 170, 130, .09);
+}
+
+.auth-gateway-picker>button>span:nth-child(2),
+.auth-gateway-picker b,
+.auth-gateway-picker small {
+  min-width: 0;
+  display: block;
+}
+
+.auth-gateway-picker b {
+  font-size: 10px;
+}
+
+.auth-gateway-picker small {
+  margin-top: 2px;
+  overflow: hidden;
+  color: #667069;
+  font-size: 7px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.auth-gateway-picker>button>i {
+  display: none;
+}
+
+.auth-gateway-logo {
+  width: 27px;
+  height: 27px;
+  display: grid !important;
+  place-items: center;
+  border-radius: 9px;
+  color: #fff;
+  font: 800 12px 'Plus Jakarta Sans', sans-serif;
+}
+
+.auth-gateway-logo.stripe {
+  background: linear-gradient(145deg, #7b61ff, #5342ce);
+}
+
+.auth-gateway-logo.razorpay {
+  background: linear-gradient(145deg, #3d8dff, #1663d7);
+}
+
+.auth-payment-note {
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(91, 202, 160, .2);
+  border-radius: 11px;
+  background: rgba(64, 170, 130, .06);
+}
+
+.auth-payment-note>span {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: rgba(91, 202, 160, .14);
+  color: #76d3b1;
+  font-size: 9px;
+}
+
+.auth-payment-note p,
+.auth-payment-note b {
+  display: block;
+  margin: 0;
+}
+
+.auth-payment-note p {
+  color: #69716b;
+  font-size: 7px;
+  line-height: 1.45;
+}
+
+.auth-payment-note b {
+  margin-bottom: 1px;
+  color: #bdc5bf;
+  font-size: 8px;
+}
+
 .auth-success {
   text-align: center;
 }
@@ -2943,6 +3071,26 @@ html:not(.dark) .auth-plan-list>button.selected {
   background: rgba(64, 170, 130, .08);
 }
 
+html:not(.dark) .auth-gateway-picker>button {
+  border-color: rgba(31, 41, 33, .12);
+  background: #f7f8f5;
+  color: #252c27;
+}
+
+html:not(.dark) .auth-gateway-picker>button.selected {
+  border-color: rgba(51, 151, 113, .58);
+  background: rgba(64, 170, 130, .08);
+}
+
+html:not(.dark) .auth-payment-note {
+  border-color: rgba(51, 151, 113, .22);
+  background: rgba(64, 170, 130, .06);
+}
+
+html:not(.dark) .auth-payment-note b {
+  color: #2c3b32;
+}
+
 html:not(.dark) .auth-plan-list b {
   color: #252c27;
 }
@@ -3044,6 +3192,17 @@ html:not(.dark) .auth-page-note {
   border-color: rgba(239, 139, 88, .62);
   background: rgba(239, 139, 88, .1);
   box-shadow: inset 0 0 0 1px rgba(239, 139, 88, .12);
+}
+
+.dark .auth-gateway-picker>button.selected,
+.dark .auth-payment-note {
+  border-color: rgba(239, 139, 88, .42);
+  background: rgba(239, 139, 88, .09);
+}
+
+.dark .auth-payment-note>span {
+  background: rgba(239, 139, 88, .14);
+  color: #ffac77;
 }
 
 .dark .auth-plan-list>button>span>i,
@@ -3756,6 +3915,16 @@ html:not(.dark) .auth-submit:hover {
 
   .auth-page-note {
     display: none;
+  }
+}
+
+@media (max-width: 430px) {
+  .auth-gateway-picker {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-gateway-picker legend {
+    grid-column: auto;
   }
 }
 

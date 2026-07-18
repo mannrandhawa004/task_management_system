@@ -66,6 +66,7 @@ CREATE TABLE `tenant_subscriptions` (
   `start_date` date NOT NULL,
   `end_date` date NOT NULL,
   `amount_paid` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `currency` char(3) NOT NULL DEFAULT 'USD',
   `payment_method` varchar(50) DEFAULT 'stripe',
   `transaction_reference` varchar(255) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
@@ -76,7 +77,42 @@ CREATE TABLE `tenant_subscriptions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
--- 4. Default Seed Data for `subscription_plans`
+-- 4. Table structure for payment-gated workspace signups
+-- Passwords are stored only as bcrypt hashes and cleared after provisioning.
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `signup_checkouts`;
+CREATE TABLE `signup_checkouts` (
+  `id` char(36) NOT NULL,
+  `gateway` enum('stripe','razorpay') NOT NULL,
+  `gateway_session_id` varchar(255) DEFAULT NULL,
+  `gateway_payment_id` varchar(255) DEFAULT NULL,
+  `plan_id` int(11) NOT NULL,
+  `billing_cycle` enum('monthly','yearly') NOT NULL,
+  `amount_minor` bigint unsigned NOT NULL,
+  `currency` char(3) NOT NULL,
+  `company_name` varchar(120) NOT NULL,
+  `workspace_slug` varchar(50) NOT NULL,
+  `contact_name` varchar(120) NOT NULL,
+  `contact_email` varchar(254) NOT NULL,
+  `contact_phone` varchar(50) DEFAULT NULL,
+  `password_hash` varchar(255) NOT NULL,
+  `status` enum('pending','paid','provisioning','provisioned','failed','expired') NOT NULL DEFAULT 'pending',
+  `tenant_id` int(11) DEFAULT NULL,
+  `failure_reason` varchar(500) DEFAULT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_signup_gateway_session` (`gateway_session_id`),
+  INDEX `idx_signup_checkout_status` (`status`),
+  INDEX `idx_signup_checkout_slug` (`workspace_slug`),
+  INDEX `idx_signup_checkout_email` (`contact_email`),
+  CONSTRAINT `fk_signup_checkout_plan` FOREIGN KEY (`plan_id`) REFERENCES `subscription_plans` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fk_signup_checkout_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 5. Default Seed Data for `subscription_plans`
 -- --------------------------------------------------------
 LOCK TABLES `subscription_plans` WRITE;
 INSERT INTO `subscription_plans` (`id`, `name`, `slug`, `description`, `price_monthly`, `price_yearly`, `max_users`, `max_projects`, `max_storage_gb`, `features_json`) VALUES
