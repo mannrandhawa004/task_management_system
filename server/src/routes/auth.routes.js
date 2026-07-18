@@ -37,6 +37,7 @@ router.post(
     message: "New workspace accounts are created only after a verified subscription payment.",
   }),
 );
+router.post("/onboarding/exchange", AuthController.onboardingExchange);
 router.post("/login", loginValidator, validate, AuthController.login);
 router.post("/login/2fa-verify", AuthController.verify2FALogin);
 router.post("/2fa/generate", authMiddleware, AuthController.generate2FA);

@@ -1,8 +1,6 @@
 import AuthModel from "../models/auth.model.js";
-import { executeQuery } from "../utils/dbQuery.js";
 import {
   BadRequestError,
-  ConflictError,
   NotFoundError,
   UnauthorizedError,
 } from "../utils/errorHandler.js";
@@ -13,6 +11,7 @@ import * as OTPAuth from "otpauth";
 import qrcode from "qrcode";
 import { tenantContext } from "../../../saas_platform/context/tenantContext.js";
 import { tenantManager } from "../../../saas_platform/services/TenantConnectionManager.js";
+import { onboardingHandoffService } from "../../../saas_platform/services/OnboardingHandoffService.js";
 
 class AuthServices {
   async register({ name, email, password, role_id, department_id, device, ip, avatar }) {
@@ -56,104 +55,108 @@ class AuthServices {
 
   }
 
-  async login({ email, password, tenantSlug, device, ip }) {
-    let tenantPool = null;
-    let activeTenantInfo = null;
-
-    if (tenantSlug) {
-      const result = await tenantManager.getPoolBySlug(tenantSlug);
-      tenantPool = result.pool;
-      activeTenantInfo = {
-        tenantId: result.tenant.id,
-        tenantSlug: result.tenant.slug,
-        tenantDbName: result.tenant.db_name,
-      };
-    }
-
-    const executeLoginLogic = async () => {
-      const existingUser = await AuthModel.getUserByEmail(email);
-
-      if (!existingUser) {
-        throw new NotFoundError("Invalid email or password");
-      }
-
-      const isMatch = await bcrypt.compare(password, existingUser.password);
-      if (!isMatch) {
-        throw new BadRequestError("Invalid email or password");
-      }
-
-      if (existingUser.two_factor_enabled === 1 || existingUser.two_factor_enabled === true) {
-        const tempToken = await GenerateToken.Temp2FAToken({
-          id: existingUser.id,
-          email: existingUser.email,
-          type: "2fa_temp",
-          tenantId: activeTenantInfo?.tenantId || null,
-          tenantSlug: activeTenantInfo?.tenantSlug || null,
-          tenantDbName: activeTenantInfo?.tenantDbName || null,
-        });
-        return {
-          requires2FA: true,
-          tempToken,
-          message: "Two-factor authentication required. Please enter code from Microsoft Authenticator.",
-        };
-      }
-
-      const payload = {
-        id: existingUser?.id,
-        role: existingUser?.role,
-        status: existingUser?.status,
-        department_id: existingUser?.department_id || null,
-        team_id: existingUser?.team_id || null,
-        reporting_manager_id: existingUser?.reporting_manager_id || null,
-        tenantId: activeTenantInfo?.tenantId || null,
-        tenantSlug: activeTenantInfo?.tenantSlug || null,
-        tenantDbName: activeTenantInfo?.tenantDbName || null,
-      };
-
-      const accessToken = await GenerateToken.AccesToken(payload);
-      const refreshToken = await GenerateToken.RefreshToken(payload);
-      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-      await AuthModel.deleteTokenByDevice(existingUser.id, device, ip);
-      await AuthModel.clearExpiredSessions(existingUser.id);
-      const activeSessions = await AuthModel.countUserSession(existingUser.id);
-      if (activeSessions >= 3) {
-        await AuthModel.deleteOldestSession(existingUser?.id);
-      }
-
-      await AuthModel.saveRefreshToken(
-        existingUser.id,
-        refreshToken,
-        device,
-        ip,
-        expiresAt,
-      );
-
-      return {
-        user: {
-          id: existingUser.id,
-          name: existingUser.name,
-          email: existingUser.email,
-          role: existingUser.role,
-          status: existingUser.status,
-          avatar: existingUser.avatar,
-          tenantSlug: activeTenantInfo?.tenantSlug || null,
-        },
-        accessToken,
-        refreshToken,
-      };
+  getTenantInfo(tenant) {
+    return {
+      tenantId: tenant.id,
+      tenantSlug: tenant.slug,
+      tenantDbName: tenant.db_name,
     };
+  }
 
-    if (tenantPool) {
-      return await new Promise((resolve, reject) => {
-        tenantContext.run(
-          { tenantPool, ...activeTenantInfo },
-          () => executeLoginLogic().then(resolve).catch(reject)
-        );
-      });
-    } else {
-      return await executeLoginLogic();
+  buildTokenPayload(user, tenantInfo) {
+    return {
+      id: user.id,
+      role: user.role,
+      status: user.status,
+      department_id: user.department_id || null,
+      team_id: user.team_id || null,
+      reporting_manager_id: user.reporting_manager_id || null,
+      ...tenantInfo,
+    };
+  }
+
+  async createAuthenticatedSession(user, tenantInfo, device, ip) {
+    const payload = this.buildTokenPayload(user, tenantInfo);
+    const accessToken = await GenerateToken.AccesToken(payload);
+    const refreshToken = await GenerateToken.RefreshToken(payload);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await AuthModel.deleteTokenByDevice(user.id, device, ip);
+    await AuthModel.clearExpiredSessions(user.id);
+    const activeSessions = await AuthModel.countUserSession(user.id);
+    if (activeSessions >= 3) {
+      await AuthModel.deleteOldestSession(user.id);
     }
+    await AuthModel.saveRefreshToken(user.id, refreshToken, device, ip, expiresAt);
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        avatar: user.avatar,
+        tenantSlug: tenantInfo.tenantSlug,
+      },
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async login({ email, password, tenantSlug, device, ip }) {
+    const normalizedSlug = String(tenantSlug || "").trim().toLowerCase();
+    if (!normalizedSlug) {
+      throw new BadRequestError("Workspace ID is required to sign in.");
+    }
+
+    let result;
+    try {
+      result = await tenantManager.getPoolBySlug(normalizedSlug);
+    } catch (error) {
+      if (String(error.message).includes("not found or inactive")) {
+        throw new NotFoundError("Workspace not found or inactive.");
+      }
+      throw error;
+    }
+    const activeTenantInfo = this.getTenantInfo(result.tenant);
+
+    return tenantContext.run(
+      { tenantPool: result.pool, ...activeTenantInfo },
+      async () => {
+        const existingUser = await AuthModel.getUserByEmail(email);
+
+        if (!existingUser) {
+          throw new NotFoundError("Invalid email or password");
+        }
+
+        const isMatch = await bcrypt.compare(password, existingUser.password);
+        if (!isMatch) {
+          throw new BadRequestError("Invalid email or password");
+        }
+        if (existingUser.status !== "active") {
+          throw new UnauthorizedError("This user account is not active.");
+        }
+
+        if (existingUser.two_factor_enabled === 1 || existingUser.two_factor_enabled === true) {
+          const tempToken = await GenerateToken.Temp2FAToken({
+            id: existingUser.id,
+            email: existingUser.email,
+            type: "2fa_temp",
+            tenantId: activeTenantInfo.tenantId,
+            tenantSlug: activeTenantInfo.tenantSlug,
+            tenantDbName: activeTenantInfo.tenantDbName,
+          });
+          return {
+            requires2FA: true,
+            tempToken,
+            message: "Two-factor authentication required. Please enter code from Microsoft Authenticator.",
+          };
+        }
+
+        return this.createAuthenticatedSession(existingUser, activeTenantInfo, device, ip);
+      },
+    );
   }
 
   async refresh(refreshToken) {
@@ -161,47 +164,84 @@ class AuthServices {
       throw new UnauthorizedError("No refresh token");
     }
 
-    const stored = await AuthModel.findRefreshToken(refreshToken);
-
-    if (!stored || stored.length === 0) {
-      throw new UnauthorizedError("Invalid refresh token");
+    const decoded = await GenerateToken.verifyRefreshToken(refreshToken);
+    if (!decoded.tenantSlug && !decoded.tenantDbName) {
+      throw new UnauthorizedError("Refresh token is missing its workspace identity.");
     }
 
-    const decoded = await GenerateToken.verifyRefreshToken(refreshToken);
-   
+    const tenantResult = decoded.tenantDbName
+      ? await tenantManager.getPoolByDbName(decoded.tenantDbName)
+      : await tenantManager.getPoolBySlug(decoded.tenantSlug);
+    const tenantInfo = this.getTenantInfo(tenantResult.tenant);
 
-    const userId = decoded.id;
-    const result = await AuthModel.getUserById(userId)
-  
-    await AuthModel.deleteRefreshToken(refreshToken);
+    return tenantContext.run(
+      { tenantPool: tenantResult.pool, ...tenantInfo },
+      async () => {
+        const stored = await AuthModel.findRefreshToken(refreshToken);
+        if (!stored || stored.length === 0) {
+          throw new UnauthorizedError("Invalid refresh token");
+        }
 
-    const payload = {
-      id: userId,
-      role: result.role,
-      status: result.status
-    };
+        const user = await AuthModel.getUserById(decoded.id);
+        if (!user || user.status !== "active") {
+          throw new UnauthorizedError("This user account is unavailable.");
+        }
 
-    const newAccessToken = await GenerateToken.AccesToken(payload);
-    const newRefreshToken = await GenerateToken.RefreshToken(payload);
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await AuthModel.deleteRefreshToken(refreshToken);
+        const payload = this.buildTokenPayload(user, tenantInfo);
+        const newAccessToken = await GenerateToken.AccesToken(payload);
+        const newRefreshToken = await GenerateToken.RefreshToken(payload);
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await AuthModel.saveRefreshToken(
-      userId,
-      newRefreshToken,
-      stored[0].device,
-      stored[0].ip_address,
-      expiresAt,
+        await AuthModel.saveRefreshToken(
+          user.id,
+          newRefreshToken,
+          stored[0].device,
+          stored[0].ip_address,
+          expiresAt,
+        );
+
+        return { accessToken: newAccessToken, refreshToken: newRefreshToken };
+      },
     );
-
-    return {
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-    };
   }
 
   async logout(refreshToken) {
     if (!refreshToken) return;
-    await AuthModel.deleteRefreshToken(refreshToken);
+    try {
+      const decoded = await GenerateToken.verifyRefreshToken(refreshToken);
+      const tenantResult = decoded.tenantDbName
+        ? await tenantManager.getPoolByDbName(decoded.tenantDbName)
+        : await tenantManager.getPoolBySlug(decoded.tenantSlug);
+      const tenantInfo = this.getTenantInfo(tenantResult.tenant);
+      await tenantContext.run(
+        { tenantPool: tenantResult.pool, ...tenantInfo },
+        () => AuthModel.deleteRefreshToken(refreshToken),
+      );
+    } catch {
+      // Logout remains idempotent even when the cookie is already invalid.
+    }
+  }
+
+  async exchangeOnboardingToken({ token, device, ip }) {
+    return onboardingHandoffService.consume(token, async (handoff) => {
+      const tenantResult = await tenantManager.getPoolBySlug(handoff.tenant_slug);
+      if (Number(tenantResult.tenant.id) !== Number(handoff.tenant_id)) {
+        throw new UnauthorizedError("The onboarding link does not match this workspace.");
+      }
+      const tenantInfo = this.getTenantInfo(tenantResult.tenant);
+
+      return tenantContext.run(
+        { tenantPool: tenantResult.pool, ...tenantInfo },
+        async () => {
+          const user = await AuthModel.getUserById(handoff.user_id);
+          if (!user || user.status !== "active" || user.role !== "super_admin") {
+            throw new UnauthorizedError("The paid workspace administrator is unavailable.");
+          }
+          return this.createAuthenticatedSession(user, tenantInfo, device, ip);
+        },
+      );
+    });
   }
 
   async profile(id) {

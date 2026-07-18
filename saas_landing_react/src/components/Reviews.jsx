@@ -19,7 +19,7 @@ export default function Reviews() {
       rating: 5
     },
     {
-      quote: "The Next.js 15 App Router frontend paired with raw parameterized MySQL 8 queries over Express 5 is lightning fast. And our HR department loves the location-tagged daily attendance (`Office vs Hybrid`)!",
+      quote: "The Next.js 16 App Router frontend paired with raw parameterized MySQL 8 queries over Express 5 is lightning fast. And our HR department loves the location-tagged daily attendance (`Office vs Hybrid`)!",
       author: "David K. Thorne",
       role: "Chief Operations Officer at Apex Labs",
       avatar: "DT",
@@ -42,7 +42,7 @@ export default function Reviews() {
           Loved by Engineering, PMO &amp; HR Leaders
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg leading-relaxed">
-          See how distributed engineering squads, PMO directors, and HR leaders scale their operations using our Next.js 15 / Express 5 architecture.
+          See how distributed engineering squads, PMO directors, and HR leaders scale their operations using our Next.js 16 / Express 5 architecture.
         </p>
       </div>
 

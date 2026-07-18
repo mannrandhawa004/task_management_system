@@ -23,7 +23,7 @@ const FAQ_DATA = [
   },
   {
     q: "What tech stack powers this platform?",
-    a: "The frontend is built on Next.js 15 (App Router), React 19, Redux Toolkit (`@reduxjs/toolkit`), and Tailwind CSS. The high-performance backend runs on Node.js, Express 5, raw parameterized MySQL 8 queries (`mysql2/promise`), Cloudinary media storage, and Socket.IO 4 for instantaneous WebSocket room broadcasting."
+    a: "The frontend is built on Next.js 16 (App Router), React 19, Redux Toolkit (`@reduxjs/toolkit`), and Tailwind CSS. The high-performance backend runs on Node.js, Express 5, raw parameterized MySQL 8 queries (`mysql2/promise`), Cloudinary media storage, and Socket.IO 4 for instantaneous WebSocket room broadcasting."
   }
 ];
 
@@ -45,7 +45,7 @@ export default function Faq() {
           Frequently Asked Questions
         </h2>
         <p className="text-slate-600 dark:text-slate-400 text-base">
-          Got questions about our Next.js 15 / Express 5 architecture, Microsoft Authenticator MFA, or RLS scoping? We've got answers.
+          Got questions about our Next.js 16 / Express 5 architecture, Microsoft Authenticator MFA, or RLS scoping? We've got answers.
         </p>
       </div>
 

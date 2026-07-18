@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import {
     useDispatch,
     useSelector,
@@ -14,6 +15,7 @@ import NotificationToastListener from "./common/NotificationToastListener";
 export default function AuthInitializer(){
 
     const dispatch = useDispatch();
+    const pathname = usePathname();
 
     const {
         initialized,
@@ -23,7 +25,7 @@ export default function AuthInitializer(){
 
     useEffect(()=>{
 
-        if (!initialized) {
+        if (!initialized && pathname !== "/auth/handoff") {
 
             dispatch(
                 profileThunk()
@@ -34,6 +36,7 @@ export default function AuthInitializer(){
     },[
         initialized,
         dispatch,
+        pathname,
     ]);
 
     return <NotificationToastListener />;

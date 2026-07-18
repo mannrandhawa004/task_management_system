@@ -28,6 +28,17 @@ export const registerValidator = [
 ];
 
 export const loginValidator = [
+  body("tenantSlug").custom((value, { req }) => {
+    const tenantSlug = String(value || req.headers["x-tenant-slug"] || "")
+      .trim()
+      .toLowerCase();
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(tenantSlug) || tenantSlug.length > 50) {
+      throw new Error("Enter a valid workspace ID");
+    }
+    req.body.tenantSlug = tenantSlug;
+    return true;
+  }),
+
   body("email")
     .trim()
     .notEmpty()

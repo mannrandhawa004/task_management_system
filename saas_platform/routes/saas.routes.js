@@ -4,6 +4,7 @@ import { createRequire } from "module";
 import { fileURLToPath } from "url";
 
 import SaasController from "../controllers/saas.controller.js";
+import { uploadProfilePic } from "../../server/src/middlewares/upload.middleware.js";
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -24,11 +25,12 @@ const checkoutLimiter = rateLimit({
 
 router.get("/plans", SaasController.getPlans);
 router.get("/tenants/lookup/:slug", SaasController.lookupTenant);
+router.get("/tenants/availability/:slug", SaasController.checkSlugAvailability);
 
 // `/checkout` remains as a compatibility alias, but it now only creates a
 // gateway checkout. The old mock-card path can no longer provision an account.
-router.post("/checkout", checkoutLimiter, SaasController.createCheckout);
-router.post("/checkout/session", checkoutLimiter, SaasController.createCheckout);
+router.post("/checkout", checkoutLimiter, uploadProfilePic.single("avatar"), SaasController.createCheckout);
+router.post("/checkout/session", checkoutLimiter, uploadProfilePic.single("avatar"), SaasController.createCheckout);
 router.post(
   "/checkout/stripe/verify",
   checkoutLimiter,

@@ -36,4 +36,21 @@ const storage = new CloudinaryStorage({
     }
 })
 
-export const uploadProfilePic = multer({ storage });
+const imageFileFilter = (req, file, callback) => {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.mimetype)) {
+        callback(new Error("Profile photo must be a JPG, PNG, or WebP image."));
+        return;
+    }
+    callback(null, true);
+};
+
+export const uploadProfilePic = multer({
+    storage,
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: imageFileFilter,
+});
+
+export const deleteUploadedImage = async (publicId) => {
+    if (!publicId) return;
+    await cloudinary.uploader.destroy(publicId, { resource_type: "image" });
+};

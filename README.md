@@ -1,7 +1,7 @@
 # 🚀 Enterprise Task Management System (SaaS Platform)
 
 <div align="center">
-  <img src="https://img.shields.io/badge/Next.js%2015-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 15" />
+  <img src="https://img.shields.io/badge/Next.js%2016-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js 16" />
   <img src="https://img.shields.io/badge/React%2019-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
   <img src="https://img.shields.io/badge/Express%205-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express 5" />
   <img src="https://img.shields.io/badge/MySQL%208-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
@@ -20,7 +20,7 @@ This repository also includes a standalone React/Vite marketing site in [`saas_l
 - Uses the real TaskFlow dashboard inside a responsive laptop hero composition, plus task-board and attendance product screenshots throughout the story.
 - Combines a multi-color premium visual system with lightweight CSS 3D accents, animated headline reveals, and responsive floating status cards.
 - Includes a GSAP ScrollTrigger-driven pinned product story with smooth masked transitions, plus a responsive cursor follower and reveal/stagger motion throughout the page.
-- Provides compact, dark/light `/login` and `/signup` pages with tenant-aware authentication and a payment-gated provisioning flow using Stripe Checkout or Razorpay Checkout.
+- Keeps paid `/signup` and provisioning on Vite while routing every sign-in to the tenant-aware Next.js application.
 - Respects `prefers-reduced-motion` and falls back to a readable, non-pinned mobile story.
 - Supports the same dark and light theme preference used across the product.
 
@@ -34,9 +34,18 @@ npm run dev
 
 The Vite preview runs at `http://localhost:5173` by default. For a production check, run `npm run build`.
 
+### Single Sign-In and Paid Onboarding
+
+- Existing users sign in once in the Next.js app with `Workspace ID + email + password`. The workspace ID selects the tenant database before credentials are checked, so identical email addresses can safely exist in different tenants.
+- New workspace registration remains payment-gated on the Vite site. A successful Stripe or Razorpay verification provisions the buyer as `super_admin` (`role_id = 5`).
+- Registration collects the administrator's name, work email, required contact number, and optional JPG/PNG/WebP profile photo (maximum 2 MB). The photo is stored through Cloudinary and copied into the provisioned tenant administrator profile.
+- Organization names do not need to be unique. Workspace slugs do: `/v1/saas/tenants/availability/:slug` checks both provisioned tenants and active checkouts, and returns server-verified alternatives when the requested URL is occupied. Checkout still repeats the uniqueness check to protect against concurrent registrations.
+- Paid administrators receive a 256-bit, ten-minute, single-use onboarding handoff. Only its SHA-256 hash is stored, the browser receives it in a URL fragment, and the Next.js handoff exchanges it for HttpOnly session cookies before opening the dashboard.
+- Access-token refresh, logout, profile, and 2FA restore tenant context from the signed token instead of querying the default database.
+
 ---
 
-> **A modern, multi-tenant, enterprise-grade Task Management & Workflow Automation platform.** Built with a high-performance **Next.js 15 (App Router)** frontend and an **Express 5 / MySQL** backend, featuring advanced **Role-Based Access Control (RBAC)**, **Multi-Factor Authentication (MFA)** via **Microsoft Authenticator**, real-time **Socket.IO** collaboration, **Department & Team Scoping**, and comprehensive **HR Attendance & Leave Management**.
+> **A modern, multi-tenant, enterprise-grade Task Management & Workflow Automation platform.** Built with a high-performance **Next.js 16 (App Router)** frontend and an **Express 5 / MySQL** backend, featuring advanced **Role-Based Access Control (RBAC)**, **Multi-Factor Authentication (MFA)** via **Microsoft Authenticator**, real-time **Socket.IO** collaboration, **Department & Team Scoping**, and comprehensive **HR Attendance & Leave Management**.
 
 ---
 
@@ -73,7 +82,7 @@ The Vite preview runs at `http://localhost:5173` by default. For a production ch
 
 | Layer | Technology | Highlights |
 | :--- | :--- | :--- |
-| **Frontend** | **Next.js 15** (App Router), React 19 | Server Components, Client Components, Server Actions, Optimized Routing |
+| **Frontend** | **Next.js 16** (App Router), React 19 | Server Components, Client Components, Server Actions, Optimized Routing |
 | **State Management** | **Redux Toolkit** (`@reduxjs/toolkit`), `react-redux` | Modular feature slices (`authSlice`, `projectSlice`, `taskSlice`, `themeSlice`) |
 | **Styling & UI** | **Tailwind CSS**, Lucide React, Glassmorphism | Curated dark/light mode tokens, micro-animations, responsive SaaS layouts |
 | **Backend API** | **Node.js**, **Express 5** | Async error handling, Express Rate Limit, Helmet, Compression, Cookie Parser |
@@ -88,7 +97,7 @@ The Vite preview runs at `http://localhost:5173` by default. For a production ch
 
 ```text
 task_management_system/
-├── client/                     # Next.js 15 Frontend Application
+├── client/                     # Next.js 16 Frontend Application
 │   ├── src/
 │   │   ├── app/                # App Router pages ((protected)/dashboard/*, (auth)/*)
 │   │   ├── components/         # Reusable UI components (projects, tasks, profile, common)
@@ -180,6 +189,10 @@ task_management_system/
    RAZORPAY_USD_TO_INR=83
    SAAS_LANDING_URL=http://localhost:5173
    CLIENT_APP_URL=http://localhost:3000
+   ONBOARDING_HANDOFF_TTL_MINUTES=10
+
+   # Empty on localhost; use .taskflow.com when app/API use sibling subdomains.
+   COOKIE_DOMAIN=
    ```
 3. Initialize the SaaS control-plane database and subscription plans:
    ```bash
@@ -238,7 +251,8 @@ The complete **OpenAPI 3.0.3 (Swagger)** REST API specification is included in t
 
 | Module | Method | Endpoint | Description |
 | :--- | :--- | :--- | :--- |
-| **Auth & MFA** | `POST` | `/v1/auth/login` | Authenticates credentials; returns `requires2FA: true` if MFA is active |
+| **Auth & MFA** | `POST` | `/v1/auth/login` | Resolves the required `tenantSlug`, authenticates inside that workspace, and returns `requires2FA: true` if MFA is active |
+| **Auth & MFA** | `POST` | `/v1/auth/onboarding/exchange` | Consumes a paid, single-use onboarding token and creates HttpOnly tenant session cookies |
 | **Auth & MFA** | `POST` | `/v1/auth/login/2fa-verify` | Verifies 6-digit TOTP code from Microsoft Authenticator |
 | **Auth & MFA** | `POST` | `/v1/auth/2fa/generate` | Generates TOTP secret & Data URL QR code image for scanning |
 | **Auth & MFA** | `POST` | `/v1/auth/2fa/verify-setup` | Validates initial OTP and activates 2FA on user account |

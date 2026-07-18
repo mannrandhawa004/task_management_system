@@ -1,11 +1,27 @@
 import { useEffect, useState } from 'react';
 import PremiumLanding from './components/PremiumLanding';
-import { LoginPage, SignupPage } from './components/AuthPages';
+import { SignupPage } from './components/AuthPages';
+
+const APP_URL = (import.meta.env.VITE_APP_URL || 'http://localhost:3000').replace(/\/$/, '');
 
 const getRoute = () => {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
   return ['/login', '/signup'].includes(path) ? path : '/';
 };
+
+function LoginRedirect() {
+  useEffect(() => {
+    window.location.replace(APP_URL);
+  }, []);
+
+  return (
+    <main className="auth-page auth-login-redirect" aria-live="polite">
+      <img src="/assets/taskflow-logo-modern.png" alt="TaskFlow" />
+      <span className="auth-spinner" aria-hidden="true" />
+      <p>Opening secure workspace sign in...</p>
+    </main>
+  );
+}
 
 export default function App() {
   const [isDark, setIsDark] = useState(true);
@@ -47,14 +63,14 @@ export default function App() {
     navigate(`/signup?plan=${id}&name=${encodeURIComponent(name)}&billing=${billing}`);
   };
 
-  if (route === '/login') return <LoginPage isDark={isDark} onToggleTheme={toggleTheme} onNavigate={navigate} />;
+  if (route === '/login') return <LoginRedirect />;
   if (route === '/signup') return <SignupPage isDark={isDark} onToggleTheme={toggleTheme} onNavigate={navigate} />;
 
   return (
     <PremiumLanding
       isDark={isDark}
       toggleTheme={toggleTheme}
-      onOpenLogin={() => navigate('/login')}
+      onOpenLogin={() => window.location.assign(APP_URL)}
       onOpenCheckout={openSignup}
     />
   );

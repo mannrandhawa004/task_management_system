@@ -8,31 +8,22 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const urlParams = new URLSearchParams(window.location.search);
-    const tenantSlug = urlParams.get("workspace") || localStorage.getItem("active_tenant_slug");
+    const submittedTenantSlug =
+      config.data && typeof config.data === "object"
+        ? config.data.tenantSlug
+        : null;
+    const tenantSlug = submittedTenantSlug
+      || urlParams.get("workspace")
+      || localStorage.getItem("active_tenant_slug");
     if (tenantSlug) {
       config.headers["x-tenant-slug"] = tenantSlug;
-      localStorage.setItem("active_tenant_slug", tenantSlug);
       if (config.url?.includes("/auth/login") && config.data && typeof config.data === "object") {
-        config.data.tenantSlug = tenantSlug;
+        config.data.tenantSlug ||= tenantSlug;
       }
     }
   }
   return config;
 });
-
-let isRefreshing = false;
-let failedQueue = [];
-
-const processQueue = (error) => {
-  failedQueue.forEach((promise) => {
-    if (error) {
-      promise.reject(error);
-    } else {
-      promise.resolve();
-    }
-  });
-  failedQueue = [];
-};
 
 api.interceptors.response.use(
   (response) => response,

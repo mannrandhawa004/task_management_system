@@ -95,6 +95,8 @@ CREATE TABLE `signup_checkouts` (
   `contact_name` varchar(120) NOT NULL,
   `contact_email` varchar(254) NOT NULL,
   `contact_phone` varchar(50) DEFAULT NULL,
+  `avatar_url` varchar(500) DEFAULT NULL,
+  `avatar_public_id` varchar(255) DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
   `status` enum('pending','paid','provisioning','provisioned','failed','expired') NOT NULL DEFAULT 'pending',
   `tenant_id` int(11) DEFAULT NULL,
@@ -112,7 +114,28 @@ CREATE TABLE `signup_checkouts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
--- 5. Default Seed Data for `subscription_plans`
+-- 5. Single-use paid onboarding handoffs
+-- Only SHA-256 token hashes are stored; raw tokens are never persisted.
+-- --------------------------------------------------------
+DROP TABLE IF EXISTS `onboarding_handoffs`;
+CREATE TABLE `onboarding_handoffs` (
+  `id` char(36) NOT NULL,
+  `checkout_id` char(36) NOT NULL,
+  `token_hash` char(64) NOT NULL,
+  `tenant_id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `consumed_at` datetime DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_onboarding_handoff_token` (`token_hash`),
+  INDEX `idx_onboarding_handoff_checkout` (`checkout_id`),
+  INDEX `idx_onboarding_handoff_expiry` (`expires_at`),
+  CONSTRAINT `fk_onboarding_handoff_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- 6. Default Seed Data for `subscription_plans`
 -- --------------------------------------------------------
 LOCK TABLES `subscription_plans` WRITE;
 INSERT INTO `subscription_plans` (`id`, `name`, `slug`, `description`, `price_monthly`, `price_yearly`, `max_users`, `max_projects`, `max_storage_gb`, `features_json`) VALUES
