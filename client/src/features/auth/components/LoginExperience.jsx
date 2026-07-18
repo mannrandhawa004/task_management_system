@@ -1,7 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
     CheckCircle2,
-    Layers3,
     LockKeyhole,
     Radio,
 } from "lucide-react";
@@ -32,11 +32,8 @@ export default function LoginExperience() {
                     <div className="absolute inset-0 opacity-20 [background-size:42px_42px] [background-image:linear-gradient(rgba(255,255,255,.16)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.16)_1px,transparent_1px)] [mask-image:linear-gradient(to_bottom,transparent,black_28%,black)]" aria-hidden="true" />
                     <div className="pointer-events-none absolute right-[-190px] top-[16%] h-[380px] w-[380px] rounded-full bg-emerald-300/20 blur-[55px] dark:bg-orange-300/20" aria-hidden="true" />
 
-                    <Link className="relative z-10 inline-flex w-fit items-center gap-2.5 text-[20px] font-extrabold tracking-[-.045em]" href="/" aria-label="TaskFlow home">
-                        <span className="grid h-10 w-10 place-items-center rounded-xl border border-white/25 bg-[linear-gradient(145deg,#fff8ec,#ffd294)] text-[#102018] shadow-[0_12px_30px_rgba(0,0,0,.18)]">
-                            <Layers3 size={20} />
-                        </span>
-                        TaskFlow
+                    <Link className="relative z-10 inline-flex w-fit" href="/" aria-label="TaskFlow home">
+                        <Image src="/assets/taskflow-logo-modern.png" alt="TaskFlow" width={156} height={30} priority className="h-auto w-[148px] object-contain drop-shadow-[0_9px_20px_rgba(0,0,0,.16)]" />
                     </Link>
 
                     <div className="relative z-10 mt-8 [@media(max-height:700px)]:mt-5">
@@ -95,9 +92,8 @@ export default function LoginExperience() {
 
                 <section className="flex min-h-0 min-w-0 flex-col overflow-y-auto bg-white/40 px-6 py-5 dark:bg-black/10 sm:px-9 sm:py-6 lg:px-12 xl:px-16 [@media(max-height:700px)]:py-4">
                     <div className="flex min-h-10 items-center justify-between lg:justify-end">
-                        <Link className="inline-flex items-center gap-2 text-[18px] font-extrabold tracking-[-.04em] text-[var(--text)] lg:hidden" href="/" aria-label="TaskFlow home">
-                            <span className="grid h-9 w-9 place-items-center rounded-[11px] bg-[var(--primary)] text-white shadow-[0_10px_28px_var(--ring)]"><Layers3 size={18} /></span>
-                            TaskFlow
+                        <Link className="inline-flex items-center lg:hidden" href="/" aria-label="TaskFlow home">
+                            <Image src="/assets/taskflow-logo-modern.png" alt="TaskFlow" width={130} height={25} priority className="h-auto w-[126px] object-contain" />
                         </Link>
 
                         <div className="inline-flex items-center gap-2 text-[9px] font-extrabold uppercase tracking-[.08em] text-[var(--muted)] [&_button]:grid [&_button]:h-9 [&_button]:w-9 [&_button]:cursor-pointer [&_button]:place-items-center [&_button]:rounded-[11px] [&_button]:border [&_button]:border-[var(--border)] [&_button]:bg-[var(--input)] [&_button]:text-[var(--text)] [&_button]:shadow-sm [&_svg]:h-4 [&_svg]:w-4">

@@ -47,12 +47,7 @@ export default function Footer({ onOpenCheckout }) {
         {/* Brand Column */}
         <div className="col-span-2 space-y-4">
           <a href="#hero" className="flex items-center gap-3 group no-underline">
-            <div className="w-9 h-9 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold text-lg shadow-orange-glow">
-              <i className="fa-solid fa-layer-group"></i>
-            </div>
-            <span className="font-display font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-              Task<span className="text-brand-500">Flow</span>
-            </span>
+            <img src="/assets/taskflow-logo-modern.png" alt="TaskFlow" className="h-auto w-[158px] object-contain transition-transform group-hover:scale-[1.02]" />
           </a>
           <p className="text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
             The next-generation multi-tenant enterprise task and attendance platform built with isolated database pools (`tenant_slug`) and real-time Socket.IO synchronization.

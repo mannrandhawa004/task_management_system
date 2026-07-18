@@ -237,8 +237,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
       <header className="site-nav">
         <div className="nav-inner">
           <a href="#top" className="brand" aria-label="TaskFlow home" onClick={closeMenu}>
-            <span className="brand-mark"><img src="/assets/taskflow-logo.png" alt="" /></span>
-            <span>TaskFlow</span>
+            <span className="brand-mark"><img src="/assets/taskflow-logo-modern.png" alt="" /></span>
           </a>
           <nav className={`nav-links ${menuOpen ? 'is-open' : ''}`} aria-label="Primary navigation">
             <a href="#workflow" onClick={closeMenu}>Product</a>
@@ -468,7 +467,7 @@ export default function PremiumLanding({ isDark, toggleTheme, onOpenLogin, onOpe
 
       <footer className="site-footer">
         <div className="section-shell footer-main">
-          <div className="footer-brand"><a href="#top" className="brand"><span className="brand-mark"><img src="/assets/taskflow-logo.png" alt="" /></span><span>TaskFlow</span></a><p>Projects, people, and progress in one calm workspace.</p></div>
+          <div className="footer-brand"><a href="#top" className="brand" aria-label="TaskFlow home"><span className="brand-mark"><img src="/assets/taskflow-logo-modern.png" alt="" /></span></a><p>Projects, people, and progress in one calm workspace.</p></div>
           <div className="footer-links"><div><b>Product</b><a href="#workflow">Overview</a><a href="#features">Features</a><a href="#pricing">Pricing</a></div><div><b>Company</b><a href="#customers">Customers</a><a href="#faq">About</a><a href="#faq">Contact</a></div><div><b>Resources</b><a href="#faq">Help center</a><a href="#faq">Security</a><a href="#faq">Status</a></div></div>
         </div>
         <div className="section-shell footer-bottom"><span>© 2026 TaskFlow. All rights reserved.</span><span><a href="#faq">Privacy</a><a href="#faq">Terms</a></span></div>

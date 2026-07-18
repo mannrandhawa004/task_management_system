@@ -7,12 +7,7 @@ export default function Navbar({ isDark, toggleTheme, onOpenLogin, onOpenCheckou
         
         {/* Left Logo */}
         <a href="#hero" className="flex items-center gap-3 group no-underline">
-          <div className="w-10 h-10 rounded-xl bg-brand-500 flex items-center justify-center text-white font-bold text-xl shadow-orange-glow group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-layer-group"></i>
-          </div>
-          <span className="font-display font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
-            Task<span className="text-brand-500">Flow</span>
-          </span>
+          <img src="/assets/taskflow-logo-modern.png" alt="TaskFlow" className="h-auto w-[142px] object-contain transition-transform group-hover:scale-[1.03]" />
           <span className="hidden sm:inline-block text-[10px] font-mono font-bold bg-brand-500/15 text-brand-500 px-2 py-0.5 rounded border border-brand-500/20 ml-1">
             v2.4 Enterprise
           </span>

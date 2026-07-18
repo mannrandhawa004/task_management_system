@@ -74,9 +74,7 @@ export function LoginModal({ isOpen, onClose }) {
         </button>
 
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-brand-500 text-white font-bold flex items-center justify-center text-lg shadow-orange-glow flex-shrink-0">
-            <i className="fa-solid fa-layer-group"></i>
-          </div>
+          <img src="/assets/taskflow-logo-modern-icon.png" alt="" className="h-10 w-10 object-contain flex-shrink-0" />
           <div>
             <h3 className="font-display font-extrabold text-xl text-slate-900 dark:text-white">Sign In to Workspace</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">Connect to your isolated MySQL tenant pool.</p>
