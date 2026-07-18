@@ -223,9 +223,7 @@ The `/signup` flow creates a checkout first and provisions the tenant database a
 - **Razorpay currency:** plan prices are stored in USD. `RAZORPAY_USD_TO_INR` controls the server-side conversion used to create INR Orders; update it to your production pricing policy.
 - **Landing site:** optionally set `VITE_API_URL=http://localhost:8000` and `VITE_APP_URL=http://localhost:3000` in `saas_landing_react/.env.local`.
 
-Use gateway test keys while developing. Replace them with live keys only after completing each provider's go-live checklist, configuring the webhook endpoints on a public HTTPS deployment, and reviewing capture settings in the provider dashboard.
-
----
+Use gateway test keys while developing. Replace them with live keys only after completing each provider's go-live checklist, configuring the webhook endpoints on a public HTTPS deployment, and reviewing capture settings in the provider dashboard
 
 ## 📚 API Documentation (OpenAPI / Swagger)
 
