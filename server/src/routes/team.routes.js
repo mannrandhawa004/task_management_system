@@ -13,6 +13,7 @@ import {
   teamAccessMiddleware,
   teamManageMiddleware,
 } from "../middlewares/teamAccess.middleware.js";
+import { cacheResponse, invalidateCacheAfter } from "../middlewares/cache.middleware.js";
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.post(
   authorizeRoles("super_admin", "admin", "dept_head"),
   createTeamValidator,
   validate,
+  invalidateCacheAfter(["teams", "users", "projects", "dashboard"]),
   TeamController.createTeam
 );
 
@@ -34,6 +36,7 @@ router.patch(
   teamManageMiddleware,
   updateTeamValidator,
   validate,
+  invalidateCacheAfter(["teams", "users", "projects", "dashboard"]),
   TeamController.updateTeam
 );
 
@@ -42,18 +45,21 @@ router.delete(
   "/delete/:id",
   teamAccessMiddleware,
   teamManageMiddleware,
+  invalidateCacheAfter(["teams", "users", "projects", "dashboard"]),
   TeamController.deleteTeam
 );
 
 // List teams
 router.get(
   "/",
+  cacheResponse({ resource: "teams-list", ttl: 120, scope: "tenant", versionResources: ["teams"] }),
   TeamController.listTeams
 );
 
 // Get my teams (must be before /:id)
 router.get(
   "/my-teams",
+  cacheResponse({ resource: "my-teams", ttl: 30, versionResources: ["teams", "users"] }),
   TeamController.getMyTeams
 );
 
@@ -61,6 +67,7 @@ router.get(
 router.get(
   "/:id",
   teamAccessMiddleware,
+  cacheResponse({ resource: (req) => `team-${req.params.id}`, ttl: 60, versionResources: ["teams", "users", "departments"], includeQuery: false }),
   TeamController.getTeamDetails
 );
 
@@ -71,6 +78,7 @@ router.post(
   teamManageMiddleware,
   addTeamMemberValidator,
   validate,
+  invalidateCacheAfter(["teams", "users", "projects", "dashboard"]),
   TeamController.addTeamMember
 );
 
@@ -78,12 +86,14 @@ router.delete(
   "/:id/members/:userId",
   teamAccessMiddleware,
   teamManageMiddleware,
+  invalidateCacheAfter(["teams", "users", "projects", "dashboard"]),
   TeamController.removeTeamMember
 );
 
 router.get(
   "/:id/members",
   teamAccessMiddleware,
+  cacheResponse({ resource: (req) => `team-${req.params.id}-members`, ttl: 30, versionResources: ["teams", "users"], includeQuery: false }),
   TeamController.getTeamMembers
 );
 
@@ -93,17 +103,20 @@ router.post(
   authorizeRoles("super_admin", "admin", "dept_head", "project_manager"),
   assignTeamToProjectValidator,
   validate,
+  invalidateCacheAfter(["teams", "projects", "tasks", "users", "dashboard"]),
   TeamController.assignTeamToProject
 );
 
 router.delete(
   "/project/:projectId/team/:teamId",
   authorizeRoles("super_admin", "admin", "dept_head", "project_manager"),
+  invalidateCacheAfter(["teams", "projects", "tasks", "users", "dashboard"]),
   TeamController.removeTeamFromProject
 );
 
 router.get(
   "/project/:projectId",
+  cacheResponse({ resource: (req) => `project-${req.params.projectId}-teams`, ttl: 30, versionResources: ["teams", "projects", "users"], includeQuery: false }),
   TeamController.getProjectTeams
 );
 
