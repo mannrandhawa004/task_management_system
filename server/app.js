@@ -33,6 +33,7 @@ import { clientIpMiddleware } from "./src/middlewares/clientIp.middleware.js";
 import { registerUserSocket, removeUserSocket, setSocketIO } from "./src/socket/socket.js";
 import { setAuditServiceIO } from "./src/services/audit.service.js";
 import { setupCronJobs } from "./src/utils/cron.js";
+import { initializeRedis } from "./src/config/redis.js";
 
 dotenv.config({
   quiet: true,
@@ -53,6 +54,7 @@ const corsOptions = {
     }
   },
   credentials: true,
+  exposedHeaders: ["X-Cache"],
 };
 
 app.use(cors(corsOptions));
@@ -189,6 +191,9 @@ setupCronJobs();
 
 connectDB()
   .then(() => {
+    // Redis is an optional optimization. Do not delay API availability while
+    // it connects or reconnects; requests safely bypass the cache until ready.
+    void initializeRedis();
     server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });

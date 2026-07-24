@@ -10,6 +10,7 @@ import {
 import {
   departmentAccessMiddleware,
 } from "../middlewares/departmentAccess.middleware.js";
+import { cacheResponse, invalidateCacheAfter } from "../middlewares/cache.middleware.js";
 
 const router = Router();
 
@@ -22,6 +23,7 @@ router.post(
   authorizeRoles("super_admin"),
   createDepartmentValidator,
   validate,
+  invalidateCacheAfter(["departments", "teams", "users", "projects", "dashboard"]),
   DepartmentController.createDepartment
 );
 
@@ -30,18 +32,21 @@ router.patch(
   authorizeRoles("super_admin"),
   updateDepartmentValidator,
   validate,
+  invalidateCacheAfter(["departments", "teams", "users", "projects", "dashboard"]),
   DepartmentController.updateDepartment
 );
 
 router.delete(
   "/delete/:id",
   authorizeRoles("super_admin"),
+  invalidateCacheAfter(["departments", "teams", "users", "projects", "dashboard"]),
   DepartmentController.deleteDepartment
 );
 
 // All authenticated employees can list departments (e.g. for selection in forms)
 router.get(
   "/",
+  cacheResponse({ resource: "departments-list", ttl: 300, scope: "tenant", versionResources: ["departments"] }),
   DepartmentController.listDepartments
 );
 
@@ -49,18 +54,21 @@ router.get(
 router.get(
   "/:id",
   departmentAccessMiddleware,
+  cacheResponse({ resource: (req) => `department-${req.params.id}`, ttl: 60, versionResources: ["departments", "users", "teams", "projects"], includeQuery: false }),
   DepartmentController.getDepartmentDetails
 );
 
 router.get(
   "/:id/users",
   departmentAccessMiddleware,
+  cacheResponse({ resource: (req) => `department-${req.params.id}-users`, ttl: 45, versionResources: ["departments", "users", "teams"], includeQuery: false }),
   DepartmentController.getDepartmentUsers
 );
 
 router.get(
   "/:id/stats",
   departmentAccessMiddleware,
+  cacheResponse({ resource: (req) => `department-${req.params.id}-stats`, ttl: 45, versionResources: ["departments", "users", "teams", "projects", "tasks"], includeQuery: false }),
   DepartmentController.getDepartmentStats
 );
 

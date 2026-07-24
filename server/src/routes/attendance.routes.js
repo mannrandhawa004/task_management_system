@@ -7,6 +7,7 @@ import {
   checkInValidator,
   updateAttendanceValidator,
 } from "../validators/attendance.validator.js";
+import { invalidateCacheAfter } from "../middlewares/cache.middleware.js";
 
 const router = Router();
 
@@ -17,21 +18,25 @@ router.post(
   "/check-in",
   checkInValidator,
   validate,
+  invalidateCacheAfter(["attendance", "dashboard"]),
   AttendanceController.checkIn
 );
 
 router.post(
   "/check-out",
+  invalidateCacheAfter(["attendance", "dashboard"]),
   AttendanceController.checkOut
 );
 
 router.post(
   "/start-break",
+  invalidateCacheAfter(["attendance", "dashboard"]),
   AttendanceController.startBreak
 );
 
 router.post(
   "/end-break",
+  invalidateCacheAfter(["attendance", "dashboard"]),
   AttendanceController.endBreak
 );
 
@@ -64,6 +69,7 @@ router.patch(
   authorizeRoles("super_admin", "admin"),
   updateAttendanceValidator,
   validate,
+  invalidateCacheAfter(["attendance", "dashboard"]),
   AttendanceController.updateAttendance
 );
 
